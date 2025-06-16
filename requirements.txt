@@ -19,5 +19,8 @@ requests==2.32.3
 # bot Telegram
 python-telegram-bot==22.1
 
+# manipulação de imagens (PIL)
+Pillow==11.1.0
+
 # servidor WSGI para deploy
 gunicorn==20.1.0
