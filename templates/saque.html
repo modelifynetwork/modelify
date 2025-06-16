@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saque | Modelify</title>
+    <!-- Google Fonts: Inter, Poppins, Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@400;600&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Lottie for loading animation -->
+    <script src="https://unpkg.com/lottie-web@5.7.3/build/player/lottie.min.js"></script>
+    <style>
+        html, body {
+            font-family: 'Inter', 'Poppins', 'Outfit', system-ui, sans-serif;
+            background: linear-gradient(135deg, #18181b 0%, #23272f 100%);
+        }
+        ::selection {
+            background: #ff85b2;
+            color: #fff;
+        }
+        ::-webkit-scrollbar {
+            width: 10px;
+            background: #242438;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ff85b2;
+            border-radius: 10px;
+        }
+        #loading-overlay {
+            position: fixed;
+            z-index: 9999;
+            inset: 0;
+            background: linear-gradient(120deg,#18181b 70%,#ff85b2 200%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s;
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            font-weight: 700;
+        }
+        #loading-overlay.loaded {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .toast {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+        .toast.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        /* Floating particles background */
+        .particles {
+            position: fixed;
+            left: 0; top: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 0;
+        }
+        .particle {
+            position: absolute;
+            will-change: transform, opacity;
+            border-radius: 50%;
+            opacity: 0.54;
+            animation: float 10s linear infinite;
+            filter: blur(1.3px);
+            pointer-events: none;
+        }
+        @keyframes float {
+            0% { transform: translateY(0) scale(1);}
+            50% { transform: translateY(-90px) scale(1.12);}
+            100% { transform: translateY(0) scale(1);}
+        }
+        /* Sidebar Premium Flutuante */
+        .premium-sidebar {
+          position: fixed;
+          top: 2.5vh;
+          left: 2vw;
+          height: 95vh;
+          width: 4.5rem;
+          z-index: 40;
+          background: linear-gradient(120deg, #18181b 85%, #23272f 120%);
+          border-radius: 2.5rem;
+          box-shadow:
+            0 2px 16px 0 #9b6cf32a,
+            0 2px 8px 0 #0005,
+            0 0 0 1.5px #26263a inset;
+          overflow: hidden;
+          border: 1.5px solid #26263a;
+          transition: width 0.33s cubic-bezier(.4,2,.3,1), box-shadow 0.3s;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          padding: 0.5rem 0.2rem;
+        }
+        .premium-sidebar.expanded {
+          width: 17rem;
+          box-shadow: 0 16px 54px 0 #a78bfa40, 0 1.5px 8px #ff85b240;
+        }
+        .premium-sidebar .sidebar-label {
+          opacity: 0;
+          transition: opacity .2s;
+          white-space: nowrap;
+        }
+        .premium-sidebar.expanded .sidebar-label {
+          opacity: 1;
+        }
+        .premium-sidebar .sidebar-link {
+          justify-content: center;
+          transition: background 0.2s, color 0.2s, justify-content 0.3s;
+        }
+        .premium-sidebar.expanded .sidebar-link {
+          justify-content: flex-start;
+        }
+        .premium-sidebar .sidebar-link .sidebar-label {
+          display: none;
+        }
+        .premium-sidebar.expanded .sidebar-link .sidebar-label {
+          display: inline;
+        }
+        .premium-sidebar:hover,
+        .premium-sidebar:focus-within {
+          width: 17rem !important;
+        }
+        .premium-sidebar:hover .sidebar-label,
+        .premium-sidebar:focus-within .sidebar-label {
+          opacity: 1 !important;
+          display: inline !important;
+        }
+        .premium-sidebar .brand {
+          opacity: 0;
+          transition: opacity 0.2s;
+          pointer-events: none;
+          height: 0;
+        }
+        .premium-sidebar.expanded .brand,
+        .premium-sidebar:hover .brand,
+        .premium-sidebar:focus-within .brand {
+          opacity: 1;
+          pointer-events: auto;
+          height: auto;
+        }
+        @media (max-width: 900px) {
+          .premium-sidebar, .premium-sidebar.expanded { left: 1vw; width: 3.5rem; }
+          .premium-sidebar.expanded { width: 99vw !important; border-radius: 2.5rem; }
+        }
+        .dashboard-card-wrapper {
+            border-radius: 1.5rem;
+            box-shadow: 0 6px 40px 0 #00000022, 0 2px 8px #a78bfa11;
+            background: rgba(25, 25, 36, 0.92);
+            padding: 2rem 1.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            min-height: 90vh;
+            transition: margin-left 0.33s cubic-bezier(.4,2,.3,1), width 0.33s cubic-bezier(.4,2,.3,1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        @media (max-width: 900px) {
+            .dashboard-card-wrapper {
+                border-radius: 1rem;
+                padding: 1rem 0.5rem;
+            }
+        }
+        .sidebar-link .sidebar-label .pulse {
+          animation: none !important;
+        }
+        .sidebar-link:hover, .sidebar-link:focus {
+          box-shadow: 0 2px 16px 0 #a78bfa15, 0 2px 8px 0 #0005;
+          transform: scale(1.03);
+        }
+        /* Saque form (mais pra cima e mais largo) */
+        .saque-form-container {
+            margin-top: 0;
+            margin-bottom: 2.5rem;
+            width: 100%;
+            max-width: 700px;
+            min-width: 420px;
+            /* p/ telas pequenas */
+        }
+        @media (max-width: 900px) {
+            .saque-form-container {
+                max-width: 99vw;
+                min-width: 0;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen transition-colors duration-500 text-[#f6f6f6] bg-[#18181b]">
+<!-- Floating animated particles background -->
+<div class="particles" id="particles"></div>
+
+<!-- Loading overlay -->
+<div id="loading-overlay">
+    <div id="lottie-loading" class="w-24 h-24"></div>
+</div>
+
+<div class="flex h-screen overflow-hidden bg-gradient-to-br from-[#181824] via-[#181824] to-[#232336]" style="position:relative;z-index:1;">
+    <!-- Sidebar Premium Flutuante -->
+    <aside id="premiumSidebar" class="premium-sidebar group" tabindex="0">
+      <div>
+        <div class="brand flex items-center gap-2 mx-5 mt-8 mb-7">
+          <span class="text-2xl font-extrabold text-white">Modeli<span class="gradient-text">fy</span></span>
+        </div>
+        <ul class="flex flex-col gap-2">
+          <li>
+            <a href="/dashboard" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="layout-dashboard" class="w-6 h-6 text-pink-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Painel</span>
+            </a>
+          </li>
+          <li>
+            <a href="/vendas" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="shopping-bag" class="w-6 h-6 text-green-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Vendas</span>
+            </a>
+          </li>
+          <li>
+            <a href="/produtos" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="package" class="w-6 h-6 text-yellow-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Produtos</span>
+            </a>
+          </li>
+          <li>
+            <a href="/aulas" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="graduation-cap" class="w-6 h-6 text-fuchsia-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Aulas Gratuitas</span>
+            </a>
+          </li>
+          <li>
+            <a href="/saque" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl bg-[#262e2a] border border-green-400/30 hover:bg-green-400/10 hover:text-green-400 transition active-link">
+              <span class="flex items-center justify-center rounded-xl bg-gradient-to-br from-green-400/80 to-emerald-600 w-9 h-9 shadow border border-green-400/40">
+                <i data-lucide="wallet" class="w-6 h-6 text-white"></i>
+              </span>
+              <span class="sidebar-label text-base font-semibold tracking-wide ml-1">Saque</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="mb-6 flex flex-col items-center gap-6">
+        <button id="theme-toggle" class="w-10 h-10 rounded-full bg-pink-500/20 hover:bg-pink-400/50 flex items-center justify-center transition">
+          <i data-lucide="moon" class="w-6 h-6 text-pink-400" id="moon-icon"></i>
+          <i data-lucide="sun" class="w-6 h-6 text-yellow-400 hidden" id="sun-icon"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="mainContent" class="flex-1 flex flex-col transition-all duration-300" style="margin-left:6.5rem;">
+      <div class="dashboard-card-wrapper" id="dashboardCardWrapper">
+        <!-- Saque Section (AGORA MAIS PRA CIMA E MAIS LARGO) -->
+        <div class="saque-form-container mx-auto">
+            <div class="flex flex-col items-center gap-2 mb-2">
+                <span class="flex items-center justify-center rounded-xl bg-green-500 w-14 h-14 shadow-lg mb-2">
+                    <i data-lucide="wallet" class="w-8 h-8 text-white"></i>
+                </span>
+                <div class="text-center">
+                    <p class="text-lg font-semibold text-gray-800 dark:text-green-200">Receita gerada</p>
+       	            <p class="text-3xl font-extrabold text-green-500 dark:text-green-400 mt-1" id="saldoDisponivel">
+    		          R$ {{ '{:,.2f}'.format(saldo_disponivel).replace(',', 'X').replace('.', ',').replace('X', '.') }}
+		    </p>
+                </div>
+            </div>
+            {% if mensagem %}
+              <div class="text-center text-green-400 font-bold mb-4">{{ mensagem }}</div>
+            {% endif %}
+            <form id="saqueForm" method="POST" action="" class="flex flex-col gap-5" autocomplete="off">
+                <div>
+                    <label for="nome" class="text-base font-medium text-gray-700 dark:text-green-200 mb-1 block">Nome completo</label>
+                    <input type="text" id="nome" name="nome" placeholder="Seu nome completo" class="px-4 py-3 w-full rounded-2xl shadow bg-[#f7f7fb] dark:bg-[#22223b] text-[#23272f] dark:text-pink-100 placeholder:text-gray-400 focus:ring-2 focus:ring-green-400 focus:outline-none transition-all duration-300" required>
+                </div>
+                <div>
+                    <label for="banco" class="text-base font-medium text-gray-700 dark:text-green-200 mb-1 block">Banco</label>
+                    <select id="banco" name="banco" class="px-4 py-3 w-full rounded-2xl shadow bg-[#f7f7fb] dark:bg-[#22223b] text-[#23272f] dark:text-pink-100 transition-all duration-300" required>
+                        <option value="">Selecione o banco</option>
+                        <option value="nubank">Nubank</option>
+                        <option value="itau">Itaú</option>
+                        <option value="bradesco">Bradesco</option>
+                        <option value="banco-do-brasil">Banco do Brasil</option>
+                        <option value="caixa">Caixa</option>
+                        <option value="santander">Santander</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="tipo_chave" class="text-base font-medium text-gray-700 dark:text-green-200 mb-1 block">Tipo de Chave PIX</label>
+                    <select id="tipo_chave" name="tipo_chave" class="px-4 py-3 w-full rounded-2xl shadow bg-[#f7f7fb] dark:bg-[#22223b] text-[#23272f] dark:text-pink-100 transition-all duration-300" required>
+                        <option value="">Selecione o tipo de chave</option>
+                        <option value="cpf">CPF</option>
+                        <option value="email">E-mail</option>
+                        <option value="celular">Celular</option>
+                        <option value="aleatoria">Chave Aleatória</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="chave" class="text-base font-medium text-gray-700 dark:text-green-200 mb-1 block">Chave PIX</label>
+                    <input type="text" id="chave" name="chave" placeholder="Informe a chave PIX" class="px-4 py-3 w-full rounded-2xl shadow bg-[#f7f7fb] dark:bg-[#22223b] text-[#23272f] dark:text-pink-100 placeholder:text-gray-400 focus:ring-2 focus:ring-green-400 focus:outline-none transition-all duration-300" required>
+                </div>
+                <div>
+                    <label for="valor" class="text-base font-medium text-gray-700 dark:text-green-200 mb-1 block">Valor do Saque (R$)</label>
+                    <input type="number" id="valor" name="valor" min="1" step="0.01" placeholder="Informe o valor do saque" class="px-4 py-3 w-full rounded-2xl shadow bg-[#f7f7fb] dark:bg-[#22223b] text-[#23272f] dark:text-pink-100 placeholder:text-gray-400 focus:ring-2 focus:ring-green-400 focus:outline-none transition-all duration-300" required>
+                </div>
+                <button type="submit" class="mt-2 px-6 py-3 rounded-2xl bg-green-500 text-white font-bold shadow hover:scale-105 hover:bg-green-600 active:scale-95 transition-all duration-300 flex items-center gap-2 justify-center text-lg">
+                    <i data-lucide="arrow-down-circle" class="w-6 h-6"></i> Solicitar Saque
+                </button>
+            </form>
+            <div id="saqueMsg" class="text-center text-sm font-semibold text-green-500 dark:text-green-300 mt-4 hidden"></div>
+        </div>
+      </div>
+    </main>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-pink-500 text-white text-sm rounded-full shadow-lg z-[6000]"></div>
+
+<script>
+    // Floating animated particles
+    function randomInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+    function createParticle() {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = randomInt(18, 38);
+      p.style.width = p.style.height = size + 'px';
+      p.style.left = randomInt(-10, 95) + 'vw';
+      p.style.top = randomInt(0, 95) + 'vh';
+      p.style.background = `radial-gradient(circle at 60% 40%, #ff85b2 0%, #a78bfa 90%)`;
+      p.style.opacity = Math.random() * 0.19 + 0.09;
+      p.style.animationDuration = randomInt(9, 16) + 's';
+      p.style.animationDelay = -randomInt(2, 16) + 's';
+      document.getElementById('particles').appendChild(p);
+    }
+    for (let i = 0; i < 18; i++) createParticle();
+
+    // Lottie loading
+    document.addEventListener('DOMContentLoaded', function() {
+        lottie.loadAnimation({
+            container: document.getElementById('lottie-loading'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: 'https://assets3.lottiefiles.com/private_files/lf30_oqpbtola.json'
+        });
+        setTimeout(() => {
+            document.getElementById('loading-overlay').classList.add('loaded');
+        }, 900);
+    });
+
+    // Lucide icons
+    lucide.createIcons();
+
+    // Sidebar/Content Animation Sync (sem focusin/focusout para evitar bug)
+    const sidebar = document.getElementById('premiumSidebar');
+    const mainContent = document.getElementById('mainContent');
+    const dashboardCardWrapper = document.getElementById('dashboardCardWrapper');
+
+    // Larguras
+    const SIDEBAR_COLLAPSED = 4.5; // rem
+    const SIDEBAR_EXPANDED = 17;   // rem
+
+    function setMainMargin(isExpanded) {
+        let ml = isExpanded ? (SIDEBAR_EXPANDED + 2) : (SIDEBAR_COLLAPSED + 2);
+        mainContent.style.marginLeft = ml + 'rem';
+        dashboardCardWrapper.style.marginLeft = isExpanded ? "1rem" : "0.25rem";
+        dashboardCardWrapper.style.width = isExpanded ? "calc(100% - 2rem)" : "100%";
+    }
+
+    // Inicial
+    setMainMargin(false);
+
+    sidebar.addEventListener('mouseenter', function() {
+        sidebar.classList.add('expanded');
+        setMainMargin(true);
+    });
+    sidebar.addEventListener('mouseleave', function() {
+        sidebar.classList.remove('expanded');
+        setMainMargin(false);
+    });
+
+    // User menu dropdown
+    // (Removido pois não há elemento com id 'user-menu-btn')
+
+    // Dark/Light mode toggle
+    const themeBtn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    themeBtn.addEventListener('click', () => {
+        const isDark = html.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        document.getElementById('moon-icon').classList.toggle('hidden', isDark);
+        document.getElementById('sun-icon').classList.toggle('hidden', !isDark);
+    });
+    if(localStorage.getItem('theme') === 'dark') {
+        html.classList.add('dark');
+        document.getElementById('moon-icon').classList.add('hidden');
+        document.getElementById('sun-icon').classList.remove('hidden');
+    }
+
+    // Toast notification
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('active');
+        setTimeout(() => {
+            toast.classList.remove('active');
+        }, 2200);
+    }
+
+    // Saque form (não há e.preventDefault, submit é padrão)
+    // Se quiser AJAX, descomente o e.preventDefault e adapte para enviar todos os campos!
+</script>
+</body>
+</html>

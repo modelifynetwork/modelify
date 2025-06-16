@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Bot Automático | Modelify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lottie-web@5.7.3/build/player/lottie.min.js"></script>
+    <style>
+        html,body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #18181b 0%, #23272f 100%);
+        }
+        ::selection { background: #ff85b2; color: #fff; }
+        ::-webkit-scrollbar { width: 10px; background: #242438;}
+        ::-webkit-scrollbar-thumb { background: #ff85b2; border-radius: 10px;}
+        .gradient-text {
+            background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            font-weight: 700;
+        }
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ec4899;
+            pointer-events: none;
+        }
+        .input-wrapper {
+            position: relative;
+        }
+        .input-full {
+            padding-left: 2.5rem!important;
+        }
+        .tip {
+            font-size: 0.94rem;
+            color: #c7a4e7;
+            margin-top: 0.15rem;
+        }
+        .premium-sidebar {
+          position: fixed;
+          top: 2.5vh;
+          left: 2vw;
+          height: 95vh;
+          width: 4.5rem;
+          z-index: 40;
+          background: linear-gradient(120deg, #18181b 85%, #23272f 120%);
+          border-radius: 2.5rem;
+          box-shadow:
+            0 2px 16px 0 #9b6cf32a,
+            0 2px 8px 0 #0005,
+            0 0 0 1.5px #26263a inset;
+          overflow: hidden;
+          border: 1.5px solid #26263a;
+          transition: width 0.33s cubic-bezier(.4,2,.3,1), box-shadow 0.3s;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          padding: 0.5rem 0.2rem;
+        }
+        .premium-sidebar.expanded {
+          width: 17rem;
+          box-shadow: 0 16px 54px 0 #a78bfa40, 0 1.5px 8px #ff85b240;
+        }
+        .premium-sidebar .sidebar-label {
+          opacity: 0;
+          transition: opacity .2s;
+          white-space: nowrap;
+        }
+        .premium-sidebar.expanded .sidebar-label {
+          opacity: 1;
+        }
+        .premium-sidebar .sidebar-link {
+          justify-content: center;
+          transition: background 0.2s, color 0.2s, justify-content 0.3s;
+        }
+        .premium-sidebar.expanded .sidebar-link {
+          justify-content: flex-start;
+        }
+        .premium-sidebar .sidebar-link .sidebar-label {
+          display: none;
+        }
+        .premium-sidebar.expanded .sidebar-link .sidebar-label {
+          display: inline;
+        }
+        .premium-sidebar:hover,
+        .premium-sidebar:focus-within {
+          width: 17rem !important;
+        }
+        .premium-sidebar:hover .sidebar-label,
+        .premium-sidebar:focus-within .sidebar-label {
+          opacity: 1 !important;
+          display: inline !important;
+        }
+        .premium-sidebar .brand {
+          opacity: 0;
+          transition: opacity 0.2s;
+          pointer-events: none;
+          height: 0;
+        }
+        .premium-sidebar.expanded .brand,
+        .premium-sidebar:hover .brand,
+        .premium-sidebar:focus-within .brand {
+          opacity: 1;
+          pointer-events: auto;
+          height: auto;
+        }
+        @media (max-width: 900px) {
+          .premium-sidebar, .premium-sidebar.expanded { left: 1vw; width: 3.5rem; }
+          .premium-sidebar.expanded { width: 99vw !important; border-radius: 2.5rem; }
+        }
+        .dashboard-card-wrapper {
+            border-radius: 1.5rem;
+            box-shadow: 0 6px 40px 0 #00000022, 0 2px 8px #a78bfa11;
+            background: rgba(25, 25, 36, 0.92);
+            padding: 2rem 1.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            min-height: 90vh;
+            transition: margin-left 0.33s cubic-bezier(.4,2,.3,1), width 0.33s cubic-bezier(.4,2,.3,1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        @media (max-width: 900px) {
+            .dashboard-card-wrapper {
+                border-radius: 1rem;
+                padding: 1rem 0.5rem;
+            }
+        }
+        .sidebar-link .sidebar-label .pulse {
+          animation: none !important;
+        }
+        .sidebar-link:hover, .sidebar-link:focus {
+          box-shadow: 0 2px 16px 0 #a78bfa15, 0 2px 8px 0 #0005;
+          transform: scale(1.03);
+        }
+        .bot-card {
+            background: linear-gradient(120deg,rgba(35,35,54,0.97),rgba(24,24,27,0.99) 100%);
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 44px 0 #a78bfa32,0 1.5px 5px #ff85b233;
+            padding: 2rem 3.5rem 2rem 3.5rem;
+            max-width: 900px;
+            margin: 0 auto;
+            min-height: unset;
+        }
+        @media (max-width: 1024px) {
+            .bot-card {
+                max-width: 98vw;
+                padding-left: 1.2rem;
+                padding-right: 1.2rem;
+            }
+        }
+        @media (max-width: 600px) {
+            .bot-card {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+        }
+        .btn-upload-modelify {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+            color: #fff;
+            font-weight: bold;
+            font-size: 1rem;
+            padding: 0.7rem 1.5rem;
+            border-radius: 0.85rem;
+            box-shadow: 0 3px 16px 0 #a78bfa22;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+            border: none;
+        }
+        .btn-upload-modelify:hover {
+            background: linear-gradient(90deg, #ff85b2 10%, #a78bfa 90%);
+            transform: scale(1.03);
+        }
+        .btn-upload-modelify i {
+            margin-right: 0.2rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen transition-colors duration-500 text-[#f6f6f6] bg-[#18181b]">
+
+<div class="flex min-h-screen bg-gradient-to-br from-[#181824] via-[#181824] to-[#232336]" style="position:relative;z-index:1;">
+    <aside id="premiumSidebar" class="premium-sidebar group" tabindex="0">
+      <div>
+        <div class="brand flex items-center gap-2 mx-5 mt-8 mb-7">
+          <span class="text-2xl font-extrabold text-white">Modeli<span class="gradient-text">fy</span></span>
+        </div>
+        <ul class="flex flex-col gap-2">
+          <li>
+            <a href="/dashboard" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="layout-dashboard" class="w-6 h-6 text-pink-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Painel</span>
+            </a>
+          </li>
+          <li>
+            <a href="/vendas" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="shopping-bag" class="w-6 h-6 text-green-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Vendas</span>
+            </a>
+          </li>
+          <li>
+            <a href="/produtos" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl bg-pink-400/10 text-pink-400 scale-105 group transition">
+              <i data-lucide="package" class="w-6 h-6 text-yellow-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Produtos</span>
+            </a>
+          </li>
+          <li>
+            <a href="/aulas" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="graduation-cap" class="w-6 h-6 text-fuchsia-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Aulas Gratuitas</span>
+            </a>
+          </li>
+          <li>
+            <a href="/saque" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl bg-[#262e2a] border border-green-400/30 hover:bg-green-400/10 hover:text-green-400 transition">
+              <span class="flex items-center justify-center rounded-xl bg-gradient-to-br from-green-400/80 to-emerald-600 w-9 h-9 shadow border border-green-400/40">
+                <i data-lucide="wallet" class="w-6 h-6 text-white"></i>
+              </span>
+              <span class="sidebar-label text-base font-semibold tracking-wide ml-1">Saque</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="mb-6 flex flex-col items-center gap-6">
+        <button id="theme-toggle" class="w-10 h-10 rounded-full bg-pink-500/20 hover:bg-pink-400/50 flex items-center justify-center transition">
+          <i data-lucide="moon" class="w-6 h-6 text-pink-400" id="moon-icon"></i>
+          <i data-lucide="sun" class="w-6 h-6 text-yellow-400 hidden" id="sun-icon"></i>
+        </button>
+      </div>
+    </aside>
+    <main id="mainContent" class="flex-1 flex flex-col py-10 px-2 md:px-16 transition-all duration-300" style="margin-left:6.5rem;">
+        <div class="dashboard-card-wrapper" id="dashboardCardWrapper" style="box-shadow:none;background:transparent;padding-top:0;">
+            <div class="max-w-4xl mx-auto w-full mb-6">
+                <div class="flex items-center gap-3 mb-2">
+                    <i data-lucide="bot" class="w-8 h-8 text-pink-400"></i>
+                    <span class="text-xl md:text-2xl font-bold text-[#f6f6f6]">Bot de Vendas do Produto <span class="gradient-text">{{ produto_nome }}</span></span>
+                </div>
+                <div class="max-w-4xl w-full mb-8" style="margin-left:0;">
+                  <div class="flex items-center gap-6 bg-[#181824] rounded-2xl shadow-lg p-6 border border-pink-400/20">
+                    <div class="w-16 h-16 rounded-xl bg-pink-100 flex items-center justify-center text-pink-400 text-2xl border-2 border-pink-400 shadow">
+                      <i data-lucide="package"></i>
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="text-lg font-bold text-pink-400">{{ produto.nome }}</span>
+                      </div>
+                      <div class="flex items-center gap-5">
+                        <span class="text-pink-200 font-bold text-base">Preço: R$ {{ "%.2f"|format(produto.preco) }}</span>
+                        <span class="text-xs bg-pink-400/10 text-pink-400 font-bold px-3 py-1 rounded-full">ID do Bot: {{ produto.id }}</span>
+                      </div>
+                      <div class="text-xs text-pink-400/60 mt-1">UUID: {{ produto.uuid }}</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="rounded-xl bg-pink-500/15 border border-pink-400/30 p-3 flex items-center gap-3 text-sm text-pink-200 shadow mb-2">
+                    <i data-lucide="info" class="w-5 h-5 text-pink-400 flex-shrink-0"></i>
+                    Configure um bot de vendas automático no Telegram para seu produto. Personalize mensagens, fluxo e integração com seu grupo VIP!
+                </div>
+            </div>
+            <div class="bot-card shadow-2xl w-full">
+                <form id="botForm" class="space-y-5" action="/api/criar_bot" method="POST" enctype="multipart/form-data">
+                    <div>
+                        <label class="block text-sm font-bold text-pink-400 mb-1" for="bot_name">
+                            <span class="flex items-center gap-2"><i data-lucide="type" class="w-4 h-4"></i> Nome do Bot</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <i data-lucide="keyboard" class="input-icon w-5 h-5"></i>
+                            <input type="text" name="bot_name" id="bot_name" required
+                                class="input-full w-full rounded-xl border border-pink-400/20 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-500/50 px-3 py-2 bg-[#232336] text-pink-100 placeholder:text-pink-200/60 font-semibold text-base transition-all duration-200 outline-none"
+                                placeholder="Ex: Bot do Grupo VIP">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-pink-400 mb-1" for="bot_token">
+                            <span class="flex items-center gap-2"><i data-lucide="key" class="w-4 h-4"></i> Token do Bot (do BotFather)</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <i data-lucide="shield-keyhole" class="input-icon w-5 h-5"></i>
+                            <input type="text" name="bot_token" id="bot_token" required
+                                class="input-full w-full rounded-xl border border-pink-400/20 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-500/50 px-3 py-2 bg-[#232336] text-pink-100 placeholder:text-pink-200/60 font-semibold text-base transition-all duration-200 outline-none"
+                                placeholder="Ex: 123456789:ABCdefGHIjklMNOpqrSTUvwxYZ">
+                        </div>
+                        <div class="tip">
+                            Crie um bot em <a href="https://t.me/BotFather" target="_blank" class="underline text-pink-400">https://t.me/BotFather</a> e cole aqui o token.
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-pink-400 mb-1">
+                            <span class="flex items-center gap-2"><i data-lucide="message-circle" class="w-4 h-4"></i> Mensagens automáticas após o /start</span>
+                        </label>
+                        <div id="mensagens-container" class="space-y-2 mb-2">
+                            <div class="flex gap-2 mensagem-item">
+                                <textarea name="mensagens" rows="2" required
+                                    class="input-full w-full rounded-xl border border-pink-400/20 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-500/50 px-3 py-2 bg-[#232336] text-pink-100 placeholder:text-pink-200/60 font-semibold text-base transition-all duration-200 outline-none resize-none"
+                                    placeholder="Digite a mensagem automática..."></textarea>
+                                <button type="button" onclick="removerMensagem(this)" class="text-pink-400 hover:text-pink-600 text-lg font-bold">✕</button>
+                            </div>
+                        </div>
+                        <button type="button" onclick="adicionarMensagem()" class="btn-upload-modelify mb-2">
+                            <i data-lucide="plus-circle"></i> Adicionar Mensagem
+                        </button>
+                        <div class="tip">Essas mensagens serão enviadas na ordem após o /start do bot. Você pode adicionar quantas quiser!</div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-pink-400 mb-1" for="botao_texto">
+                            <span class="flex items-center gap-2"><i data-lucide="hand" class="w-4 h-4"></i> Texto do botão de ação</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <i data-lucide="mouse-pointer-click" class="input-icon w-5 h-5"></i>
+                            <input type="text" name="botao_texto" id="botao_texto"
+                                class="input-full w-full rounded-xl border border-pink-400/20 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-500/50 px-3 py-2 bg-[#232336] text-pink-100 placeholder:text-pink-200/60 font-semibold text-base transition-all duration-200 outline-none"
+                                placeholder="Ex: QUERO TER ACESSO AO VIP" value="QUERO TER ACESSO AO VIP">
+                        </div>
+                        <div class="tip">Este será o texto do botão de ação após as mensagens automáticas.</div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-pink-400 mb-1" for="group_id">
+                            <span class="flex items-center gap-2"><i data-lucide="users" class="w-4 h-4"></i> Grupo VIP (ID opcional)</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <i data-lucide="hash" class="input-icon w-5 h-5"></i>
+                            <input type="text" name="group_id" id="group_id"
+                                class="input-full w-full rounded-xl border border-pink-400/20 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-500/50 px-3 py-2 bg-[#232336] text-pink-100 placeholder:text-pink-200/60 font-semibold text-base transition-all duration-200 outline-none"
+                                placeholder="Ex: -1001234567890">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-pink-400 mb-1" for="link_vip">
+                            <span class="flex items-center gap-2"><i data-lucide="link" class="w-4 h-4"></i> Link VIP (liberado após pagamento)</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <i data-lucide="external-link" class="input-icon w-5 h-5"></i>
+                            <input type="url" name="link_vip" id="link_vip"
+                                class="input-full w-full rounded-xl border border-pink-400/20 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-500/50 px-3 py-2 bg-[#232336] text-pink-100 placeholder:text-pink-200/60 font-semibold text-base transition-all duration-200 outline-none"
+                                placeholder="https://t.me/+exemplo_vip_link">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-pink-400 mb-1" for="oferta">
+                            <span class="flex items-center gap-2"><i data-lucide="tag" class="w-4 h-4"></i> Oferta Promocional</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <i data-lucide="dollar-sign" class="input-icon w-5 h-5"></i>
+                            <select name="oferta" id="oferta"
+                                class="input-full w-full rounded-xl border border-pink-400/20 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-500/50 px-3 py-2 bg-[#232336] text-pink-100 placeholder:text-pink-200/60 font-semibold text-base transition-all duration-200 outline-none">
+                                <option value="Oferta principal: R$ {{ '%.2f'|format(produto.preco) }}">Oferta principal: R$ {{ '%.2f'|format(produto.preco) }}</option>
+                                <option value="Desconto 10%: R$ {{ '%.2f'|format(produto.preco*0.90) }}">Desconto 10%: R$ {{ '%.2f'|format(produto.preco*0.90) }}</option>
+                                <option value="Desconto 20%: R$ {{ '%.2f'|format(produto.preco*0.80) }}">Desconto 20%: R$ {{ '%.2f'|format(produto.preco*0.80) }}</option>
+                                <option value="Oferta especial: 2x R$ {{ '%.2f'|format((produto.preco/2)) }}">Oferta especial: 2x R$ {{ '%.2f'|format((produto.preco/2)) }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-pink-400 mb-1" for="bot_photo">
+                            <span class="flex items-center gap-2"><i data-lucide="image" class="w-4 h-4"></i> Foto de Perfil do Bot</span>
+                        </label>
+                        <input type="file" name="bot_photo" id="bot_photo" accept="image/*" class="hidden" onchange="showPhotoName()">
+                        <label for="bot_photo" class="btn-upload-modelify cursor-pointer">
+                            <i data-lucide="upload-cloud" class="w-5 h-5"></i> Enviar Foto
+                        </label>
+                        <span id="photoName" class="ml-2 text-pink-200 text-xs"></span>
+                    </div>
+                    <input type="hidden" name="product_uuid" value="{{ produto.uuid }}">
+                    <div class="flex flex-col gap-2 mt-8 mb-2">
+                        <button type="submit"
+                            class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-fuchsia-500 hover:from-pink-600 hover:to-fuchsia-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition-all text-lg">
+                            <i data-lucide="rocket" class="w-5 h-5 animate-bounce"></i> Criar Bot Automático
+                        </button>
+                        <div class="mt-2 text-center text-xs text-pink-300 font-medium">
+                            Esse bot será conectado ao produto <span class="gradient-text">{{ produto_nome }}</span> automaticamente.
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+<script>
+    lucide.createIcons();
+    const sidebar = document.getElementById('premiumSidebar');
+    function setMainMargin(isExpanded) {
+        const mainContent = document.getElementById('mainContent');
+        const dashboardCardWrapper = document.getElementById('dashboardCardWrapper');
+        const SIDEBAR_COLLAPSED = 4.5, SIDEBAR_EXPANDED = 17;
+        let ml = isExpanded ? (SIDEBAR_EXPANDED + 2) : (SIDEBAR_COLLAPSED + 2);
+        if(mainContent) mainContent.style.marginLeft = ml + 'rem';
+        if(dashboardCardWrapper) {
+            dashboardCardWrapper.style.marginLeft = isExpanded ? "1rem" : "0.25rem";
+            dashboardCardWrapper.style.width = isExpanded ? "calc(100% - 2rem)" : "100%";
+        }
+    }
+    setMainMargin(false);
+    sidebar.addEventListener('mouseenter', function() {
+        sidebar.classList.add('expanded');
+        setMainMargin(true);
+    });
+    sidebar.addEventListener('mouseleave', function() {
+        sidebar.classList.remove('expanded');
+        setMainMargin(false);
+    });
+
+    const themeBtn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    themeBtn && themeBtn.addEventListener('click', () => {
+        const isDark = html.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        document.getElementById('moon-icon').classList.toggle('hidden', isDark);
+        document.getElementById('sun-icon').classList.toggle('hidden', !isDark);
+    });
+    if(localStorage.getItem('theme') === 'dark') {
+        html.classList.add('dark');
+        document.getElementById('moon-icon') && document.getElementById('moon-icon').classList.add('hidden');
+        document.getElementById('sun-icon') && document.getElementById('sun-icon').classList.remove('hidden');
+    }
+
+    function showPhotoName() {
+        const input = document.getElementById('bot_photo');
+        if (input.files && input.files[0]) {
+            document.getElementById('photoName').textContent = input.files[0].name;
+        }
+    }
+
+    function adicionarMensagem() {
+        const container = document.getElementById('mensagens-container');
+        const div = document.createElement('div');
+        div.className = "flex gap-2 mensagem-item";
+        div.innerHTML = `
+            <textarea name="mensagens" rows="2" required
+                class="input-full w-full rounded-xl border border-pink-400/20 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-500/50 px-3 py-2 bg-[#232336] text-pink-100 placeholder:text-pink-200/60 font-semibold text-base transition-all duration-200 outline-none resize-none"
+                placeholder="Digite a mensagem automática..."></textarea>
+            <button type="button" onclick="removerMensagem(this)" class="text-pink-400 hover:text-pink-600 text-lg font-bold">✕</button>
+        `;
+        container.appendChild(div);
+    }
+    function removerMensagem(btn) {
+        btn.parentElement.remove();
+    }
+
+    // INTERCEPTA SUBMISSÃO PARA REDIRECIONAR AO FINAL
+    document.getElementById('botForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if(submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="animate-spin mr-2">⏳</span> Criando...';
+        }
+        fetch('/api/criar_bot', {
+            method: "POST",
+            body: formData
+        }).then(res => res.json())
+        .then(result => {
+            if (result.success && result.product_uuid) {
+                // Redireciona para a página de bots do produto
+                window.location.href = "/meus_bots/" + result.product_uuid;
+            } else {
+                alert(result.error || "Erro ao criar bot.");
+            }
+        })
+        .catch(() => {
+            alert("Erro ao criar bot.");
+        })
+        .finally(() => {
+            if(submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i data-lucide="rocket" class="w-5 h-5 animate-bounce"></i> Criar Bot Automático';
+                lucide.createIcons();
+            }
+        });
+    });
+</script>
+</body>
+</html>

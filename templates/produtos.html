@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Produtos | Modelify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lottie-web@5.7.3/build/player/lottie.min.js"></script>
+    <style>
+        html, body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #18181b 0%, #23272f 100%);
+        }
+        ::selection { background: #ff85b2; color: #fff; }
+        ::-webkit-scrollbar { width: 10px; background: #242438; }
+        ::-webkit-scrollbar-thumb { background: #ff85b2; border-radius: 10px; }
+        #loading-overlay {
+            position: fixed; z-index: 9999; inset: 0;
+            background: linear-gradient(120deg,#18181b 70%,#ff85b2 200%);
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.5s;
+        }
+        #loading-overlay.loaded { opacity: 0; pointer-events: none; }
+        .toast { opacity: 0; pointer-events: none; transition: opacity 0.5s; }
+        .toast.active { opacity: 1; pointer-events: auto; }
+        .dropdown-menu {
+            min-width: 180px;
+            box-shadow: 0 2px 16px 0 #a78bfa1a;
+            border-radius: 12px;
+            background: #fff;
+            z-index: 30;
+        }
+        .fade-in-count {
+            animation: fadeIn 0.6s both;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            font-weight: 700;
+        }
+        .premium-sidebar {
+          position: fixed;
+          top: 2.5vh;
+          left: 2vw;
+          height: 95vh;
+          width: 4.5rem;
+          z-index: 40;
+          background: linear-gradient(120deg, #18181b 85%, #23272f 120%);
+          border-radius: 2.5rem;
+          box-shadow:
+            0 2px 16px 0 #9b6cf32a,
+            0 2px 8px 0 #0005,
+            0 0 0 1.5px #26263a inset;
+          overflow: hidden;
+          border: 1.5px solid #26263a;
+          transition: width 0.33s cubic-bezier(.4,2,.3,1), box-shadow 0.3s;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          padding: 0.5rem 0.2rem;
+        }
+        .premium-sidebar.expanded {
+          width: 17rem;
+          box-shadow: 0 16px 54px 0 #a78bfa40, 0 1.5px 8px #ff85b240;
+        }
+        .premium-sidebar .sidebar-label {
+          opacity: 0;
+          transition: opacity .2s;
+          white-space: nowrap;
+        }
+        .premium-sidebar.expanded .sidebar-label {
+          opacity: 1;
+        }
+        .premium-sidebar .sidebar-link {
+          justify-content: center;
+          transition: background 0.2s, color 0.2s, justify-content 0.3s;
+        }
+        .premium-sidebar.expanded .sidebar-link {
+          justify-content: flex-start;
+        }
+        .premium-sidebar .sidebar-link .sidebar-label {
+          display: none;
+        }
+        .premium-sidebar.expanded .sidebar-link .sidebar-label {
+          display: inline;
+        }
+        .premium-sidebar:hover,
+        .premium-sidebar:focus-within {
+          width: 17rem !important;
+        }
+        .premium-sidebar:hover .sidebar-label,
+        .premium-sidebar:focus-within .sidebar-label {
+          opacity: 1 !important;
+          display: inline !important;
+        }
+        .premium-sidebar .brand {
+          opacity: 0;
+          transition: opacity 0.2s;
+          pointer-events: none;
+          height: 0;
+        }
+        .premium-sidebar.expanded .brand,
+        .premium-sidebar:hover .brand,
+        .premium-sidebar:focus-within .brand {
+          opacity: 1;
+          pointer-events: auto;
+          height: auto;
+        }
+        @media (max-width: 900px) {
+          .premium-sidebar, .premium-sidebar.expanded { left: 1vw; width: 3.5rem; }
+          .premium-sidebar.expanded { width: 99vw !important; border-radius: 2.5rem; }
+        }
+        .dashboard-card-wrapper {
+            border-radius: 1.5rem;
+            box-shadow: 0 6px 40px 0 #00000022, 0 2px 8px #a78bfa11;
+            background: rgba(25, 25, 36, 0.92);
+            padding: 2rem 1.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            min-height: 90vh;
+            transition: margin-left 0.33s cubic-bezier(.4,2,.3,1), width 0.33s cubic-bezier(.4,2,.3,1);
+        }
+        @media (max-width: 900px) {
+            .dashboard-card-wrapper {
+                border-radius: 1rem;
+                padding: 1rem 0.5rem;
+            }
+        }
+        .sidebar-link .sidebar-label .pulse {
+          animation: none !important;
+        }
+        .sidebar-link:hover, .sidebar-link:focus {
+          box-shadow: 0 2px 16px 0 #a78bfa15, 0 2px 8px 0 #0005;
+          transform: scale(1.03);
+        }
+    </style>
+</head>
+<body class="min-h-screen transition-colors duration-500 text-[#18181b] dark:text-[#f6f6f6] bg-[#18181b]">
+
+<div id="loading-overlay">
+    <div id="lottie-loading" class="w-24 h-24"></div>
+</div>
+
+<div class="flex h-screen overflow-hidden bg-gradient-to-br from-[#181824] via-[#181824] to-[#232336]" style="position:relative;z-index:1;">
+    <aside id="premiumSidebar" class="premium-sidebar group" tabindex="0">
+      <div>
+        <div class="brand flex items-center gap-2 mx-5 mt-8 mb-7">
+          <span class="text-2xl font-extrabold text-white">Modeli<span class="gradient-text">fy</span></span>
+        </div>
+        <ul class="flex flex-col gap-2">
+          <li>
+            <a href="/dashboard" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="layout-dashboard" class="w-6 h-6 text-pink-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Painel</span>
+            </a>
+          </li>
+          <li>
+            <a href="/vendas" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="shopping-bag" class="w-6 h-6 text-green-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Vendas</span>
+            </a>
+          </li>
+          <li>
+            <a href="/produtos" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl bg-pink-400/10 text-pink-400 scale-105 group transition">
+              <i data-lucide="package" class="w-6 h-6 text-yellow-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Produtos</span>
+            </a>
+          </li>
+          <li>
+            <a href="/aulas" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="graduation-cap" class="w-6 h-6 text-fuchsia-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Aulas Gratuitas</span>
+            </a>
+          </li>
+          <li>
+            <a href="/saque" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl bg-[#262e2a] border border-green-400/30 hover:bg-green-400/10 hover:text-green-400 transition">
+              <span class="flex items-center justify-center rounded-xl bg-gradient-to-br from-green-400/80 to-emerald-600 w-9 h-9 shadow border border-green-400/40">
+                <i data-lucide="wallet" class="w-6 h-6 text-white"></i>
+              </span>
+              <span class="sidebar-label text-base font-semibold tracking-wide ml-1">Saque</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="mb-6 flex flex-col items-center gap-6">
+        <button id="theme-toggle" class="w-10 h-10 rounded-full bg-pink-500/20 hover:bg-pink-400/50 flex items-center justify-center transition">
+          <i data-lucide="moon" class="w-6 h-6 text-pink-400" id="moon-icon"></i>
+          <i data-lucide="sun" class="w-6 h-6 text-yellow-400 hidden" id="sun-icon"></i>
+        </button>
+      </div>
+    </aside>
+    <main id="mainContent" class="flex-1 flex flex-col transition-all duration-300" style="margin-left:6.5rem;">
+      <div class="dashboard-card-wrapper" id="dashboardCardWrapper">
+        <div class="flex justify-between items-center mb-5">
+            <div class="flex items-center">
+                <span class="inline-flex items-center justify-center w-12 h-12 rounded-full border-2 border-pink-500 bg-pink-100 dark:bg-[#1f1f26]">
+                  <i data-lucide="user-round" class="w-7 h-7 text-pink-400"></i>
+                </span>
+                <div class="ml-3">
+                    <p class="font-semibold text-[#18181b] dark:text-white">{{ user['name'] }}</p>
+                    <p class="text-sm text-gray-500 dark:text-pink-200">{{ user['email'] }}</p>
+                </div>
+            </div>
+            <button class="bg-pink-500 px-5 py-2 rounded-xl text-white font-bold shadow hover:bg-pink-600 hover:scale-105 transition flex items-center gap-2" onclick="openModal()">
+                <i data-lucide="plus-circle" class="w-5 h-5"></i> Criar Produto
+            </button>
+        </div>
+        <div id="productCountBox" class="fade-in-count flex items-center gap-2 mb-3 text-sm text-gray-500 dark:text-pink-200 bg-pink-50/70 dark:bg-[#21182b] px-4 py-2 rounded-xl w-fit shadow-sm border border-pink-100 dark:border-pink-800" style="display:none;">
+            <i data-lucide="package" class="w-5 h-5 text-pink-400"></i>
+            <span id="productCountText"></span>
+        </div>
+        <div>
+            <h1 class="text-xl md:text-2xl font-bold mb-5 text-[#18181b] dark:text-pink-200">Meus Produtos</h1>
+            <div id="tabela-produtos" class="rounded-2xl bg-white/95 dark:bg-[#181824] shadow p-0 overflow-x-auto">
+                <table class="min-w-full text-left text-sm">
+                    <thead>
+                        <tr class="bg-pink-50 dark:bg-[#232336] border-b border-pink-100 dark:border-pink-900">
+                            <th class="px-4 py-3 font-semibold text-[#18181b] dark:text-pink-200">PRODUTO</th>
+                            <th class="px-4 py-3 font-semibold text-[#18181b] dark:text-pink-200">PREÇO</th>
+                            <th class="px-4 py-3 font-semibold text-[#18181b] dark:text-pink-200">VENDAS</th>
+                            <th class="px-4 py-3 font-semibold text-[#18181b] dark:text-pink-200 text-center">AÇÕES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productData"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-overlay fixed inset-0 bg-black/50 dark:bg-black/60 hidden justify-center items-center z-[200]" id="modal">
+          <div class="bg-[#232336]/95 dark:bg-[#232336]/98 rounded-3xl shadow-2xl w-full max-w-md p-8 relative border border-pink-200/15 dark:border-pink-800/30 backdrop-blur-xl transition-all duration-300">
+            <div class="flex justify-between items-center border-b border-pink-200/15 dark:border-pink-800/35 pb-4 mb-5">
+              <h2 class="text-xl font-bold text-pink-400 flex items-center gap-2 tracking-tight">
+                <i data-lucide="package-plus" class="w-5 h-5 text-pink-400"></i>
+                Novo Produto
+              </h2>
+              <button class="text-pink-200/80 hover:text-pink-100 transition" onclick="closeModal()">
+                <i data-lucide="x" class="w-5 h-5"></i>
+              </button>
+            </div>
+            <form onsubmit="event.preventDefault(); salvarProduto()" autocomplete="off">
+              <div class="space-y-5">
+                <div>
+                  <label for="product-name" class="block text-xs font-semibold text-pink-300 mb-1">Nome</label>
+                  <input type="text" id="product-name" placeholder="Ex: Pack Hot V1" class="w-full rounded-xl border border-pink-200/20 dark:border-pink-700/30 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-500/40 px-3 py-2 bg-[#242438]/80 dark:bg-[#22223b]/90 text-pink-100 placeholder:text-pink-200/40 font-semibold text-sm transition-all duration-200 outline-none shadow-sm">
+                </div>
+                <div>
+                  <label for="price" class="block text-xs font-semibold text-pink-300 mb-1">Preço (R$)</label>
+                  <input type="number" id="price" placeholder="Ex: 49.90" min="5" step="0.01" class="w-full rounded-xl border border-pink-200/20 dark:border-pink-700/30 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-500/40 px-3 py-2 bg-[#242438]/80 dark:bg-[#22223b]/90 text-pink-100 placeholder:text-pink-200/40 font-semibold text-sm transition-all duration-200 outline-none shadow-sm">
+                  <small class="text-pink-300 block mt-1">O preço mínimo é R$ 5,00</small>
+                </div>
+                <div>
+                  <label for="short-description" class="block text-xs font-semibold text-pink-300 mb-1">Descrição Curta</label>
+                  <textarea id="short-description" rows="2" placeholder="Breve explicação"  class="w-full rounded-xl border border-pink-200/20 dark:border-pink-700/30 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-500/40 px-3 py-2 bg-[#242438]/80 dark:bg-[#22223b]/90 text-pink-100 placeholder:text-pink-200/40 font-semibold text-sm resize-none transition-all duration-200 outline-none shadow-sm"></textarea>
+                </div>
+                <div>
+                  <label for="category" class="block text-xs font-semibold text-pink-300 mb-1">Categoria</label>
+                  <select id="category" name="categoria" class="w-full rounded-xl border border-pink-200/20 dark:border-pink-700/30 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-500/40 px-3 py-2 bg-[#242438]/80 dark:bg-[#22223b]/90 text-pink-100 font-semibold text-sm transition-all duration-200 outline-none shadow-sm">
+                    <option>Entrega - Grupo VIP</option>
+                    <option>Entrega - Painel de Conteúdos</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="cover-image" class="block text-xs font-semibold text-pink-300 mb-1">Imagem</label>
+                  <div class="flex items-center gap-2 mt-1">
+                    <label for="file-upload" class="cursor-pointer inline-flex items-center px-3 py-1 border border-pink-200/15 dark:border-pink-700/30 rounded-lg shadow-sm text-xs font-semibold text-pink-300 bg-[#22223b]/75 dark:bg-[#1f1f26]/85 hover:bg-pink-50/5 dark:hover:bg-[#2c2c34] transition">
+                      <i data-lucide="image" class="h-4 w-4 text-pink-400 mr-1"></i>
+                      Selecionar
+                    </label>
+                    <span id="file-name" class="text-pink-200/70 text-xs italic">Nenhum arquivo selecionado</span>
+                    <input id="file-upload" type="file" class="hidden" onchange="updateFileName(event)">
+                  </div>
+                </div>
+              </div>
+              <div class="mt-7 flex justify-end gap-3">
+                <button type="button" class="bg-[#232336]/60 hover:bg-[#232336]/80 px-4 py-2 rounded-xl text-pink-200 font-bold text-sm transition-all border border-pink-200/10 dark:border-pink-700/20 shadow-sm" onclick="closeModal()">Cancelar</button>
+                <button type="submit" class="bg-gradient-to-r from-pink-500 to-fuchsia-500 px-5 py-2 rounded-xl text-white font-bold text-sm shadow-md hover:from-pink-600 hover:to-fuchsia-600 transition-all">Salvar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div id="noProductsMessage" class="hidden text-center mt-12">
+          <div class="inline-flex flex-col items-center justify-center p-6 rounded-2xl border border-dashed border-pink-300 dark:border-pink-700 bg-pink-50 dark:bg-[#1f1f2b] animate-fade-in shadow">
+            <i data-lucide="alert-triangle" class="w-10 h-10 text-pink-500 animate-bounce mb-2"></i>
+            <h3 class="text-pink-600 dark:text-pink-300 font-semibold text-lg">Você ainda não adicionou produtos</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Clique em <b>Criar Produto</b> no canto superior direito da tela para começar sua primeira oferta!</p>
+          </div>
+        </div>
+      </div>
+<div id="edit-modal" class="modal-overlay fixed inset-0 bg-black/50 dark:bg-black/60 hidden justify-center items-center z-[300]">
+  <div class="bg-[#232336]/95 dark:bg-[#232336]/98 rounded-3xl shadow-2xl w-full max-w-md p-8 relative border border-pink-200/15 dark:border-pink-800/30 backdrop-blur-xl transition-all duration-300">
+    <div class="flex justify-between items-center border-b border-pink-200/15 dark:border-pink-800/35 pb-4 mb-7">
+      <h2 class="text-xl font-bold gradient-text flex items-center gap-2 tracking-tight">
+        <i data-lucide="edit-3" class="w-5 h-5 text-pink-400"></i>
+        Editar Produto
+      </h2>
+      <button class="text-pink-300/80 hover:text-pink-100 transition" onclick="closeEditModal()">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+    <form id="editProductForm" onsubmit="event.preventDefault(); salvarEdicaoProduto()" autocomplete="off">
+      <input type="hidden" id="edit-uuid" name="uuid">
+      <div class="space-y-6">
+        <div>
+          <label for="edit-product-name" class="block text-xs font-semibold text-pink-300 mb-1">Nome do Produto</label>
+          <input type="text" id="edit-product-name" name="nome"
+            class="w-full rounded-xl border border-pink-200/20 dark:border-pink-700/30 bg-[#242438]/80 dark:bg-[#22223b]/90 text-pink-100 placeholder:text-pink-200/40 font-semibold text-base px-3 py-2 transition-all duration-200 outline-none shadow-sm focus:ring-2 focus:ring-pink-400/30 focus:border-pink-400"
+            placeholder="Ex: Pack Hot V1">
+        </div>
+        <div>
+          <label for="edit-price" class="block text-xs font-semibold text-pink-300 mb-1">Preço (R$)</label>
+          <input type="number" id="edit-price" name="preco" min="5" step="0.01"
+            class="w-full rounded-xl border border-pink-200/20 dark:border-pink-700/30 bg-[#242438]/80 dark:bg-[#22223b]/90 text-pink-100 placeholder:text-pink-200/40 font-semibold text-base px-3 py-2 transition-all duration-200 outline-none shadow-sm focus:ring-2 focus:ring-pink-400/30 focus:border-pink-400"
+            placeholder="Ex: 49.90">
+          <small class="text-pink-300 block mt-1">O preço mínimo é R$ 5,00</small>
+        </div>
+        <div>
+          <label for="edit-description" class="block text-xs font-semibold text-pink-300 mb-1">Descrição Curta</label>
+          <textarea id="edit-description" name="descricao" rows="2"
+            class="w-full rounded-xl border border-pink-200/20 dark:border-pink-700/30 bg-[#242438]/80 dark:bg-[#22223b]/90 text-pink-100 placeholder:text-pink-200/40 font-semibold text-base px-3 py-2 transition-all duration-200 outline-none shadow-sm resize-none focus:ring-2 focus:ring-pink-400/30 focus:border-pink-400"
+            placeholder="Breve explicação do produto"></textarea>
+        </div>
+        <div>
+          <label for="edit-category" class="block text-xs font-semibold text-pink-300 mb-1">Categoria</label>
+          <select id="edit-category" name="categoria"
+            class="w-full rounded-xl border border-pink-200/20 dark:border-pink-700/30 bg-[#242438]/80 dark:bg-[#22223b]/90 text-pink-100 font-semibold text-base px-3 py-2 transition-all duration-200 outline-none shadow-sm focus:ring-2 focus:ring-pink-400/30 focus:border-pink-400">
+            <option>Entrega - Grupo VIP</option>
+            <option>Entrega - Painel de Conteúdos</option>
+          </select>
+        </div>
+        <div>
+          <label for="edit-file-upload" class="block text-xs font-semibold text-pink-300 mb-1">Imagem</label>
+          <div class="flex items-center gap-2 mt-1">
+            <label for="edit-file-upload" class="cursor-pointer inline-flex items-center px-3 py-1 border border-pink-200/15 dark:border-pink-700/30 rounded-lg shadow-sm text-xs font-semibold text-pink-300 bg-[#22223b]/75 dark:bg-[#1f1f26]/85 hover:bg-pink-50/5 dark:hover:bg-[#2c2c34] transition">
+              <i data-lucide="image" class="h-4 w-4 text-pink-400 mr-1"></i>
+              Selecionar
+            </label>
+            <span id="edit-file-name" class="text-pink-200/70 text-xs italic">Nenhum arquivo selecionado</span>
+            <input id="edit-file-upload" name="imagem" type="file" class="hidden" onchange="updateEditFileName(event)">
+          </div>
+          <div id="edit-current-image" class="mt-3">
+            <!-- preview da imagem aparece aqui -->
+          </div>
+        </div>
+      </div>
+      <div class="mt-8 flex justify-end gap-3">
+        <button type="button"
+          class="bg-[#232336]/60 hover:bg-[#232336]/80 px-4 py-2 rounded-xl text-pink-200 font-bold text-sm border border-pink-200/10 dark:border-pink-700/20 shadow-sm transition-all"
+          onclick="closeEditModal()">Cancelar</button>
+        <button type="submit"
+          class="bg-gradient-to-r from-pink-500 to-fuchsia-500 px-5 py-2 rounded-xl text-white font-bold text-sm shadow-md hover:from-pink-600 hover:to-fuchsia-600 transition-all">
+          Salvar Alterações
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<div id="confirm-delete-modal" class="modal-overlay fixed inset-0 bg-black/50 dark:bg-black/60 hidden justify-center items-center z-[400]">
+  <div class="bg-[#232336]/95 dark:bg-[#232336]/98 rounded-3xl shadow-2xl w-full max-w-sm p-8 relative border border-pink-200/15 dark:border-pink-800/30 backdrop-blur-xl transition-all duration-300">
+    <div class="flex flex-col items-center gap-2">
+      <span class="rounded-full bg-pink-100 p-3 mb-2 shadow">
+        <i data-lucide="trash-2" class="w-8 h-8 text-pink-500"></i>
+      </span>
+      <h2 class="text-lg font-bold text-pink-400 mb-1">Excluir Produto</h2>
+      <p class="text-sm text-gray-300 mb-4 text-center">Tem certeza que deseja excluir este produto?<br>Esta ação não poderá ser desfeita.</p>
+      <div class="flex gap-3 mt-2 w-full justify-center">
+        <button type="button"
+          class="bg-[#232336]/60 hover:bg-[#232336]/80 px-4 py-2 rounded-xl text-pink-200 font-bold text-sm border border-pink-200/10 dark:border-pink-700/20 shadow-sm transition-all"
+          onclick="closeConfirmDeleteModal()">Cancelar</button>
+        <button type="button"
+          class="bg-gradient-to-r from-red-500 to-pink-500 px-5 py-2 rounded-xl text-white font-bold text-sm shadow-md hover:from-red-600 hover:to-pink-600 transition-all"
+          id="confirmDeleteBtn">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+</div>
+<div id="toast" class="toast fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-pink-500 text-white text-sm rounded-full shadow-lg z-[6000]"></div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        lottie.loadAnimation({
+            container: document.getElementById('lottie-loading'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: 'https://assets3.lottiefiles.com/private_files/lf30_oqpbtola.json'
+        });
+        setTimeout(() => {
+            document.getElementById('loading-overlay').classList.add('loaded');
+        }, 900);
+    });
+
+    lucide.createIcons();
+
+    const sidebar = document.getElementById('premiumSidebar');
+    const mainContent = document.getElementById('mainContent');
+    const dashboardCardWrapper = document.getElementById('dashboardCardWrapper');
+    const SIDEBAR_COLLAPSED = 4.5;
+    const SIDEBAR_EXPANDED = 17;
+
+    function setMainMargin(isExpanded) {
+        let ml = isExpanded ? (SIDEBAR_EXPANDED + 2) : (SIDEBAR_COLLAPSED + 2);
+        mainContent.style.marginLeft = ml + 'rem';
+        dashboardCardWrapper.style.marginLeft = isExpanded ? "1rem" : "0.25rem";
+        dashboardCardWrapper.style.width = isExpanded ? "calc(100% - 2rem)" : "100%";
+    }
+    setMainMargin(false);
+
+    sidebar.addEventListener('mouseenter', function() {
+        sidebar.classList.add('expanded');
+        setMainMargin(true);
+    });
+    sidebar.addEventListener('mouseleave', function() {
+        sidebar.classList.remove('expanded');
+        setMainMargin(false);
+    });
+
+    const themeBtn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    themeBtn && themeBtn.addEventListener('click', () => {
+        const isDark = html.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        document.getElementById('moon-icon').classList.toggle('hidden', isDark);
+        document.getElementById('sun-icon').classList.toggle('hidden', !isDark);
+    });
+    if(localStorage.getItem('theme') === 'dark') {
+        html.classList.add('dark');
+        document.getElementById('moon-icon') && document.getElementById('moon-icon').classList.add('hidden');
+        document.getElementById('sun-icon') && document.getElementById('sun-icon').classList.remove('hidden');
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('active');
+        setTimeout(() => {
+            toast.classList.remove('active');
+        }, 2200);
+    }
+
+function updateEditFileName(event) {
+    const fileName = event.target.files[0]?.name || 'Nenhum arquivo selecionado';
+    document.getElementById('edit-file-name').textContent = fileName;
+}
+
+function closeEditModal() {
+    document.getElementById('edit-modal').classList.add('hidden');
+}
+
+async function abrirModalEdicao(product_uuid) {
+    const response = await fetch(`/editar_produto/${product_uuid}`);
+    const produto = await response.json();
+    if (response.ok) {
+        document.getElementById('edit-uuid').value = produto.uuid;
+        document.getElementById('edit-product-name').value = produto.nome;
+        document.getElementById('edit-price').value = produto.preco;
+        document.getElementById('edit-description').value = produto.descricao;
+        document.getElementById('edit-category').value = produto.categoria;
+        document.getElementById('edit-file-name').textContent = "Nenhum arquivo selecionado";
+        if (produto.imagem) {
+            document.getElementById('edit-current-image').innerHTML = `<img src="/${produto.imagem}" class="rounded mt-1 mb-2 max-h-24">`;
+        } else {
+            document.getElementById('edit-current-image').innerHTML = '';
+        }
+        document.getElementById('edit-modal').classList.remove('hidden');
+        setTimeout(() => { document.getElementById('edit-product-name').focus(); }, 200);
+    } else {
+        alert(produto.error || "Erro ao carregar produto");
+    }
+}
+
+async function salvarEdicaoProduto() {
+    const price = parseFloat(document.getElementById('edit-price').value);
+    if (isNaN(price) || price < 5) {
+        alert('O preço mínimo é R$ 5,00');
+        document.getElementById('edit-price').focus();
+        return;
+    }
+    const formData = new FormData();
+    formData.append('uuid', document.getElementById('edit-uuid').value);
+    formData.append('nome', document.getElementById('edit-product-name').value);
+    formData.append('preco', document.getElementById('edit-price').value);
+    formData.append('descricao', document.getElementById('edit-description').value);
+    formData.append('categoria', document.getElementById('edit-category').value);
+    if(document.getElementById('edit-file-upload').files[0]) {
+        formData.append('imagem', document.getElementById('edit-file-upload').files[0]);
+    }
+    const response = await fetch('/salvar_edicao_produto', {
+        method: 'POST',
+        body: formData
+    });
+    const data = await response.json();
+    if(response.ok) {
+        closeEditModal();
+        carregarProdutos();
+        alert(data.message);
+    } else {
+        alert(data.error || 'Erro ao atualizar');
+    }
+}
+    function exibirMensagemSemProdutos() {
+        document.getElementById('noProductsMessage').classList.remove('hidden');
+        document.getElementById('tabela-produtos').classList.add('hidden');
+    }
+    function ocultarMensagemSemProdutos() {
+        document.getElementById('noProductsMessage').classList.add('hidden');
+        document.getElementById('tabela-produtos').classList.remove('hidden');
+    }
+
+    function carregarProdutos() {
+        $.ajax({
+            url: '/produtos_lista',
+            method: 'GET',
+            success: function(produtos) {
+                var tbody = $('#productData');
+                tbody.empty();
+                if (produtos.length > 0) {
+                    $('#tabela-produtos').removeClass('hidden');
+                    $('#noProductsMessage').addClass('hidden');
+                    $('#productCountBox').show();
+                    $('#productCountText').text(
+                        produtos.length === 1 ? "Você tem 1 produto cadastrado" : `Você tem ${produtos.length} produtos cadastrados`
+                    );
+                    produtos.forEach(function(produto) {
+                        var tr = $('<tr class="hover:bg-pink-50 dark:hover:bg-[#232336] transition"></tr>');
+                        tr.append('<td class="px-4 py-4 font-semibold flex items-center gap-2"><i data-lucide="shopping-cart" class="w-4 h-4 text-pink-400"></i>' + produto.nome + '</td>');
+                        tr.append('<td class="px-4 py-4 text-pink-600 dark:text-pink-300 font-bold">R$ ' + parseFloat(produto.preco).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>');
+                        tr.append('<td class="px-4 py-4">' + (produto.quantidade_vendas || 0) + '</td>');
+                        let isVIP = (produto.categoria === "Entrega - Grupo VIP");
+                        let acoes = '';
+                        if (isVIP) {
+                            acoes = `
+                                <a href="/meus_bots/${produto.id}"
+                                class="inline-flex items-center gap-1 bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white font-semibold px-4 py-2 rounded-lg shadow transition text-sm min-w-[145px] justify-center"
+                                style="min-width:145px;"
+                                title="Gerenciar Bots">
+                                <i data-lucide="bot" class="w-4 h-4"></i> Gerenciar Bots
+                                </a>
+                            `;
+                        } else {
+                            acoes = `
+                                <a href="${produto.url_checkout}" target="_blank"
+                                class="inline-flex items-center gap-1 bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-white font-semibold px-4 py-2 rounded-lg shadow transition text-sm min-w-[145px] justify-center"
+                                style="min-width:145px;"
+                                title="Ir para Checkout">
+                                <i data-lucide="credit-card" class="w-4 h-4"></i> Checkout
+                                </a>
+                            `;
+                        }
+                        let dropdownLinks = '';
+                        if (!isVIP) {
+                            dropdownLinks += `<a href="/membros/area/${produto.id}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition"><i data-lucide="users" class="w-4 h-4 mr-2"></i>Área de Membros</a>`;
+                        }
+                        dropdownLinks += `
+                            <a href="/ofertas?product_id=${produto.id}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition"><i data-lucide="target" class="w-4 h-4 mr-2"></i>Ofertas</a>
+                            <a href="${produto.url_flow}" target="_blank" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition"><i data-lucide="brain-circuit" class="w-4 h-4 mr-2"></i>Funil de Venda</a>
+			    <a href="#" onclick="abrirModalEdicao('${produto.uuid}'); event.preventDefault();" class="flex items-center px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded transition"><i data-lucide="edit-3" class="w-4 h-4 mr-2"></i>Editar</a>
+			    <a href="#" onclick="excluirProduto('${produto.uuid}'); event.preventDefault();" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded transition"><i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>Excluir</a>
+                        `;
+                        let dropdown = `
+                            <div class="relative inline-block text-left">
+                                <button type="button"
+                                    class="inline-flex items-center gap-1 bg-white border border-pink-200 text-pink-600 font-semibold px-4 py-2 rounded-lg shadow hover:bg-pink-50 transition text-sm"
+                                    onclick="toggleDropdown(this)">
+                                    <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                                </button>
+                                <div class="hidden dropdown-menu absolute right-0 mt-2 w-52 shadow z-40">
+                                    <div class="py-2 rounded-xl border border-pink-100">
+                                        ${dropdownLinks}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        tr.append(`
+                            <td class="px-4 py-4 text-center">
+                                <div class="flex justify-center items-center gap-2">
+                                    ${acoes}
+                                    ${dropdown}
+                                </div>
+                            </td>
+                        `);
+                        tbody.append(tr);
+                    });
+                    lucide.createIcons();
+                } else {
+                    $('#noProductsMessage').removeClass('hidden');
+                    $('#tabela-produtos').addClass('hidden');
+                    $('#productCountBox').hide();
+                }
+            },
+            error: function(error) {
+                console.error('Erro ao carregar os produtos:', error);
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        carregarProdutos();
+    });
+
+    function openModal() {
+      const modal = document.getElementById('modal');
+      modal.style.display = 'flex';
+      setTimeout(() => {
+        document.getElementById('product-name').focus();
+      }, 300);
+    }
+    function closeModal() {
+      const modal = document.getElementById('modal');
+      modal.style.display = 'none';
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+        const modal = document.getElementById('modal');
+        modal.style.display = 'none';
+    });
+    function updateFileName(event) {
+        const fileName = event.target.files[0]?.name || 'Nenhum arquivo selecionado';
+        document.getElementById('file-name').textContent = fileName;
+    }
+    async function salvarProduto() {
+        const price = parseFloat(document.getElementById('price').value);
+        if (isNaN(price) || price < 5) {
+            showToast('O preço mínimo é R$ 5,00');
+            document.getElementById('price').focus();
+            return;
+        }
+        const formData = new FormData();
+        formData.append('nome', document.getElementById('product-name').value);
+        formData.append('preco', document.getElementById('price').value);
+        formData.append('descricao', document.getElementById('short-description').value);
+        formData.append('imagem', document.getElementById('file-upload').files[0]);
+        formData.append('categoria', document.getElementById('category').value);
+        try {
+            const response = await fetch('/salvar_produto', {
+                method: 'POST',
+                body: formData
+            })
+            const result = await response.json();
+            if (response.ok) {
+                closeModal();
+                carregarProdutos();
+                showToast('Produto criado com sucesso!');
+            } else {
+                alert(result.error);
+            }
+        } catch (error) {
+            console.error('Erro ao salvar o produto:', error);
+            alert('Erro ao salvar o produto. Tente novamente.');
+        }
+    }
+    function toggleDropdown(button) {
+        document.querySelectorAll('.dropdown-menu').forEach(m => {
+            if (m !== button.nextElementSibling) {
+                m.classList.add('hidden');
+                m.classList.remove('fixed-dropdown');
+                m.style.position = '';
+                m.style.top = '';
+                m.style.left = '';
+                m.style.bottom = '';
+                m.style.zIndex = '';
+            }
+        });
+
+        const menu = button.nextElementSibling;
+
+        if (menu.classList.contains('fixed-dropdown')) {
+            menu.classList.add('hidden');
+            menu.classList.remove('fixed-dropdown');
+            menu.style.position = '';
+            menu.style.top = '';
+            menu.style.left = '';
+            menu.style.bottom = '';
+            menu.style.zIndex = '';
+            return;
+        } else {
+            menu.classList.remove('hidden');
+            menu.classList.add('fixed-dropdown');
+            const rect = button.getBoundingClientRect();
+            let menuHeight = menu.offsetHeight;
+            if (!menuHeight) {
+                menu.style.visibility = 'hidden';
+                menu.style.display = 'block';
+                menuHeight = menu.offsetHeight || 220;
+                menu.style.display = '';
+                menu.style.visibility = '';
+            }
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+
+            menu.style.position = 'fixed';
+            menu.style.left = rect.left + 'px';
+            menu.style.zIndex = 9999;
+            if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
+                menu.style.top = '';
+                menu.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
+            } else {
+                menu.style.top = (rect.bottom + 4) + 'px';
+                menu.style.bottom = '';
+            }
+        }
+
+        function outsideClick(e) {
+            if (!menu.contains(e.target) && e.target !== button) {
+                menu.classList.add('hidden');
+                menu.classList.remove('fixed-dropdown');
+                menu.style.position = '';
+                menu.style.top = '';
+                menu.style.left = '';
+                menu.style.bottom = '';
+                menu.style.zIndex = '';
+                document.removeEventListener('mousedown', outsideClick);
+            }
+        }
+        setTimeout(() => {
+            document.addEventListener('mousedown', outsideClick);
+        }, 0);
+    }
+
+function excluirProduto(uuid) {
+    if (confirm('Tem certeza que deseja excluir este produto?')) {
+        fetch(`/excluir_produto/${uuid}`, {
+            method: 'DELETE'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Produto excluído com sucesso!');
+                carregarProdutos(); // RECARRREGA A LISTA
+                // window.location.href = '/produtos'; // Só use se quiser recarregar a página inteira!
+            } else {
+                alert(data.error || 'Erro ao excluir produto');
+            }
+        })
+        .catch(err => {
+            alert('Erro ao excluir produto');
+        });
+    }
+}
+    function criarBot() {
+        window.location.href = "/criar-bot";
+    }
+    function abrirAfiliados() {
+        window.location.href = "/afiliados";
+    }
+let produtoParaExcluir = null;
+
+function excluirProduto(uuid) {
+    produtoParaExcluir = uuid;
+    document.getElementById('confirm-delete-modal').classList.remove('hidden');
+}
+
+function closeConfirmDeleteModal() {
+    produtoParaExcluir = null;
+    document.getElementById('confirm-delete-modal').classList.add('hidden');
+}
+
+// Vincula o botão de confirmação
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('confirmDeleteBtn');
+    if (btn) {
+        btn.onclick = function() {
+            if (!produtoParaExcluir) return;
+            fetch(`/excluir_produto/${produtoParaExcluir}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(data => {
+                closeConfirmDeleteModal();
+                if (data.success) {
+                    showToast('Produto excluído com sucesso!');
+                    carregarProdutos();
+                } else {
+                    alert(data.error || 'Erro ao excluir produto');
+                }
+            })
+            .catch(() => {
+                closeConfirmDeleteModal();
+                alert('Erro ao excluir produto');
+            });
+        }
+    }
+});
+</script>
+</body>
+</html>

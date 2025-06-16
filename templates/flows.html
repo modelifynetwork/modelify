@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelify Interactive - Fluxogramas</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --primary-color: #FF007F;
+            --secondary-color: #1A1A2E;
+            --accent-color: #E94560;
+            --background-color: #0F0F1E;
+            --text-color: #FFFFFF;
+            --card-background: #2D2D44;
+            --button-hover: #FF4F8B;
+            --green-color: #4CAF50;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            background-color: var(--secondary-color);
+            border-bottom: 2px solid var(--primary-color);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .header h1 .modelify {
+            color: var(--text-color);
+        }
+
+        .header h1 .fy {
+            color: var(--primary-color);
+        }
+
+        .header h2 {
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: var(--accent-color);
+        }
+
+        .new-flow-button {
+	    background-color: var(--green-color);
+            color: var(--text-color);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+	.back-flow-button {
+	    background-color: var(--primary-color);
+            color: var(--text-color);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+	}
+
+        .new-flow-button:hover {
+            background-color: var(--button-hover);
+            transform: scale(1.05);
+        }
+
+        .content {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: var(--secondary-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .flow-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .flow-card {
+            background-color: var(--card-background);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .flow-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .flow-card h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .flow-card .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .flow-card button {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .flow-card button:hover {
+            background-color: var(--button-hover);
+            transform: scale(1.05);
+        }
+
+        .flow-card button.delete {
+            background-color: #FF4F4F;
+        }
+
+        .flow-card button.delete:hover {
+            background-color: #E94560;
+        }
+    </style>
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <header class="header">
+        <div>
+            <h1><span class="modelify">Modeli</span><span class="fy">fy</span></h1>
+            <h2>Interactive</h2>
+        </div>
+	<button class="new-flow-button" onclick="createNewFlow()">+ Criar Novo Fluxograma</button>
+	<button class="back-flow-button bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded" onclick="window.location.href='/dashboard'">
+    < Voltar para o Dashboard
+	</button>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="content">
+        <h2 class="text-2xl font-bold mb-5">Meus Fluxogramas</h2>
+        <ul class="flow-list">
+            {% for fluxo in fluxos %}
+            <li class="flow-card">
+                <h3>{{ fluxo[1] }}</h3>
+                <div class="actions">
+                    <button onclick="openFlow('{{ fluxo[0] }}')">
+                        <i class="fas fa-folder-open"></i> Abrir
+                    </button>
+                    <button class="delete" onclick="deleteFlow('{{ fluxo[0] }}')">
+                        <i class="fas fa-trash-alt"></i> Excluir
+                    </button>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </main>
+
+    <script>
+        function createNewFlow() {
+            window.location.href = '/flow';
+        }
+
+        function openFlow(flowId) {
+            window.location.href = '/flow/' + flowId;
+        }
+
+	function deleteFlow(flowId) {
+    if (confirm('Tem certeza que deseja excluir este fluxograma? Esta ação não pode ser desfeita.')) {
+        fetch('/flow/' + flowId, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Fluxograma excluído com sucesso!');
+                location.reload(); // Recarregar a página para atualizar a lista
+            } else {
+                response.json().then(data => {
+                    alert('Erro: ' + data.message);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao excluir o fluxograma.');
+        });
+    }
+}
+    </script>
+</body>
+</html>

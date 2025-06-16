@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar - Modelify</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 0% 100%, #3a1b55 0%, #18181b 70%) no-repeat fixed;
+      overflow: hidden;
+    }
+    .gradient-text {
+      background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+      font-weight: 700;
+    }
+    .login-blur {
+      backdrop-filter: blur(28px) saturate(160%);
+      background: rgba(24, 24, 27, 0.92);
+      border: 2px solid #25112e;
+      box-shadow: 0 8px 48px #ff85b233, 0 2px 0 #ff85b288;
+    }
+    .brand-shadow {
+      text-shadow: 0 4px 48px #ff85b233, 0 1.5px 0 #ff85b288;
+    }
+    .bg-glass {
+      background: rgba(32, 8, 40, 0.48);
+      border-radius: 1.5rem;
+      border: 1.5px solid #312034;
+    }
+    .login-btn-gradient {
+      background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+      color: #fff !important;
+      transition: .2s;
+      box-shadow: 0 4px 24px #ff85b244;
+    }
+    .login-btn-gradient:hover {
+      filter: brightness(1.07) saturate(1.1);
+      transform: translateY(-2px) scale(1.04) rotate(-2deg);
+      box-shadow: 0 6px 36px #ff85b266;
+    }
+    .login-google-btn {
+      background: #fff;
+      color: #232336;
+      border: none;
+      font-weight: 600;
+      transition: 0.22s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 10px;
+      box-shadow: 0 6px 24px #ff85b22a;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .login-google-btn .btn-glow {
+      content: "";
+      position: absolute;
+      left: -50%;
+      top: -50%;
+      width: 200%;
+      height: 200%;
+      z-index: 0;
+      background: conic-gradient(from 180deg at 50% 50%, #ff85b2 0deg, #a78bfa 120deg, #ff85b2 240deg, #ff85b2 360deg);
+      opacity: 0.14;
+      filter: blur(22px);
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+    .login-google-btn:hover {
+      background: #f1e9f6;
+      color: #ff85b2;
+      transform: scale(1.04);
+      box-shadow: 0 0 0 2px #a78bfa66;
+    }
+    .login-google-btn:hover .btn-glow {
+      opacity: 0.22;
+    }
+    .subtle-badge {
+      background: linear-gradient(90deg, #18181b 0%, #232336 100%);
+      color: #ff85b2;
+      font-size: 0.97em;
+      font-weight: 700;
+      padding: 0.22em 1.1em;
+      border-radius: 999px;
+      letter-spacing: 0.02em;
+      border: 1.2px solid #a78bfa55;
+      margin-bottom: 1.4rem;
+      display: inline-block;
+      box-shadow: 0 1.5px 10px #a78bfa33;
+      opacity: 0.85;
+    }
+    @media (max-width: 900px) {
+      .login-panel {
+        flex-direction: column;
+        min-height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .side-visual {
+        min-height: 120px;
+        border-radius: 1.5rem 1.5rem 0 0;
+      }
+    }
+    .particles {
+      position: fixed;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      pointer-events: none; z-index: 1;
+    }
+    .particle {
+      position: absolute;
+      will-change: transform, opacity;
+      border-radius: 50%;
+      opacity: 0.54;
+      animation: float 10s linear infinite;
+      filter: blur(1.3px);
+      pointer-events: none;
+    }
+    @keyframes float {
+      0% { transform: translateY(0) scale(1);}
+      50% { transform: translateY(-90px) scale(1.12);}
+      100% { transform: translateY(0) scale(1);}
+    }
+  </style>
+</head>
+<body>
+  <!-- DIFERENCIAL: partículas animadas inteligentes -->
+  <div class="particles" id="particles"></div>
+  <div class="absolute inset-0 pointer-events-none z-0" style="background: radial-gradient(ellipse 50% 80% at 0% 100%, #a78bfa44 0%, #18181b 90%);"></div>
+  <div class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-10 py-6">
+    <div class="flex items-center gap-3">
+      <span class="text-3xl font-extrabold brand-shadow text-white">Modeli<span class="gradient-text">fy</span></span>
+    </div>
+  </div>
+  <div class="flex login-panel z-10 relative max-w-4xl mx-auto mt-32 shadow-xl rounded-3xl login-blur overflow-hidden">
+    <!-- Visual Side -->
+    <div class="side-visual min-w-[340px] w-[380px] flex flex-col items-center justify-center px-10 py-14 bg-glass">
+      <div class="subtle-badge">
+        <svg class="inline mr-2 -mt-1" width="18" height="18" fill="none" stroke="#ff85b2" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Transforme sedução em vendas!
+      </div>
+      <div>
+        <h1 class="text-3xl md:text-4xl font-bold text-white leading-tight text-center mb-3 brand-shadow">
+          <span class="gradient-text">Inteligente, Prática e ilimitada.</span>
+        </h1>
+        <p class="text-base text-gray-300 text-center max-w-xs mb-7">
+          Modelify é a <span class="gradient-text font-semibold">SaaS para produtores de conteúdo adulto</span> que querem vender mais, criar experiências exclusivas e automatizar suas vendas com IA, voz sedutora e automação total.
+        </p>
+      </div>
+      <a href="https://modelify.com.br" class="inline-flex items-center justify-center login-btn-gradient px-7 py-2.5 rounded-xl font-semibold text-lg mt-2 shadow hover:opacity-95 transition">
+        Explorar Modelify
+        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" stroke-width="2"
+          viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+          d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+      </a>
+    </div>
+    <!-- Login Area -->
+    <div class="flex-1 flex flex-col items-center justify-center px-6 pt-14 pb-12 bg-[#18181b]">
+      <h2 class="text-2xl sm:text-3xl font-bold text-white mb-2 mt-2 brand-shadow">
+        Entre no universo Modelify
+      </h2>
+      <p class="text-base text-gray-400 mb-8 text-center max-w-md">
+        Faça login e comece a criar experiências exclusivas para seus fãs com tecnologia, sedução e automação.
+      </p>
+      <button class="login-google-btn w-full max-w-xs px-6 py-3 text-lg mb-2" onclick="window.location.href='/auth/google'">
+        <span class="btn-glow"></span>
+        <img src="https://img.icons8.com/color/32/000000/google-logo.png" alt="Google" class="w-7 h-7 z-10"> 
+        <span class="z-10">Entrar com Google</span>
+      </button>
+      <div class="mt-10 text-center text-xs text-gray-700 select-none opacity-75">
+        <span class="font-semibold text-pink-400">O prazer digital começa aqui.</span>
+        <br>
+        <span class="text-gray-400">
+          © <span id="ano"></span> Modelify - Todos os direitos reservados.
+        </span>
+      </div>
+      <!-- DIFERENCIAL: IA de boas-vindas animada -->
+      <div id="ai-welcome" class="mt-12 text-pink-400 text-base text-center font-semibold opacity-85 flex flex-col items-center justify-center select-none">
+        <svg class="w-10 h-10 mb-2 animate-bounce" fill="none" stroke="currentColor" stroke-width="2"
+          viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+          d="M12 20v-6m0 0V4m0 10l3-3m-3 3l-3-3"></path></svg>
+        <span id="ia-msg">Aquecendo as experiências sensuais com IA...</span>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Partículas inteligentes exclusivas
+    function randomInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+    function createParticle() {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = randomInt(18, 38);
+      p.style.width = p.style.height = size + 'px';
+      p.style.left = randomInt(-10, 95) + 'vw';
+      p.style.top = randomInt(0, 95) + 'vh';
+      p.style.background = `radial-gradient(circle at 60% 40%, #ff85b2 0%, #a78bfa 90%)`;
+      p.style.opacity = Math.random() * 0.19 + 0.09;
+      p.style.animationDuration = randomInt(9, 16) + 's';
+      p.style.animationDelay = -randomInt(2, 16) + 's';
+      document.getElementById('particles').appendChild(p);
+    }
+    for (let i = 0; i < 18; i++) createParticle();
+
+    // IA animada de boas-vindas: frases rotativas sensuais e tecnológicas
+    const iaTips = [
+      "Aquecendo as experiências sensuais com IA...",
+      "Preparando fluxogramas hot e automação exclusiva!",
+      "Gerando voz feminina sedutora IA para suas vendas.",
+      "Acesso reservado: área privada pronta para seus conteúdos picantes.",
+      "O bot Modelify já está pronto para vender e encantar no Telegram.",
+      "Libere seu potencial sexy com tecnologia de ponta."
+    ];
+    let iaIndex = 0;
+    setInterval(() => {
+      document.getElementById('ia-msg').textContent = iaTips[iaIndex % iaTips.length];
+      iaIndex++;
+    }, 3400);
+
+    document.getElementById('ano').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

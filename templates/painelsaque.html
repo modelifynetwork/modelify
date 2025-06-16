@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel de Saques - MODELIFY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 0% 100%, #3a1b55 0%, #18181b 80%) no-repeat fixed;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .gradient-text {
+      background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+      font-weight: 700;
+    }
+    .brand-shadow {
+      text-shadow: 0 4px 48px #ff85b233, 0 2px 0 #ff85b288;
+    }
+    .glass-box {
+      background: rgba(24, 24, 27, 0.91);
+      box-shadow: 0 8px 48px #ff85b233, 0 2px 0 #ff85b288;
+      border: 2px solid #25112e;
+      border-radius: 1.5rem;
+      backdrop-filter: blur(22px) saturate(150%);
+      padding: 2.3rem 2rem;
+      width: 100%;
+      min-width: 0;
+      max-width: 100vw;
+      margin: 0 auto 2.5rem auto;
+      overflow-x: auto;
+    }
+    .table-modern {
+      width: 100%;
+      min-width: 1200px;
+      border-collapse: separate;
+      border-spacing: 0;
+      table-layout: fixed;
+    }
+    .table-modern th, .table-modern td {
+      padding-top: 0.8rem;
+      padding-bottom: 0.8rem;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      font-size: 1.06rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .table-modern th {
+      letter-spacing: 0.02em;
+      font-weight: 700;
+      color: #a78bfa;
+      background: none;
+      border-bottom: 1.7px solid #2e2140;
+      font-size: 0.96em;
+      text-shadow: 0 0.5px 2px #23233655;
+    }
+    .table-modern td {
+      color: #e5e7eb;
+      background: none;
+      border-bottom: 1px solid #23233622;
+      font-weight: 500;
+    }
+    .table-modern tr:last-child td {
+      border-bottom: none;
+    }
+    .badge-status {
+      display: inline-block;
+      padding: 0.24em 1.1em;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.94em;
+      letter-spacing: 0.02em;
+      box-shadow: 0 1.5px 10px #a78bfa33;
+      border: 1.2px solid #a78bfa55;
+      opacity: 0.92;
+    }
+    .badge-pendente { background: #1e1934; color: #ffd600; border-color: #ffd60099; }
+    .badge-liberado { background: #162b1e; color: #42ffb2; border-color: #42ffb299; }
+    .badge-recusado { background: #2d1721; color: #ff85b2; border-color: #ff85b299; }
+    .btn-glass {
+      background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+      color: #fff;
+      font-weight: 700;
+      border-radius: 0.9em;
+      padding: 0.5em 1.4em;
+      box-shadow: 0 2px 12px #ff85b255;
+      transition: .14s;
+      border: none;
+    }
+    .btn-glass:hover {
+      filter: brightness(1.07) saturate(1.14);
+      transform: translateY(-1px) scale(1.04) rotate(-1deg);
+      box-shadow: 0 8px 32px #a78bfa55;
+      background: linear-gradient(90deg, #a78bfa 0%, #ff85b2 100%);
+    }
+    .particles {
+      position: fixed;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      pointer-events: none; z-index: 0;
+    }
+    .particle {
+      position: absolute;
+      will-change: transform, opacity;
+      border-radius: 50%;
+      opacity: 0.47;
+      animation: float 10s linear infinite;
+      filter: blur(1.3px);
+      pointer-events: none;
+    }
+    @keyframes float {
+      0% { transform: translateY(0) scale(1);}
+      50% { transform: translateY(-90px) scale(1.12);}
+      100% { transform: translateY(0) scale(1);}
+    }
+    .section-title {
+      font-size: 1.27em;
+      font-weight: 700;
+      margin-bottom: 1.8rem;
+      color: #a78bfa;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+    }
+    .section-title-green {
+      color: #42ffb2;
+    }
+    @media (max-width: 1400px) {
+      .table-modern { min-width: 900px; }
+    }
+    @media (max-width: 900px) {
+      .glass-box { padding: 1.2rem 0.5rem; }
+      .table-modern th, .table-modern td { font-size: 0.92em; padding-left: 0.4rem; padding-right: 0.4rem; }
+      .table-modern { min-width: 600px; }
+    }
+    @media (max-width: 600px) {
+      .table-modern { min-width: 320px; }
+    }
+    main {
+      width: 100vw;
+      max-width: 100vw;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0px;
+      align-items: stretch;
+    }
+  </style>
+</head>
+<body>
+  <!-- partículas animadas -->
+  <div class="particles" id="particles"></div>
+
+  <!-- HEADER -->
+  <header class="flex items-center justify-between px-10 py-7 brand-shadow" style="position: relative; z-index: 10;">
+    <div class="flex items-center gap-3">
+      <span class="text-3xl font-extrabold brand-shadow text-white select-none">MODELI<span class="gradient-text">FY</span></span>
+    </div>
+    <h2 class="text-lg font-bold gradient-text select-none">Painel de Solicitações de Saque</h2>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+    <!-- Pendentes -->
+    <section class="glass-box w-full">
+      <div class="section-title">
+        <svg class="w-6 h-6" fill="none" stroke="#ffd600" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Solicitações Pendentes
+      </div>
+      <div>
+        <table class="table-modern">
+          <thead>
+            <tr>
+              <th>NOME</th>
+              <th>EMAIL</th>
+              <th>VALOR</th>
+              <th>BANCO</th>
+              <th>CHAVE PIX</th>
+              <th>STATUS</th>
+              <th>AÇÕES</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in saques_pendentes %}
+              <tr class="hover:bg-[#2e2240] transition cursor-pointer">
+                <td>
+                  <div class="font-bold text-white">{{ s['nome_completo'] }}</div>
+                </td>
+                <td class="text-gray-300">{{ s['user_email'] }}</td>
+                <td class="font-bold" style="color:#42ffb2">R$ {{ '%.2f'|format(s['valor']|float) }}</td>
+                <td style="color:#a78bfa">{{ s['banco'] }}</td>
+                <td class="text-pink-400">{{ s['chave_pix'] }}</td>
+                <td>
+                  <span class="badge-status badge-pendente">{{ s['status']|capitalize }}</span>
+                </td>
+                <td>
+                  <button class="btn-glass">Liberar</button>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="7" class="text-center text-gray-400 py-4">Nenhuma solicitação pendente.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <!-- Liberados -->
+    <section class="glass-box w-full">
+      <div class="section-title section-title-green">
+        <svg class="w-6 h-6" fill="none" stroke="#42ffb2" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
+        Saques Liberados
+      </div>
+      <div>
+        <table class="table-modern">
+          <thead>
+            <tr>
+              <th>NOME</th>
+              <th>EMAIL</th>
+              <th>VALOR</th>
+              <th>BANCO</th>
+              <th>CHAVE PIX</th>
+              <th>STATUS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in saques_liberados %}
+              <tr class="hover:bg-[#22342e] transition cursor-pointer">
+                <td>
+                  <div class="font-bold text-white">{{ s['nome_completo'] }}</div>
+                </td>
+                <td class="text-gray-300">{{ s['user_email'] }}</td>
+                <td class="font-bold" style="color:#42ffb2">R$ {{ '%.2f'|format(s['valor']|float) }}</td>
+                <td style="color:#a78bfa">{{ s['banco'] }}</td>
+                <td class="text-pink-400">{{ s['chave_pix'] }}</td>
+                <td>
+                  <span class="badge-status badge-liberado">{{ s['status']|capitalize }}</span>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="6" class="text-center text-gray-400 py-4">Nenhum saque liberado.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script>
+    // partículas animadas
+    function randomInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+    function createParticle() {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = randomInt(18, 38);
+      p.style.width = p.style.height = size + 'px';
+      p.style.left = randomInt(-10, 95) + 'vw';
+      p.style.top = randomInt(0, 95) + 'vh';
+      p.style.background = `radial-gradient(circle at 60% 40%, #ff85b2 0%, #a78bfa 90%)`;
+      p.style.opacity = Math.random() * 0.19 + 0.09;
+      p.style.animationDuration = randomInt(9, 16) + 's';
+      p.style.animationDelay = -randomInt(2, 16) + 's';
+      document.getElementById('particles').appendChild(p);
+    }
+    for (let i = 0; i < 20; i++) createParticle();
+  </script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seja Afiliado - Modelify</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 0% 100%, #3a1b55 0%, #18181b 80%) no-repeat fixed;
+      overflow: hidden;
+    }
+    .gradient-text {
+      background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+      font-weight: 700;
+    }
+    .brand-shadow {
+      text-shadow: 0 4px 48px #ff85b233, 0 1.5px 0 #ff85b288;
+    }
+    .cta-btn {
+      background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+      color: #18181b;
+      font-weight: 800;
+      font-size: 1.2rem;
+      border-radius: 1em;
+      padding: 0.85em 2.3em;
+      box-shadow: 0 6px 32px #43e97b33, 0 1.5px 0 #38f9d788;
+      transition: filter .18s, transform .18s;
+      margin-top: 1.8rem;
+    }
+    .cta-btn:hover {
+      filter: brightness(1.09) contrast(1.13);
+      transform: scale(1.04) translateY(-2px);
+      box-shadow: 0 10px 30px #43e97b77;
+    }
+    .expand-box {
+      background: linear-gradient(90deg, #1a3a23 0%, #134e28 100%);
+      color: #e4ffe2;
+      border-radius: 1.2em;
+      box-shadow: 0 6px 28px #43e97b33;
+      border: 1.5px solid #38f9d7cc;
+      padding: 1.8em 1.5em 1em 1.5em;
+      margin: 0 auto 1.7em auto;
+      max-width: 370px;
+      font-size: 1.07rem;
+      display: none;
+      animation: fadein .4s;
+    }
+    @keyframes fadein {
+      from {opacity:0; transform: scale(0.97);}
+      to {opacity:1; transform: scale(1);}
+    }
+    .toggle-link {
+      color: #43e97b;
+      font-weight: bold;
+      cursor: pointer;
+      transition: color .18s;
+      border: none;
+      background: none;
+      outline: none;
+      font-size: 1rem;
+      padding: 0;
+      margin-top: 1.6em;
+      margin-bottom: 0.2em;
+    }
+    .toggle-link:hover {
+      color: #38f9d7;
+      text-decoration: underline;
+    }
+    .subtle-badge {
+      background: linear-gradient(90deg, #18181b 0%, #232336 100%);
+      color: #ff85b2;
+      font-size: 1em;
+      font-weight: 700;
+      padding: 0.22em 1.1em;
+      border-radius: 999px;
+      border: 1.2px solid #a78bfa55;
+      margin-bottom: 1.2rem;
+      display: inline-block;
+      box-shadow: 0 1.5px 10px #a78bfa33;
+      opacity: 0.85;
+    }
+    .info-txt {
+      color: #b6b6d1;
+      font-size: 1.05rem;
+      margin-bottom: 1.2em;
+    }
+    .regras-list {
+      list-style: disc inside;
+      color: #a78bfa;
+      font-size: 0.95em;
+    }
+    .regras-list li {
+      margin-bottom: .45em;
+      color: #d0cdec;
+    }
+    .commission {
+      background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+      color: #134e28;
+      font-weight: 900;
+      font-size: 1.3em;
+      border-radius: 1em;
+      display: inline-block;
+      padding: .32em 1.1em;
+      margin: 1.2em 0 1.1em 0;
+      box-shadow: 0 3px 18px #43e97b33;
+      letter-spacing: 0.01em;
+    }
+    @media (max-width: 600px){
+      .expand-box {max-width:97vw;}
+    }
+    .particles {
+      position: fixed;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      pointer-events: none; z-index: 1;
+    }
+    .particle {
+      position: absolute;
+      will-change: transform, opacity;
+      border-radius: 50%;
+      opacity: 0.54;
+      animation: float 10s linear infinite;
+      filter: blur(1.3px);
+      pointer-events: none;
+    }
+    @keyframes float {
+      0% { transform: translateY(0) scale(1);}
+      50% { transform: translateY(-90px) scale(1.12);}
+      100% { transform: translateY(0) scale(1);}
+    }
+  </style>
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+  <div class="absolute inset-0 pointer-events-none z-0" style="background: radial-gradient(ellipse 50% 80% at 0% 100%, #a78bfa44 0%, #18181b 90%);"></div>
+  <div class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-10 py-6">
+    <div class="flex items-center gap-3">
+      <img src="/static/brand/modelify-icon.png" alt="Logo" class="w-11 h-11 rounded-xl shadow-xl" style="background: #232336;">
+      <span class="text-3xl font-extrabold brand-shadow text-white">Modeli<span class="gradient-text">fy</span></span>
+    </div>
+  </div>
+  <main class="flex flex-col items-center justify-center min-h-screen z-10 relative">
+    <div class="flex flex-col items-center w-full max-w-md mt-20">
+      <div class="subtle-badge">
+        Afiliados Modelify
+      </div>
+      <img src="/static/produtos/produto-hot.jpg" alt="Produto Modelify" class="rounded-2xl shadow-xl mb-4 w-40 h-40 object-cover border-4 border-[#ff85b2]/30">
+      <h1 class="text-2xl sm:text-3xl font-bold text-white text-center brand-shadow leading-tight mb-2">Manual da Sedução Modelify</h1>
+      <p class="info-txt text-center">
+        O produto digital adulto #1 para quem quer vender mais, seduzir e fidelizar fãs.
+      </p>
+      <div class="commission">50% por venda</div>
+      <button class="cta-btn flex items-center gap-2 mx-auto" onclick="window.location.href='/afiliados/cadastro'">
+        <svg width="26" height="26" fill="none" stroke="#134e28" stroke-width="2"
+          viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8m0 0l3-3m-3 3l-3-3"/></svg>
+        Quero me Afiliar Agora
+      </button>
+
+      <button class="toggle-link" onclick="toggleBeneficios()">Ver benefícios, comissões & regras</button>
+
+      <div id="expandBox" class="expand-box mt-3">
+        <div class="font-bold text-lg mb-3 text-green-200 flex items-center gap-2">
+          <svg width="24" height="24" fill="none" stroke="#43e97b" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2l4-4"/></svg>
+          Benefícios do Programa
+        </div>
+        <ul class="mb-3 ml-2 space-y-1 text-green-100">
+          <li>💰 Comissão padrão: <b>50% por venda</b></li>
+          <li>🔥 Bônus para Top Afiliados: até <b>65%</b>!</li>
+          <li>🚀 Pagamento automático em 1 dia útil</li>
+          <li>👑 Materiais de divulgação e suporte AI</li>
+          <li>🔗 Links inteligentes e sub-afiliados</li>
+        </ul>
+        <div class="font-bold text-lg mb-2 text-green-200 flex items-center gap-2 mt-3">
+          <svg width="24" height="24" fill="none" stroke="#43e97b" stroke-width="2" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 12l2 2l4-4"/></svg>
+          Comissões Detalhadas
+        </div>
+        <ul class="ml-2 mb-3 text-green-100">
+          <li>Venda direta: <b>R$ 48,50</b> por venda</li>
+          <li>Venda por sub-afiliado: <b>R$ 9,70</b> extra por venda</li>
+          <li>Bônus hot: <b>+5% extra</b> para meta semanal</li>
+        </ul>
+        <div class="font-bold text-lg mb-2 mt-5 text-pink-100">Regras do Programa</div>
+        <ul class="regras-list ml-4">
+          <li>Proibido SPAM ou divulgação ilegal.</li>
+          <li>Não gere vendas falsas ou compras para si mesmo.</li>
+          <li>Respeite as diretrizes Modelify e legislação vigente.</li>
+          <li>Use criativos oficiais e materiais fornecidos.</li>
+          <li>Premiações sujeitas à análise de qualidade.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-8 text-center text-xs text-gray-700 select-none opacity-75">
+      <span class="font-semibold text-pink-400">Afiliado Modelify: renda, prazer e liberdade.</span>
+      <br>
+      <span class="text-gray-400">
+        © <span id="ano"></span> Modelify - Todos os direitos reservados.
+      </span>
+    </div>
+  </main>
+  <script>
+    // Expand box toggle
+    function toggleBeneficios() {
+      const box = document.getElementById("expandBox");
+      box.style.display = box.style.display === "block" ? "none" : "block";
+    }
+    // Partículas
+    function randomInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+    function createParticle() {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = randomInt(18, 38);
+      p.style.width = p.style.height = size + 'px';
+      p.style.left = randomInt(-10, 95) + 'vw';
+      p.style.top = randomInt(0, 95) + 'vh';
+      p.style.background = `radial-gradient(circle at 60% 40%, #43e97b 0%, #38f9d7 90%)`;
+      p.style.opacity = Math.random() * 0.19 + 0.09;
+      p.style.animationDuration = randomInt(9, 16) + 's';
+      p.style.animationDelay = -randomInt(2, 16) + 's';
+      document.getElementById('particles').appendChild(p);
+    }
+    for (let i = 0; i < 14; i++) createParticle();
+    document.getElementById('ano').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

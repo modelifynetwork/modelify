@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Conteúdos do Produto | Modelify</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lottie-web@5.7.3/build/player/lottie.min.js"></script>
+  <style>
+    html, body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(135deg, #18181b 0%, #23272f 100%);
+    }
+    ::selection { background: #ff85b2; color: #fff; }
+    ::-webkit-scrollbar { width: 10px; background: #242438; }
+    ::-webkit-scrollbar-thumb { background: #ff85b2; border-radius: 10px; }
+    #loading-overlay {
+      position: fixed; z-index: 9999; inset: 0;
+      background: linear-gradient(120deg,#18181b 70%,#ff85b2 200%);
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.5s;
+    }
+    #loading-overlay.loaded { opacity: 0; pointer-events: none; }
+    .toast { opacity: 0; pointer-events: none; transition: opacity 0.5s; }
+    .toast.active { opacity: 1; pointer-events: auto; }
+    .gallery-thumb {
+      aspect-ratio: 1/1;
+      object-fit: cover;
+      border-radius: 1rem;
+      border: 2px solid #fff;
+      box-shadow: 0 8px 32px #23233622;
+      background: #232336;
+      transition: transform 0.15s;
+    }
+    .gallery-thumb:hover {
+      transform: scale(1.03) rotate(-2deg);
+      border-color: #ff85b2;
+    }
+    .gallery-meta {
+      font-size: 0.93rem;
+      color: #ff85b2;
+      margin-top: 0.1rem;
+      font-weight: 600;
+      letter-spacing: .01em;
+    }
+    .gallery-actions button {
+      background: #18181b;
+      color: #ff85b2;
+      font-weight: 700;
+      border-radius: 7px;
+      padding: 7px 18px;
+      margin-right: 6px;
+      border: 1px solid #2e2e38;
+      transition: background .2s, color .2s;
+    }
+    .gallery-actions button:last-child { margin-right: 0; }
+    .gallery-actions button:hover {
+      background: #232336;
+      color: #fff;
+      border-color: #ff85b2;
+    }
+    .upload-area {
+      border: 2px dashed #ff85b2;
+      border-radius: 1.5rem;
+      background: #fff0fb;
+      transition: border-color 0.2s;
+    }
+    .upload-area.dragover {
+      border-color: #a78bfa;
+      background: #f3e8ff;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col transition-colors duration-500 text-[#f6f6f6] bg-[#18181b]">
+
+<!-- Loading overlay -->
+<div id="loading-overlay">
+  <div id="lottie-loading" class="w-24 h-24"></div>
+</div>
+
+<!-- Header -->
+<header class="w-full bg-[#18181b] shadow-lg px-4 md:px-12 py-7 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+  <div class="flex items-center gap-4">
+    <!-- BOTÃO DE VOLTAR -->
+    <a href="/produtos" title="Voltar para Produtos"
+      class="bg-[#232336] hover:bg-pink-500/70 text-pink-200 hover:text-white rounded-full p-2 shadow transition mr-2 flex items-center">
+      <i data-lucide="arrow-left" class="w-6 h-6"></i>
+    </a>
+    <img src="{{ url_for('static', filename=product['imagem'].replace('static/', '')) }}" alt="Produto" class="w-16 h-16 rounded-xl border-4 border-pink-400/30 shadow-lg object-cover">
+    <div>
+      <h1 class="text-2xl font-bold text-white flex items-center gap-2">{{ product['nome'] }}</h1>
+      <p class="text-pink-100 text-sm mt-1">{{ product['descricao'] }}</p>
+      <div class="flex items-center gap-3 mt-2">
+        <span class="text-green-400 font-bold text-lg">R$ {{ product['preco'] }}</span>
+        <span class="px-3 py-1 rounded-full bg-pink-400/10 text-pink-400 text-xs font-bold">PAINEL DO CRIADOR</span>
+      </div>
+    </div>
+  </div>
+  <div class="flex gap-3">
+    <a href="{{ product['url_checkout'] }}" target="_blank" class="bg-blue-500 text-white px-5 py-2 rounded-2xl font-semibold hover:bg-blue-600 transition flex items-center gap-2 text-sm">
+      <i data-lucide="external-link" class="w-4 h-4"></i> Ver Checkout
+    </a>
+    <a href="{{ product['url_flow'] }}" target="_blank" class="bg-fuchsia-500 text-white px-5 py-2 rounded-2xl font-semibold hover:bg-fuchsia-600 transition flex items-center gap-2 text-sm">
+      <i data-lucide="zap" class="w-4 h-4"></i> Funil de Vendas
+    </a>
+    <button onclick="openUpload()" class="bg-gradient-to-tr from-pink-500 to-fuchsia-500 text-white font-bold px-5 py-2 rounded-2xl hover:from-pink-600 hover:to-fuchsia-600 transition shadow flex items-center gap-2 text-sm">
+      <i data-lucide="upload-cloud" class="w-5 h-5"></i> Adicionar Conteúdo
+    </button>
+  </div>
+</header>
+
+<main class="flex-1 w-full max-w-[1300px] mx-auto px-4 md:px-12 py-8">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <h2 class="text-xl md:text-2xl font-bold text-[#18181b] dark:text-pink-200 flex items-center gap-2 mb-2">
+        <i data-lucide="image" class="w-6 h-6 text-pink-400"></i>
+        Gerencie seus Conteúdos
+      </h2>
+      <p class="text-base text-gray-500 dark:text-pink-100 mt-1">Faça upload, edite e exclua fotos e vídeos premium do produto.</p>
+    </div>
+    <div class="flex gap-2 mt-2 md:mt-0">
+      <button onclick="openTab('all')" id="tabAll" class="px-4 py-2 rounded-xl tab-active flex items-center gap-1 text-sm">
+        <i data-lucide="gallery-horizontal-end" class="w-5 h-5"></i> Todos
+      </button>
+      <button onclick="openTab('fotos')" id="tabFotos" class="px-4 py-2 rounded-xl tab-inactive flex items-center gap-1 text-sm">
+        <i data-lucide="image" class="w-5 h-5"></i> Fotos
+      </button>
+      <button onclick="openTab('videos')" id="tabVideos" class="px-4 py-2 rounded-xl tab-inactive flex items-center gap-1 text-sm">
+        <i data-lucide="film" class="w-5 h-5"></i> Vídeos
+      </button>
+      <button onclick="loadContents()" id="refreshBtn" class="ml-3 px-4 py-2 rounded-xl bg-[#232336] text-pink-200 font-bold flex items-center gap-2 shadow hover:bg-[#282836] transition text-sm border border-pink-900/20">
+        <i data-lucide="refresh-ccw" class="w-5 h-5"></i> Atualizar
+      </button>
+    </div>
+  </div>
+
+  <!-- Galeria -->
+  <div class="gallery-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-7 mt-6" id="galleryGrid">
+    <!-- Conteúdos dinâmicos aqui -->
+  </div>
+</main>
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 hidden">
+  <div class="bg-white dark:bg-[#181824] rounded-2xl shadow-2xl p-8 w-full max-w-md relative">
+    <button onclick="closeUpload()" class="absolute top-4 right-4 text-gray-400 hover:text-pink-400 transition">
+      <i data-lucide="x" class="w-7 h-7"></i>
+    </button>
+    <div class="flex flex-col items-center mb-4">
+      <i data-lucide="upload-cloud" class="w-12 h-12 text-pink-400"></i>
+      <h2 class="text-xl font-bold text-pink-600 mt-2 mb-1">Adicionar Conteúdo</h2>
+      <p class="text-gray-500 dark:text-pink-100 text-center text-sm">Arraste arquivos ou clique para selecionar fotos e vídeos.</p>
+    </div>
+    <!-- MODAL ATUALIZADO: campos escuros e contraste correto -->
+    <form id="uploadForm" enctype="multipart/form-data" class="flex flex-col gap-4" autocomplete="off">
+      <input type="text" name="nome"
+        placeholder="Título do conteúdo"
+        class="rounded-xl border border-pink-400 focus:ring-pink-500 focus:border-pink-500 px-4 py-2 bg-[#232336] text-pink-100 placeholder:text-pink-200 text-sm"
+        style="color:#f6f6f6;"
+        required>
+      <div id="dragArea"
+        class="upload-area flex flex-col items-center justify-center px-3 py-12 cursor-pointer transition bg-[#181824] border-pink-400"
+        style="background:#181824; border-color:#a78bfa;">
+        <i data-lucide="file-plus" class="w-10 h-10 text-pink-400 mb-3"></i>
+        <span class="font-bold text-pink-300 mb-1">Arraste aqui ou clique para selecionar</span>
+        <input type="file" name="file" id="fileInput" accept="image/*,video/*" class="hidden">
+        <span id="fileName" class="text-sm text-pink-200 mt-2"></span>
+      </div>
+      <button type="submit" class="bg-gradient-to-tr from-pink-500 to-fuchsia-500 text-white px-4 py-2 rounded-xl font-bold hover:from-pink-600 hover:to-fuchsia-600 transition shadow flex items-center gap-2 justify-center">
+        <i data-lucide="cloud-upload" class="w-5 h-5"></i> Enviar Conteúdo
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-pink-500 text-white text-sm rounded-full shadow-lg z-[6000]"></div>
+
+<script>
+const produtoId = "{{ product.uuid }}";
+let contents = [];
+let activeTab = 'all';
+
+document.addEventListener('DOMContentLoaded', function() {
+  lottie.loadAnimation({
+    container: document.getElementById('lottie-loading'),
+    renderer: 'svg',
+    loop: true,
+    autoplay: true,
+    path: 'https://assets3.lottiefiles.com/private_files/lf30_oqpbtola.json'
+  });
+  setTimeout(() => {
+    document.getElementById('loading-overlay').classList.add('loaded');
+  }, 900);
+
+  lucide.createIcons();
+  loadContents();
+  setupUploadDrag();
+});
+
+function openTab(tab) {
+  activeTab = tab;
+  document.getElementById('tabAll').className = tab === 'all' ? 'px-4 py-2 rounded-xl tab-active flex items-center gap-1 text-sm' : 'px-4 py-2 rounded-xl tab-inactive flex items-center gap-1 text-sm';
+  document.getElementById('tabFotos').className = tab === 'fotos' ? 'px-4 py-2 rounded-xl tab-active flex items-center gap-1 text-sm' : 'px-4 py-2 rounded-xl tab-inactive flex items-center gap-1 text-sm';
+  document.getElementById('tabVideos').className = tab === 'videos' ? 'px-4 py-2 rounded-xl tab-active flex items-center gap-1 text-sm' : 'px-4 py-2 rounded-xl tab-inactive flex items-center gap-1 text-sm';
+  renderContents();
+}
+
+function openUpload() {
+  document.getElementById('uploadModal').classList.remove('hidden');
+}
+function closeUpload() {
+  document.getElementById('uploadModal').classList.add('hidden');
+  document.getElementById('uploadForm').reset();
+  document.getElementById('fileName').textContent = '';
+}
+
+function setupUploadDrag() {
+  const dragArea = document.getElementById('dragArea');
+  const fileInput = document.getElementById('fileInput');
+  dragArea.addEventListener('click', () => fileInput.click());
+  dragArea.addEventListener('dragover', (e) => { e.preventDefault(); dragArea.classList.add('dragover'); });
+  dragArea.addEventListener('dragleave', (e) => { e.preventDefault(); dragArea.classList.remove('dragover'); });
+  dragArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dragArea.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+      fileInput.files = e.dataTransfer.files;
+      document.getElementById('fileName').textContent = e.dataTransfer.files[0].name;
+    }
+  });
+  fileInput.addEventListener('change', function() {
+    if (this.files && this.files[0]) {
+      document.getElementById('fileName').textContent = this.files[0].name;
+    }
+  });
+}
+
+async function loadContents() {
+  try {
+    const response = await fetch("/api/get_content", {
+      method: "GET"
+    });
+    const data = await response.json();
+    if (response.ok) {
+      contents = data;
+      renderContents();
+    } else {
+      showToast("Erro ao buscar conteúdos: " + data.error);
+    }
+  } catch (error) {
+    showToast("Erro ao carregar conteúdos.");
+  }
+}
+
+function renderContents() {
+  const grid = document.getElementById("galleryGrid");
+  grid.innerHTML = "";
+  let filtered = contents.filter(content => content.produto_uuid === produtoId);
+  if (activeTab === "fotos") {
+    filtered = filtered.filter(content => /\.(jpg|jpeg|png|gif|webp)$/i.test(content.conteudo || ''));
+  }
+  if (activeTab === "videos") {
+    filtered = filtered.filter(content => /\.(mp4|webm|ogg)$/i.test(content.conteudo || ''));
+  }
+  if (!filtered.length) {
+    grid.innerHTML =
+      `<div class="col-span-full flex flex-col items-center justify-center text-center py-16 text-pink-400">
+        <i data-lucide="image-off" class="w-16 h-16 mb-4"></i>
+        <span class="text-xl font-bold">Nenhum conteúdo encontrado.</span>
+        <span class="text-base mt-1">Clique em <b>Adicionar Conteúdo</b> para começar!</span>
+      </div>`;
+    lucide.createIcons();
+    return;
+  }
+  filtered.forEach((content, index) => {
+    const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(content.conteudo || '');
+    const isVideo = /\.(mp4|webm|ogg)$/i.test(content.conteudo || '');
+    const card = document.createElement("div");
+    card.className = "content-card bg-white/90 dark:bg-[#181824] rounded-2xl p-4 shadow flex flex-col gap-3 relative border border-[#232336] transition";
+    card.style.maxWidth = '340px';
+    card.style.margin = '0 auto';
+
+    if (isImage) {
+      card.innerHTML += `<div class="w-full h-48 mb-2 flex items-center justify-center">
+        <img src="${content.conteudo}" alt="${content.nome}" class="gallery-thumb w-full h-full object-cover" loading="lazy">
+      </div>`;
+    } else if (isVideo) {
+      card.innerHTML += `<div class="w-full h-48 mb-2 flex items-center justify-center">
+        <video src="${content.conteudo}" controls class="gallery-thumb w-full h-full object-cover"></video>
+      </div>`;
+    } else {
+      card.innerHTML += `<div class="w-full h-48 mb-2 flex items-center justify-center text-gray-400">
+        <i data-lucide="alert-octagon" class="w-11 h-11"></i>
+      </div>`;
+    }
+    card.innerHTML += `
+      <div class="gallery-meta flex items-center gap-2 mb-1">
+        <i data-lucide="${isImage ? 'image' : isVideo ? 'film' : 'file'}" class="w-4 h-4"></i>
+        <span>${content.nome}</span>
+        <span class="ml-auto text-xs text-gray-400">${content.data_envio ? content.data_envio.substring(0, 16).replace('T', ' ') : ''}</span>
+      </div>
+      <div class="gallery-actions mt-2 flex gap-2">
+        <button onclick="editContent(${index})"><i data-lucide='edit-3' class="w-4 h-4"></i> Editar</button>
+        <button onclick="deleteContent(${index})"><i data-lucide='trash-2' class="w-4 h-4"></i> Excluir</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+  lucide.createIcons();
+}
+
+document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
+  const form = document.getElementById('uploadForm');
+  const formData = new FormData(form);
+  formData.append("produto_id", produtoId);
+  const file = form.file.files[0];
+  if (!file || !/^image\/|^video\//.test(file.type)) {
+    showToast("Apenas fotos ou vídeos são aceitos!");
+    return;
+  }
+  try {
+    const response = await fetch("/api/add_content_produto", {
+      method: "POST",
+      body: formData
+    });
+    const data = await response.json();
+    if (response.ok) {
+      showToast("Conteúdo enviado com sucesso!");
+      closeUpload();
+      loadContents(); // Atualiza lista automaticamente
+    } else {
+      showToast("Erro ao enviar: " + data.error);
+    }
+  } catch (err) {
+    showToast("Erro interno ao enviar conteúdo.");
+  }
+});
+
+function editContent(index) {
+  const content = contents[index];
+  const novoNome = prompt("Editar título do conteúdo:", content.nome);
+  if (novoNome && novoNome !== content.nome) {
+    fetch('/api/editar_content_produto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: content.id, nome: novoNome })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        showToast('Conteúdo editado!');
+        content.nome = novoNome;
+        renderContents();
+      }
+    })
+    .catch(err => showToast('Erro ao editar conteúdo!'));
+  }
+}
+
+function deleteContent(index) {
+  const content = contents[index];
+  if (confirm("Tem certeza que deseja excluir este conteúdo?")) {
+    fetch('/api/excluir_content_produto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: content.id })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        showToast('Conteúdo excluído!');
+        contents.splice(index, 1);
+        renderContents();
+      }
+    })
+    .catch(err => showToast('Erro ao excluir conteúdo!'));
+  }
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('active');
+  setTimeout(() => {
+    toast.classList.remove('active');
+  }, 2200);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afiliados</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary-color: #ff007f;
+            --secondary-color: #1a1a1a; /* Sidebar quase preta */
+            --background-color: #ffffff; /* Fundo principal branco */
+            --card-color: #f7f7f7; /* Fundo claro para os cards */
+            --text-color: #333333; /* Texto em cinza escuro para contraste */
+            --hover-color: rgba(255, 0, 127, 0.2); /* Cor de hover nos itens */
+            --border-color: #dddddd; /* Bordas mais suaves */
+        }
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        .sidebar {
+            width: 25%;
+            min-width: 250px;
+            max-width: 320px;
+            background-color: var(--secondary-color);
+            color: #ffffff; /* Texto branco para contraste */
+        }
+        .menu-item:hover {
+            background: var(--hover-color);
+        }
+        .card {
+            background: var(--card-color);
+            color: var(--text-color);
+        }
+        .todo-item {
+            background: var(--card-color);
+            color: var(--text-color);
+        }
+        .todo-item.completed span {
+            text-decoration: line-through;
+            color: #999999; /* Cinza claro para tarefas concluídas */
+        }
+        .todo-checkbox {
+            accent-color: var(--primary-color);
+        }
+        .add-task-input {
+            background: var(--card-color);
+            color: var(--text-color);
+            border: 1px solid var(--primary-color);
+        }
+        .add-task-button, .remove-task-button {
+            background: var(--secondary-color);
+            color: #ffffff; /* Botões com texto branco */
+        }
+        .remove-task-button {
+            font-size: 12px;
+        }
+        .category-label {
+            background: var(--primary-color);
+            color: var(--secondary-color); /* Texto preto no rótulo */
+        }
+        .priority-label {
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 5px;
+        }
+        .priority-high {
+            background: red;
+            color: white;
+        }
+        .priority-medium {
+            background: orange;
+            color: white.
+        }
+        .priority-low {
+            background: green;
+            color: white;
+        }
+        .task-section {
+            margin-top: 2rem;
+        }
+        .fluxograma-container {
+            display: flex;
+            align-items: center;
+            background: #28a745;
+            padding: 5px;
+            border-radius: 8px;
+            transition: width 0.3s ease-in-out;
+            overflow: hidden;
+            width: 38px;
+        }
+        .fluxograma-container:hover {
+            width: 163px;
+        }
+        .fluxograma-text {
+            opacity: 0;
+            white-space: nowrap;
+            transition: opacity 0.3s;
+        }
+        .fluxograma-container:hover .fluxograma-text {
+            opacity: 1;
+            margin-left: 8px;
+        }
+</style>
+</head>
+<body>
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="sidebar text-white p-5 flex flex-col justify-between rounded-r-2xl">
+            <div>
+                <h1 class="text-2xl font-bold"><span class="text-white">Modeli</span><span class="text-pink-500">fy</span></h1>
+                <hr class="border-gray-600 my-4">
+                <ul class="space-y-3">
+                    <li class="p-3 rounded cursor-pointer menu-item" onclick="window.location.href='/dashboard'">Painel</li>
+                    <li class="p-3 rounded cursor-pointer menu-item" onclick="window.location.href='/vendas'">Vendas</li>
+                    <li class="p-3 rounded cursor-pointer menu-item" onclick="window.location.href='/aff'">Afiliados</li>
+                    <li class="p-3 rounded cursor-pointer menu-item" onclick="window.location.href='/produtos'">Produtos</li>
+                    <li class="p-3 rounded cursor-pointer menu-item" onclick="window.location.href='/aulas'">Aulas Gratuitas</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-5">
+            <div class="flex justify-between items-center mb-5">
+                <div class="flex items-center">
+                    <img src="{{ user['picture'] }}" alt="User" class="w-12 h-12 rounded-full border-2 border-pink-500">
+                    <div class="ml-3">
+                        <p class="font-semibold">{{ user['name'] }}</p>
+                        <p class="text-sm text-gray-400">{{ user['email'] }}</p>
+                    </div>
+                <div class="fluxograma-container ml-3">
+                        <img src="https://i.ibb.co/TDYPK8QJ/fluxograma-icon-removebg-preview.png" alt="Fluxograma" onclick="window.location.href='/flow'" class="w-6 h-6">
+                        <span class="fluxograma-text">Fluxos de Venda</span>
+                </div>
+                <div class="bot-icon-container ml-4 flex items-center">
+                        <img src="/static/img/icons/bots_icon.png" alt="Bots" class="w-19 h-9 rounded-lg">
+                </div>
+                </div>
+                <a href="{{ url_for('logout') }}" class="text-white text-2xl">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+
+            <!-- Affiliates Data -->
+            <div class="container">
+                <h1 class="text-2xl font-bold mb-5">Painel de Afiliados</h1>
+                <div class="card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Afiliado</th>
+                                <th>Produto Promovido</th>
+                                <th>Comissão Gerada</th>
+                                <th>Total de Vendas</th>
+                            </tr>
+                        </thead>
+                        <tbody id="affiliatesData">
+                            <!-- Dados de exemplo inseridos dinamicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados simulados de afiliados
+        const affiliates = [
+            { nome: 'João Silva', produto: 'Curso de Programação', comissao: 300.00, vendas: 10 },
+            { nome: 'Maria Oliveira', produto: 'E-book de Finanças', comissao: 150.00, vendas: 5 },
+            { nome: 'Carlos Santos', produto: 'Curso de Marketing', comissao: 450.00, vendas: 15 },
+            { nome: 'Ana Costa', produto: 'Ferramenta de Design', comissao: 200.00, vendas: 8 }
+        ];
+
+        // Função para renderizar os dados na tabela
+        function renderAffiliatesData() {
+            const affiliatesDataContainer = document.getElementById('affiliatesData');
+            affiliatesDataContainer.innerHTML = ''; // Limpa o conteúdo existente
+
+            affiliates.forEach(affiliate => {
+                const row = `
+                    <tr>
+                        <td>${affiliate.nome}</td>
+                        <td>${affiliate.produto}</td>
+                        <td>R$ ${affiliate.comissao.toFixed(2)}</td>
+                        <td>${affiliate.vendas}</td>
+                    </tr>
+                `;
+
+                affiliatesDataContainer.innerHTML += row;
+            });
+        }
+
+        // Renderizar os dados na inicialização
+        renderAffiliatesData();
+    </script>
+</body>
+</html>

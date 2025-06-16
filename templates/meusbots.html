@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Bots | Modelify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <style>
+        html, body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #18181b 0%, #23272f 100%);
+        }
+        .animate-fade-in {
+            animation: fadeIn .9s cubic-bezier(.4,2,.3,1) both;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px) scale(.97);}
+            to { opacity: 1; transform: translateY(0) scale(1);}
+        }
+        .animate-pop {
+            animation: pop .7s cubic-bezier(.55,0,.1,1) both;
+        }
+        @keyframes pop {
+            0% { transform: scale(.8); opacity:0; }
+            60% { transform: scale(1.05);}
+            100% { transform: scale(1); opacity:1; }
+        }
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        @keyframes floating {
+            0%,100% {transform: translateY(0);}
+            50% {transform: translateY(-12px);}
+        }
+        .shine {
+            background: linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0.18) 50%,rgba(255,255,255,0) 100%);
+            background-size: 200% 100%;
+            animation: shine 2.2s linear infinite;
+        }
+        @keyframes shine {
+            0% {background-position: 100% 0;}
+            100% {background-position: -100% 0;}
+        }
+        .badge {
+            background: linear-gradient(85deg,#ff85b2 10%,#a78bfa 90%);
+            color: #fff;
+            font-weight: 600;
+            padding: .15rem .7rem;
+            border-radius: 1rem;
+            font-size: .8rem;
+            box-shadow: 0 2px 8px #ff85b255;
+            letter-spacing: .02em;
+        }
+        .glass {
+            background: linear-gradient(100deg,rgba(255,255,255,0.13) 0%,rgba(255,255,255,0.04) 100%);
+            backdrop-filter: blur(6px);
+        }
+        .gradient-border {
+            border: 1.5px solid transparent;
+            border-radius: 1.2rem;
+            background: linear-gradient(#18181b,#18181b) padding-box, linear-gradient(90deg,#ff85b2,#a78bfa,#50fa7b) border-box;
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            font-weight: 700;
+        }
+        /* Sidebar Premium Flutuante */
+        .premium-sidebar {
+          position: fixed;
+          top: 2.5vh;
+          left: 2vw;
+          height: 95vh;
+          width: 4.5rem;
+          z-index: 40;
+          background: linear-gradient(120deg, #18181b 85%, #23272f 120%);
+          border-radius: 2.5rem;
+          box-shadow:
+            0 2px 16px 0 #9b6cf32a,
+            0 2px 8px 0 #0005,
+            0 0 0 1.5px #26263a inset;
+          overflow: hidden;
+          border: 1.5px solid #26263a;
+          transition: width 0.33s cubic-bezier(.4,2,.3,1), box-shadow 0.3s;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          padding: 0.5rem 0.2rem;
+        }
+        .premium-sidebar.expanded {
+          width: 17rem;
+          box-shadow: 0 16px 54px 0 #a78bfa40, 0 1.5px 8px #ff85b240;
+        }
+        .premium-sidebar .sidebar-label {
+          opacity: 0;
+          transition: opacity .2s;
+          white-space: nowrap;
+        }
+        .premium-sidebar.expanded .sidebar-label {
+          opacity: 1;
+        }
+        .premium-sidebar .sidebar-link {
+          justify-content: center;
+          transition: background 0.2s, color 0.2s, justify-content 0.3s;
+        }
+        .premium-sidebar.expanded .sidebar-link {
+          justify-content: flex-start;
+        }
+        .premium-sidebar .sidebar-link .sidebar-label {
+          display: none;
+        }
+        .premium-sidebar.expanded .sidebar-link .sidebar-label {
+          display: inline;
+        }
+        .premium-sidebar:hover,
+        .premium-sidebar:focus-within {
+          width: 17rem !important;
+        }
+        .premium-sidebar:hover .sidebar-label,
+        .premium-sidebar:focus-within .sidebar-label {
+          opacity: 1 !important;
+          display: inline !important;
+        }
+        .premium-sidebar .brand {
+          opacity: 0;
+          transition: opacity 0.2s;
+          pointer-events: none;
+          height: 0;
+        }
+        .premium-sidebar.expanded .brand,
+        .premium-sidebar:hover .brand,
+        .premium-sidebar:focus-within .brand {
+          opacity: 1;
+          pointer-events: auto;
+          height: auto;
+        }
+        @media (max-width: 900px) {
+          .premium-sidebar, .premium-sidebar.expanded { left: 1vw; width: 3.5rem; }
+          .premium-sidebar.expanded { width: 99vw !important; border-radius: 2.5rem; }
+        }
+        .dashboard-card-wrapper {
+            border-radius: 1.5rem;
+            box-shadow: 0 6px 40px 0 #00000022, 0 2px 8px #a78bfa11;
+            background: rgba(25, 25, 36, 0.92);
+            padding: 1.2rem 1rem 2.5rem 1rem;
+            margin-top: 0.8rem;
+            margin-bottom: 0.5rem;
+            min-height: 90vh;
+            transition: margin-left 0.33s cubic-bezier(.4,2,.3,1), width 0.33s cubic-bezier(.4,2,.3,1);
+            max-width: 92vw;
+            width: 100%;
+        }
+        @media (min-width: 1700px) {
+            .dashboard-card-wrapper {
+                max-width: 1700px;
+            }
+        }
+        @media (max-width: 900px) {
+            .dashboard-card-wrapper {
+                border-radius: 1rem;
+                padding: 1rem 0.5rem;
+                max-width: 99vw;
+            }
+        }
+        .sidebar-link .sidebar-label .pulse {
+          animation: none !important;
+        }
+        .sidebar-link:hover, .sidebar-link:focus {
+          box-shadow: 0 2px 16px 0 #a78bfa15, 0 2px 8px 0 #0005;
+          transform: scale(1.03);
+        }
+        .pulse {
+            position: relative;
+            width: 16px;
+            height: 16px;
+        }
+        .pulse-dot {
+            position: absolute;
+            left: 0; top: 0;
+            width: 16px; height: 16px;
+            border-radius: 9999px;
+            background: #4ade80; /* green-400 */
+            animation: pulse-bot 1.2s infinite;
+            opacity: 0.7;
+        }
+        .pulse-center {
+            position: absolute;
+            left: 4px; top: 4px;
+            width: 8px; height: 8px;
+            border-radius: 9999px;
+            background: #22c55e; /* green-500 */
+            z-index: 1;
+        }
+        @keyframes pulse-bot {
+            0% { transform: scale(1); opacity: 0.7; }
+            70% { transform: scale(2); opacity: 0; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="min-h-screen transition-colors duration-500 text-[#18181b] dark:text-[#f6f6f6] bg-[#18181b]">
+
+<div class="flex h-screen overflow-hidden bg-gradient-to-br from-[#181824] via-[#181824] to-[#232336]" style="position:relative;z-index:1;">
+    <!-- Sidebar Premium Flutuante -->
+    <aside id="premiumSidebar" class="premium-sidebar group" tabindex="0">
+      <div>
+        <div class="brand flex items-center gap-2 mx-5 mt-8 mb-7">
+          <span class="text-2xl font-extrabold text-white">Modeli<span class="gradient-text">fy</span></span>
+        </div>
+        <ul class="flex flex-col gap-2">
+          <li>
+            <a href="/dashboard" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="layout-dashboard" class="w-6 h-6 text-pink-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Painel</span>
+            </a>
+          </li>
+          <li>
+            <a href="/vendas" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="shopping-bag" class="w-6 h-6 text-green-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Vendas</span>
+            </a>
+          </li>
+          <li>
+            <a href="/produtos" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="package" class="w-6 h-6 text-yellow-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Produtos</span>
+            </a>
+          </li>
+          <li>
+            <a href="/aulas" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="graduation-cap" class="w-6 h-6 text-fuchsia-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Aulas Gratuitas</span>
+            </a>
+          </li>
+          <li>
+            <a href="/saque" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl bg-[#262e2a] border border-green-400/30 hover:bg-green-400/10 hover:text-green-400 transition">
+              <span class="flex items-center justify-center rounded-xl bg-gradient-to-br from-green-400/80 to-emerald-600 w-9 h-9 shadow border border-green-400/40">
+                <i data-lucide="wallet" class="w-6 h-6 text-white"></i>
+              </span>
+              <span class="sidebar-label text-base font-semibold tracking-wide ml-1">Saque</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="mb-6 flex flex-col items-center gap-6">
+        <button id="theme-toggle" class="w-10 h-10 rounded-full bg-pink-500/20 hover:bg-pink-400/50 flex items-center justify-center transition">
+          <i data-lucide="moon" class="w-6 h-6 text-pink-400" id="moon-icon"></i>
+          <i data-lucide="sun" class="w-6 h-6 text-yellow-400 hidden" id="sun-icon"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="mainContent" class="flex-1 flex flex-col transition-all duration-300" style="margin-left:6.5rem;">
+      <div class="dashboard-card-wrapper max-w-[92vw] xl:max-w-[1700px] mx-auto">
+
+        <!-- ALERTA DE PRODUTO NÃO ENCONTRADO -->
+        {% if produto_nao_encontrado %}
+        <div class="flex flex-col items-center justify-center mt-12 mb-8 animate-fade-in">
+            <lottie-player src="https://assets2.lottiefiles.com/packages/lf20_qp1q7mct.json" background="transparent" speed="1" style="width:100px;height:100px;" loop autoplay></lottie-player>
+            <div class="mt-4 text-center">
+                <h2 class="text-2xl font-bold text-pink-400 mb-2">Produto não encontrado</h2>
+                <p class="text-pink-200 text-base mb-2">Este produto não existe ou não pertence à sua conta.<br>Verifique o link ou escolha um produto válido.</p>
+                <a href="/produtos" class="inline-block mt-2 px-6 py-2 rounded-xl bg-gradient-to-br from-pink-500 to-fuchsia-500 text-white font-bold shadow hover:scale-105 transition-all duration-300">
+                    Ver meus produtos
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        <!-- FIM DO ALERTA -->
+
+        <!-- BLOCO MAIS COMPACTO DE INFORMAÇÕES DO PRODUTO -->
+        {% if produto %}
+        <section class="mb-4 animate-fade-in">
+          <div class="relative flex flex-row items-center p-3 glass gradient-border shadow-xl"
+               style="border-radius: 1.2rem; min-height: 64px; gap: 14px; margin-bottom:0;">
+            <div class="flex-shrink-0 flex flex-col items-center justify-center">
+              <div class="w-9 h-9 rounded-xl shadow bg-gradient-to-br from-pink-500/90 to-fuchsia-500/80 flex items-center justify-center">
+                <i data-lucide="package" class="w-5 h-5 text-white"></i>
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex flex-wrap items-center gap-2 mb-0.5">
+                <span class="badge py-0 px-3 text-xs floating" style="box-shadow:none;">Produto Vinculado</span>
+                <span class="text-pink-300 text-xs font-bold tracking-tight" style="margin-left: 0.25rem;">{{ produto.nome }}</span>
+              </div>
+              <div class="flex flex-wrap items-center gap-2 text-xs text-pink-200/90 font-medium mb-0.5">
+                <span>#ID: {{ produto.id }}</span>
+                <span>UUID: {{ produto.uuid }}</span>
+                <span>Categoria: {{ produto.categoria or 'N/A' }}{% if not produto.categoria %}<i data-lucide="alert-triangle" class="inline w-3 h-3 text-yellow-400 ml-1 align-middle"></i>{% endif %}</span>
+              </div>
+              <div class="flex flex-wrap items-center gap-2 text-xs text-pink-100 font-semibold mb-0.5">
+                <span class="flex items-center gap-1"><i data-lucide="credit-card" class="w-4 h-4"></i> R$ {{ "%.2f"|format(produto.preco) }}</span>
+                {% if produto.url_checkout %}
+                <a href="{{ produto.url_checkout }}" target="_blank" class="ml-2 px-3 py-1 rounded bg-green-500/80 hover:bg-green-500/95 transition text-xs text-white font-bold flex items-center gap-1 shadow-sm">
+                  <i data-lucide="shopping-cart" class="w-4 h-4"></i> Checkout
+                </a>
+                {% endif %}
+              </div>
+              <div class="text-xs text-pink-200/80 truncate" style="max-width: 100%;">
+                {{ produto.descricao or 'Nenhuma descrição cadastrada para este produto.' }}
+              </div>
+            </div>
+            <!-- Lottie or image, small and right-aligned -->
+            <div class="hidden md:flex md:items-center md:justify-center md:ml-2">
+              {% if produto.imagem %}
+                <img src="{{ produto.imagem }}" alt="Imagem do produto" class="w-10 h-10 object-cover rounded-xl border-2 border-pink-200/60 shadow" />
+              {% else %}
+                <lottie-player src="https://assets2.lottiefiles.com/packages/lf20_rHshpK.json" background="transparent" speed="1" style="width:32px;height:32px;" loop autoplay></lottie-player>
+              {% endif %}
+            </div>
+            <div class="absolute right-2 bottom-0 opacity-75 pointer-events-none select-none">
+                <lottie-player src="https://assets7.lottiefiles.com/packages/lf20_1pxqjqps.json" background="transparent" speed="2"
+                    style="width:38px;height:38px;" loop autoplay></lottie-player>
+            </div>
+          </div>
+        </section>
+        {% endif %}
+        <!-- FIM BLOCO COMPACTO -->
+
+        <div class="flex items-center justify-between mb-6 mt-2">
+            <h2 class="text-xl md:text-2xl font-bold text-[#18181b] dark:text-pink-200 tracking-tight">Meus Bots</h2>
+            {% if produto %}
+            <a href="/criar_bot/{{ produto.uuid }}" class="flex items-center gap-2 px-5 py-2 rounded-2xl bg-gradient-to-br from-pink-500 to-fuchsia-500 text-white font-bold shadow hover:scale-105 hover:bg-pink-600 active:scale-95 transition-all duration-300">
+                <i data-lucide="plus-circle" class="w-5 h-5"></i> Novo Bot
+            </a>
+            {% endif %}
+        </div>
+        <div class="overflow-x-auto">
+        <table class="min-w-full rounded-3xl bg-white/90 dark:bg-[#181824] shadow-xl text-sm" id="bots-table">
+          <thead>
+            <tr class="bg-pink-50 dark:bg-[#232336] border-b border-pink-100 dark:border-pink-900 text-[#18181b] dark:text-pink-200">
+              <th class="px-5 py-4 text-left font-semibold">BOT</th>
+              <th class="px-5 py-4 text-left font-semibold">TOKEN</th>
+              <th class="px-5 py-4 text-left font-semibold">LINK</th>
+              <th class="px-5 py-4 text-center font-semibold">STATUS</th>
+              <th class="px-5 py-4 text-left font-semibold">CRIADO EM</th>
+              <th class="px-5 py-4 text-left font-semibold">PALAVRA-CHAVE</th>
+              <th class="px-5 py-4 text-left font-semibold">MENSAGEM</th>
+              <th class="px-5 py-4 text-center font-semibold">AÇÕES</th>
+            </tr>
+          </thead>
+          <tbody id="bots-tbody">
+            <tr id="bots-loading"><td colspan="8" class="py-10 text-center text-gray-400">Carregando bots...</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </main>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    lucide.createIcons();
+    // sidebar animation
+    const sidebar = document.getElementById('premiumSidebar');
+    const mainContent = document.getElementById('mainContent');
+    const dashboardCardWrapper = document.getElementById('dashboardCardWrapper');
+    const SIDEBAR_COLLAPSED = 4.5; // rem
+    const SIDEBAR_EXPANDED = 17;   // rem
+    function setMainMargin(isExpanded) {
+        let ml = isExpanded ? (SIDEBAR_EXPANDED + 2) : (SIDEBAR_COLLAPSED + 2);
+        mainContent.style.marginLeft = ml + 'rem';
+        if (dashboardCardWrapper) {
+            dashboardCardWrapper.style.marginLeft = isExpanded ? "1rem" : "0.25rem";
+            dashboardCardWrapper.style.width = isExpanded ? "calc(100% - 2rem)" : "100%";
+        }
+    }
+    setMainMargin(false);
+    sidebar.addEventListener('mouseenter', function() {
+        sidebar.classList.add('expanded');
+        setMainMargin(true);
+    });
+    sidebar.addEventListener('mouseleave', function() {
+        sidebar.classList.remove('expanded');
+        setMainMargin(false);
+    });
+
+    // Carregar bots via AJAX
+    fetch('/api/meus_bots')
+      .then(r => r.json())
+      .then(bots => {
+        const tbody = document.getElementById("bots-tbody");
+        tbody.innerHTML = "";
+        if(!bots.length) {
+          tbody.innerHTML = `<tr><td colspan="8" class="text-center text-gray-400 py-12">
+            Você ainda não criou nenhum bot.<br>
+            {% if produto %}
+            <a href="/criar_bot/{{ produto.uuid }}" class="inline-block mt-4 px-6 py-3 rounded-2xl bg-gradient-to-br from-pink-500 to-fuchsia-500 text-white font-bold shadow hover:scale-105 hover:bg-pink-600 active:scale-95 transition-all duration-300">
+              <i data-lucide="plus-circle" class="w-5 h-5"></i> Criar seu primeiro Bot
+            </a>
+            {% endif %}
+            </td></tr>`;
+          lucide.createIcons();
+          return;
+        }
+        bots.forEach(bot => {
+          tbody.innerHTML += `
+            <tr class="group border-b border-pink-50 dark:border-pink-900 hover:bg-pink-50 dark:hover:bg-[#232336] transition">
+              <td class="px-5 py-5 whitespace-nowrap">
+                <div class="flex items-center gap-3">
+                  ${bot.photo_filename
+                    ? `<img src="/static/${bot.photo_filename}" alt="${bot.bot_name}" class="w-11 h-11 rounded-full object-cover border-2 border-pink-400 shadow">`
+                    : `<div class="w-11 h-11 rounded-full bg-pink-100 flex items-center justify-center text-pink-400 text-xl border-2 border-pink-400 shadow">
+                        <i data-lucide="bot"></i>
+                      </div>`
+                  }
+                  <div>
+                    <div class="font-bold text-base text-[#18181b] dark:text-pink-100 truncate">${bot.bot_name}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-5 py-5 whitespace-nowrap text-xs text-gray-500 dark:text-pink-200">${bot.bot_token.slice(0,8)}...</td>
+              <td class="px-5 py-5 whitespace-nowrap">
+                <a href="https://web.telegram.org/a/#${bot.link_username}" target="_blank" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-pink-400/10 text-pink-500 text-xs font-bold hover:bg-pink-400/20 transition">
+                  <i data-lucide="send" class="w-4 h-4"></i> Chat Bot
+                </a>
+              </td>
+              <td class="px-5 py-5 text-center">
+                ${bot.ativo
+                  ? `<span class="inline-flex items-center px-1">
+                        <span class="pulse"><span class="pulse-dot"></span><span class="pulse-center"></span></span>
+                        <span class="ml-2 font-semibold text-green-500">Ativo</span>
+                     </span>`
+                  : `<span class="inline-flex items-center px-1">
+                        <span class="w-4 h-4 rounded-full bg-gray-400 border-[3px] border-white"></span>
+                        <span class="ml-2 font-semibold text-gray-400">Pausado</span>
+                     </span>`
+                }
+              </td>
+              <td class="px-5 py-5 whitespace-nowrap text-xs text-gray-500 dark:text-pink-200">${bot.created_at ? bot.created_at.slice(0,10) : ''}</td>
+              <td class="px-5 py-5 whitespace-nowrap text-xs text-gray-500 dark:text-pink-200">${bot.confirmation_keyword || ''}</td>
+              <td class="px-5 py-5 whitespace-nowrap text-xs text-gray-500 dark:text-pink-200">${bot.confirmation_message ? (bot.confirmation_message.length > 18 ? bot.confirmation_message.slice(0,18) + '...' : bot.confirmation_message) : ''}</td>
+              <td class="px-5 py-5 text-center">
+                <div class="flex gap-2 justify-center">
+                  <a href="/editar_bot/${bot.id}" class="px-4 py-2 rounded-2xl bg-pink-100 dark:bg-pink-900 text-pink-500 dark:text-pink-200 font-semibold shadow hover:bg-pink-400 hover:text-white transition-all duration-300 flex items-center gap-2 text-xs">
+                    <i data-lucide="edit-3" class="w-4 h-4"></i> Editar
+                  </a>
+                  ${bot.ativo
+                    ? `<form method="POST" action="/pausar_bot/${bot.id}">
+                        <button type="submit" class="px-4 py-2 rounded-2xl bg-yellow-100 dark:bg-yellow-900 text-yellow-500 font-semibold shadow hover:bg-yellow-400 hover:text-white transition-all duration-300 flex items-center gap-2 text-xs">
+                          <i data-lucide="pause-circle" class="w-4 h-4"></i> Pausar
+                        </button>
+                      </form>`
+                    : `<form method="POST" action="/ativar_bot/${bot.id}">
+                        <button type="submit" class="px-4 py-2 rounded-2xl bg-green-100 dark:bg-green-900 text-green-500 font-semibold shadow hover:bg-green-400 hover:text-white transition-all duration-300 flex items-center gap-2 text-xs">
+                          <i data-lucide="play-circle" class="w-4 h-4"></i> Ativar
+                        </button>
+                      </form>`
+                  }
+                  <form method="POST" action="/excluir_bot/${bot.id}">
+                    <button type="submit" class="p-2 rounded-full bg-pink-50 dark:bg-pink-900 text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-800 transition" title="Excluir bot">
+                      <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+        lucide.createIcons();
+      });
+});
+</script>
+</body>
+</html>

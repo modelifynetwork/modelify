@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Cliente - Modelify</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 0% 100%, #1a0e24 0%, #0f0f11 70%) no-repeat fixed;
+      overflow-x: hidden;
+      font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+    }
+    .gradient-text {
+      background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+      font-weight: 700;
+    }
+    .brand-shadow {
+      text-shadow: 0 4px 48px #ff85b233, 0 1.5px 0 #ff85b288;
+    }
+    .bg-glass {
+      background: rgba(32, 8, 40, 0.48);
+      border-radius: 1.5rem;
+      border: 1.5px solid #312034;
+    }
+    .header-blur {
+      backdrop-filter: blur(24px) saturate(140%);
+      background: rgba(18, 18, 20, 0.96);
+      border-bottom: 2px solid #25112e;
+      box-shadow: 0 8px 48px #ff85b233;
+    }
+    .card-content {
+      background: rgba(25, 5, 30, 0.65);
+      border-radius: 1.2rem;
+      border: 1.5px solid #312034;
+      box-shadow: 0 6px 24px #a78bfa22;
+      transition: transform 0.19s;
+      color: #f3f3fa;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-content:hover {
+      transform: scale(1.025) translateY(-2px);
+      box-shadow: 0 12px 40px #ff85b255;
+    }
+    .gradient-badge {
+      background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+      color: #18181b;
+      font-size: 0.92em;
+      font-weight: 700;
+      padding: 0.21em 1.1em;
+      border-radius: 999px;
+      letter-spacing: 0.02em;
+      border: none;
+      margin-bottom: 1.2rem;
+      display: inline-block;
+      box-shadow: 0 1.5px 10px #a78bfa33;
+      opacity: 0.93;
+    }
+    @media (max-width: 900px) {
+      .painel-container {
+        padding: 0.5rem !important;
+      }
+      .header-blur {
+        padding: 1.5rem 1.2rem !important;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .brand-shadow {
+        font-size: 2rem !important;
+      }
+    }
+    .particles {
+      position: fixed;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      pointer-events: none; z-index: 1;
+    }
+    .particle {
+      position: absolute;
+      will-change: transform, opacity;
+      border-radius: 50%;
+      opacity: 0.54;
+      animation: float 10s linear infinite;
+      filter: blur(1.3px);
+      pointer-events: none;
+    }
+    @keyframes float {
+      0% { transform: translateY(0) scale(1);}
+      50% { transform: translateY(-90px) scale(1.12);}
+      100% { transform: translateY(0) scale(1);}
+    }
+  </style>
+</head>
+<body>
+  <!-- Partículas animadas -->
+  <div class="particles" id="particles"></div>
+  <div class="absolute inset-0 pointer-events-none z-0"
+       style="background: radial-gradient(ellipse 50% 80% at 0% 100%, #a78bfa22 0%, #0f0f11 100%);"></div>
+
+  <!-- Header -->
+  <header class="header-blur flex items-center justify-between px-10 py-6 z-10">
+    <span class="text-3xl font-extrabold brand-shadow text-white">Modeli<span class="gradient-text">fy</span></span>
+    <div>
+      <span class="gradient-badge">Painel do Cliente</span>
+    </div>
+  </header>
+
+  <!-- Painel Principal -->
+  <main class="painel-container max-w-5xl mx-auto mt-10 px-4 pb-10 z-10 relative">
+    <h1 class="text-2xl font-bold text-white mb-5 brand-shadow">Bem-vindo(a) ao seu Painel!</h1>
+    <p class="text-lg text-gray-300 mb-6">Abaixo estão os conteúdos exclusivos dos seus produtos comprados. Aproveite!</p>
+{% if produtos %}
+  {% for produto in produtos %}
+    <section class="mb-14">
+      <div class="flex items-center gap-4 mb-3">
+        <img src="{{ produto['imagem'] }}" class="w-16 h-16 rounded-xl border border-pink-400/50 object-cover" alt="Produto">
+        <div>
+          <div class="font-bold text-xl gradient-text">{{ produto['nome'] }}</div>
+          <div class="text-gray-400">{{ produto['descricao'] }}</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-7 mt-6">
+        {% for content in conteudos %}
+          {% if content['produto_uuid'] == produto['uuid'] %}
+            <div class="card-content p-5 flex flex-col items-start group">
+              {% if content['conteudo'].endswith('.jpg') or content['conteudo'].endswith('.jpeg') or content['conteudo'].endswith('.png') or content['conteudo'].endswith('.webp') %}
+                <img src="{{ content['conteudo'] }}" alt="{{ content['nome'] }}" class="w-full rounded-lg mb-2 object-cover transition-all duration-300 ease-in-out max-h-[280px] group-[.expanded]:max-h-full">
+              {% elif content['conteudo'].endswith('.mp4') or content['conteudo'].endswith('.webm') or content['conteudo'].endswith('.ogg') %}
+                <video src="{{ content['conteudo'] }}" controls class="w-full rounded-lg mb-2 transition-all duration-300 ease-in-out max-h-[300px] group-[.expanded]:max-h-full"></video>
+              {% endif %}
+              <div class="mb-2 text-sm font-bold text-pink-400">Produto: {{ produto['nome'] }}</div>
+              <div class="text-lg text-white font-semibold mb-1">{{ content['nome'] }}</div>
+              <div class="text-xs text-pink-300 mt-1">{{ content['data_envio'] }}</div>
+              <button onclick="expandir(this)" class="mt-4 text-sm text-pink-400 hover:text-pink-300 transition">
+                Ver {{ content['conteudo'].endswith('.mp4') or content['conteudo'].endswith('.webm') or content['conteudo'].endswith('.ogg') and 'vídeo' or 'imagem' }} completa
+              </button>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </section>
+  {% endfor %}
+{% else %}
+  <div class="text-pink-400 text-lg mt-14 text-center">Nenhum conteúdo disponível para sua conta.</div>
+{% endif %}
+
+    <div id="semConteudo" class="text-center mt-16 text-gray-500 text-lg hidden">
+      Nenhum conteúdo encontrado para sua conta.<br>
+      Aguarde a liberação após a confirmação da sua compra!
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script>
+    function expandir(btn) {
+      const card = btn.closest('.card-content');
+      card.classList.toggle('group-[.expanded]');
+      card.classList.toggle('expanded');
+      btn.textContent = card.classList.contains('expanded') ? 'Recolher' : 'Ver conteúdo completa';
+    }
+
+    // Partículas animadas
+    function randomInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+    function createParticle() {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = randomInt(18, 38);
+      p.style.width = p.style.height = size + 'px';
+      p.style.left = randomInt(-10, 95) + 'vw';
+      p.style.top = randomInt(0, 95) + 'vh';
+      p.style.background = `radial-gradient(circle at 60% 40%, #ff85b2 0%, #a78bfa 90%)`;
+      p.style.opacity = Math.random() * 0.19 + 0.09;
+      p.style.animationDuration = randomInt(9, 16) + 's';
+      p.style.animationDelay = -randomInt(2, 16) + 's';
+      document.getElementById('particles').appendChild(p);
+    }
+    for (let i = 0; i < 16; i++) createParticle();
+  </script>
+</body>
+</html>

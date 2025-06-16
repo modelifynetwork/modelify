@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar - Modelify</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 0% 100%, #3a1b55 0%, #18181b 70%) no-repeat fixed;
+      overflow: hidden;
+    }
+    .gradient-text {
+      background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+      font-weight: 700;
+    }
+    .login-blur {
+      backdrop-filter: blur(28px) saturate(160%);
+      background: rgba(24, 24, 27, 0.92);
+      border: 2px solid #25112e;
+      box-shadow: 0 8px 48px #ff85b233, 0 2px 0 #ff85b288;
+    }
+    .brand-shadow {
+      text-shadow: 0 4px 48px #ff85b233, 0 1.5px 0 #ff85b288;
+    }
+    .login-btn-gradient {
+      background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+      color: #fff !important;
+      transition: .2s;
+      box-shadow: 0 4px 24px #ff85b244;
+    }
+    .login-btn-gradient:hover {
+      filter: brightness(1.07) saturate(1.1);
+      transform: translateY(-2px) scale(1.04) rotate(-2deg);
+      box-shadow: 0 6px 36px #ff85b266;
+    }
+    .particles {
+      position: fixed;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      pointer-events: none; z-index: 1;
+    }
+    .particle {
+      position: absolute;
+      will-change: transform, opacity;
+      border-radius: 50%;
+      opacity: 0.54;
+      animation: float 10s linear infinite;
+      filter: blur(1.3px);
+      pointer-events: none;
+    }
+    @keyframes float {
+      0% { transform: translateY(0) scale(1);}
+      50% { transform: translateY(-90px) scale(1.12);}
+      100% { transform: translateY(0) scale(1);}
+    }
+    .error {
+      color: #ff85b2;
+      text-align: center;
+      margin-top: 10px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    @media (max-width: 900px) {
+      .login-panel {
+        flex-direction: column;
+        min-height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Partículas animadas -->
+  <div class="particles" id="particles"></div>
+  <div class="absolute inset-0 pointer-events-none z-0" style="background: radial-gradient(ellipse 50% 80% at 0% 100%, #a78bfa44 0%, #18181b 90%);"></div>
+  <div class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-10 py-6">
+    <div class="flex items-center gap-3">
+      <span class="text-3xl font-extrabold brand-shadow text-white">Modeli<span class="gradient-text">fy</span></span>
+    </div>
+  </div>
+  <div class="flex login-panel z-10 relative max-w-4xl mx-auto mt-32 shadow-xl rounded-3xl login-blur overflow-hidden">
+    <!-- Login Area -->
+    <div class="flex-1 flex flex-col items-center justify-center px-6 pt-14 pb-12 bg-[#18181b]">
+      <h2 class="text-2xl sm:text-3xl font-bold text-white mb-2 mt-2 brand-shadow">
+        Acesse seu painel exclusivo
+      </h2>
+      <p class="text-base text-gray-400 mb-8 text-center max-w-md">
+        Digite seu <span class="gradient-text font-bold">E-mail</span> e a <span class="gradient-text font-bold">Chave de Acesso</span> enviada após o pagamento.
+      </p>
+      <form id="loginForm" autocomplete="off" class="w-full max-w-xs">
+        <div class="mb-5 relative">
+          <label for="email" class="block text-gray-300 font-semibold mb-2">E-mail</label>
+          <span class="absolute left-3 top-[49px] pointer-events-none opacity-85">
+            <svg width="20" height="20" fill="none" stroke="#a78bfa" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M22 6l-10 7L2 6"/></svg>
+          </span>
+          <input type="email" id="email" name="email" required autofocus
+                 class="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-[#25112e] bg-[#18181b] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-400 font-mono text-lg tracking-wider shadow transition"
+                 placeholder="seu@email.com">
+        </div>
+        <div class="mb-5 relative">
+          <label for="access_key" class="block text-gray-300 font-semibold mb-2">Chave de Acesso</label>
+          <span class="absolute left-3 top-[49px] pointer-events-none opacity-85">
+            <svg width="20" height="20" fill="none" stroke="#a78bfa" stroke-width="2" viewBox="0 0 24 24"><path d="M12 17v-7m0 0V7m0 3l3-3m-3 3l-3-3"/><circle cx="12" cy="12" r="10"/></svg>
+          </span>
+          <input type="text" id="access_key" name="access_key" required
+                 class="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-[#25112e] bg-[#18181b] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-400 font-mono text-lg tracking-wider shadow transition"
+                 placeholder="Sua chave de acesso">
+        </div>
+        <button type="submit" class="w-full login-btn-gradient px-6 py-3 text-lg rounded-lg font-bold shadow mt-2">
+          Entrar no Painel
+        </button>
+      </form>
+      <div class="error" id="errorMsg"></div>
+      <div class="mt-10 text-center text-xs text-gray-700 select-none opacity-75">
+        <span class="font-semibold text-pink-400">Priorizamos sua identidade e segurança.</span>
+        <br>
+        <span class="text-gray-400">
+          © <span id="ano"></span> Modelify - Todos os direitos reservados.
+        </span>
+      </div>
+      <!-- IA de boas-vindas animada -->
+      <div id="ai-welcome" class="mt-12 text-pink-400 text-base text-center font-semibold opacity-85 flex flex-col items-center justify-center select-none">
+        <svg class="w-10 h-10 mb-2 animate-bounce" fill="none" stroke="currentColor" stroke-width="2"
+          viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+          d="M12 20v-6m0 0V4m0 10l3-3m-3 3l-3-3"></path></svg>
+        <span id="ia-msg">Aquecendo as experiências sensuais...</span>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Partículas inteligentes exclusivas
+    function randomInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+    function createParticle() {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = randomInt(18, 38);
+      p.style.width = p.style.height = size + 'px';
+      p.style.left = randomInt(-10, 95) + 'vw';
+      p.style.top = randomInt(0, 95) + 'vh';
+      p.style.background = `radial-gradient(circle at 60% 40%, #ff85b2 0%, #a78bfa 90%)`;
+      p.style.opacity = Math.random() * 0.19 + 0.09;
+      p.style.animationDuration = randomInt(9, 16) + 's';
+      p.style.animationDelay = -randomInt(2, 16) + 's';
+      document.getElementById('particles').appendChild(p);
+    }
+    for (let i = 0; i < 18; i++) createParticle();
+
+    // IA animada de boas-vindas: frases rotativas sensuais e tecnológicas
+    const iaTips = [
+      "Aquecendo as experiências sensuais com IA...",
+      "Preparando fluxogramas hot e automação exclusiva!",
+      "Gerando voz feminina sedutora IA para suas vendas.",
+      "Acesso reservado: área privada pronta para seus conteúdos picantes.",
+      "O bot Modelify já está pronto para vender e encantar no Telegram.",
+      "Libere seu potencial sexy com tecnologia de ponta."
+    ];
+    let iaIndex = 0;
+    setInterval(() => {
+      document.getElementById('ia-msg').textContent = iaTips[iaIndex % iaTips.length];
+      iaIndex++;
+    }, 3400);
+
+    document.getElementById('ano').textContent = new Date().getFullYear();
+
+    // Login/validação da chave + email
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const access_key = document.getElementById('access_key').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const errorMsg = document.getElementById('errorMsg');
+      errorMsg.textContent = "";
+      fetch('/painel_auth', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({access_key, email})
+      })
+      .then(resp => resp.json())
+      .then(data => {
+        if (data.status === "ok") {
+          window.location.href = "/acesso-conteudos";
+        } else {
+          errorMsg.textContent = data.error || "Chave ou e-mail inválido. Tente novamente.";
+        }
+      })
+      .catch(() => {
+        errorMsg.textContent = "Erro ao conectar. Tente de novo em instantes.";
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendas | Modelify</title>
+    <!-- Google Fonts: Inter, Poppins, Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@400;600&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Lottie for loading animation -->
+    <script src="https://unpkg.com/lottie-web@5.7.3/build/player/lottie.min.js"></script>
+    <style>
+        html, body {
+            font-family: 'Inter','Poppins','Outfit',system-ui,sans-serif;
+            background: linear-gradient(135deg, #18181b 0%, #23272f 100%);
+        }
+        ::selection {
+            background: #ff85b2;
+            color: #fff;
+        }
+        ::-webkit-scrollbar { width: 10px; background: #242438; }
+        ::-webkit-scrollbar-thumb { background: #ff85b2; border-radius: 10px; }
+        #loading-overlay {
+            position: fixed;
+            z-index: 9999;
+            inset: 0;
+            background: linear-gradient(120deg,#18181b 70%,#ff85b2 200%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s;
+        }
+        #loading-overlay.loaded {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .toast {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+        .toast.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            font-weight: 700;
+        }
+        /* Sidebar Premium Flutuante */
+        .premium-sidebar {
+          position: fixed;
+          top: 2.5vh;
+          left: 2vw;
+          height: 95vh;
+          width: 4.5rem;
+          z-index: 40;
+          background: linear-gradient(120deg, #18181b 85%, #23272f 120%);
+          border-radius: 2.5rem;
+          box-shadow:
+            0 2px 16px 0 #9b6cf32a,
+            0 2px 8px 0 #0005,
+            0 0 0 1.5px #26263a inset;
+          overflow: hidden;
+          border: 1.5px solid #26263a;
+          transition: width 0.33s cubic-bezier(.4,2,.3,1), box-shadow 0.3s;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          padding: 0.5rem 0.2rem;
+        }
+        .premium-sidebar.expanded {
+          width: 17rem;
+          box-shadow: 0 16px 54px 0 #a78bfa40, 0 1.5px 8px #ff85b240;
+        }
+        .premium-sidebar .sidebar-label {
+          opacity: 0;
+          transition: opacity .2s;
+          white-space: nowrap;
+        }
+        .premium-sidebar.expanded .sidebar-label {
+          opacity: 1;
+        }
+        .premium-sidebar .sidebar-link {
+          justify-content: center;
+          transition: background 0.2s, color 0.2s, justify-content 0.3s;
+        }
+        .premium-sidebar.expanded .sidebar-link {
+          justify-content: flex-start;
+        }
+        .premium-sidebar .sidebar-link .sidebar-label {
+          display: none;
+        }
+        .premium-sidebar.expanded .sidebar-link .sidebar-label {
+          display: inline;
+        }
+        .premium-sidebar:hover,
+        .premium-sidebar:focus-within {
+          width: 17rem !important;
+        }
+        .premium-sidebar:hover .sidebar-label,
+        .premium-sidebar:focus-within .sidebar-label {
+          opacity: 1 !important;
+          display: inline !important;
+        }
+        .premium-sidebar .brand {
+          opacity: 0;
+          transition: opacity 0.2s;
+          pointer-events: none;
+          height: 0;
+        }
+        .premium-sidebar.expanded .brand,
+        .premium-sidebar:hover .brand,
+        .premium-sidebar:focus-within .brand {
+          opacity: 1;
+          pointer-events: auto;
+          height: auto;
+        }
+        @media (max-width: 900px) {
+          .premium-sidebar, .premium-sidebar.expanded { left: 1vw; width: 3.5rem; }
+          .premium-sidebar.expanded { width: 99vw !important; border-radius: 2.5rem; }
+        }
+        .dashboard-card-wrapper {
+            border-radius: 1.5rem;
+            box-shadow: 0 6px 40px 0 #00000022, 0 2px 8px #a78bfa11;
+            background: rgba(25, 25, 36, 0.92);
+            padding: 2rem 1.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            min-height: 90vh;
+            transition: margin-left 0.33s cubic-bezier(.4,2,.3,1), width 0.33s cubic-bezier(.4,2,.3,1);
+        }
+        @media (max-width: 900px) {
+            .dashboard-card-wrapper {
+                border-radius: 1rem;
+                padding: 1rem 0.5rem;
+            }
+        }
+        .sidebar-link .sidebar-label .pulse {
+          animation: none !important;
+        }
+        .sidebar-link:hover, .sidebar-link:focus {
+          box-shadow: 0 2px 16px 0 #a78bfa15, 0 2px 8px 0 #0005;
+          transform: scale(1.03);
+        }
+    </style>
+</head>
+<body class="min-h-screen transition-colors duration-500 text-[#f6f6f6] bg-[#18181b]">
+
+<!-- Loading overlay -->
+<div id="loading-overlay">
+    <div id="lottie-loading" class="w-24 h-24"></div>
+</div>
+
+<div class="flex h-screen overflow-hidden bg-gradient-to-br from-[#181824] via-[#181824] to-[#232336]" style="position:relative;z-index:1;">
+    <!-- Sidebar Premium Flutuante -->
+    <aside id="premiumSidebar" class="premium-sidebar group" tabindex="0">
+      <div>
+        <div class="brand flex items-center gap-2 mx-5 mt-8 mb-7">
+          <span class="text-2xl font-extrabold text-white">Modeli<span class="gradient-text">fy</span></span>
+        </div>
+        <ul class="flex flex-col gap-2">
+          <li>
+            <a href="/dashboard" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="layout-dashboard" class="w-6 h-6 text-pink-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Painel</span>
+            </a>
+          </li>
+          <li>
+            <a href="/vendas" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl bg-pink-400/10 text-pink-300 scale-105 group transition">
+              <i data-lucide="shopping-bag" class="w-6 h-6 text-green-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Vendas</span>
+            </a>
+          </li>
+          <li>
+            <a href="/produtos" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="package" class="w-6 h-6 text-yellow-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Produtos</span>
+            </a>
+          </li>
+          <li>
+            <a href="/aulas" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="graduation-cap" class="w-6 h-6 text-fuchsia-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Aulas Gratuitas</span>
+            </a>
+          </li>
+          <li>
+            <a href="/saque" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl bg-[#262e2a] border border-green-400/30 hover:bg-green-400/10 hover:text-green-400 transition">
+              <span class="flex items-center justify-center rounded-xl bg-gradient-to-br from-green-400/80 to-emerald-600 w-9 h-9 shadow border border-green-400/40">
+                <i data-lucide="wallet" class="w-6 h-6 text-white"></i>
+              </span>
+              <span class="sidebar-label text-base font-semibold tracking-wide ml-1">Saque</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="mb-6 flex flex-col items-center gap-6">
+        <button id="theme-toggle" class="w-10 h-10 rounded-full bg-pink-500/20 hover:bg-pink-400/50 flex items-center justify-center transition">
+          <i data-lucide="moon" class="w-6 h-6 text-pink-400" id="moon-icon"></i>
+          <i data-lucide="sun" class="w-6 h-6 text-yellow-400 hidden" id="sun-icon"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="mainContent" class="flex-1 flex flex-col transition-all duration-300" style="margin-left:6.5rem;">
+      <div class="dashboard-card-wrapper" id="dashboardCardWrapper">
+        <!-- Top bar -->
+        <div class="flex justify-between items-center mb-5">
+            <div class="flex items-center">
+                <span class="inline-flex items-center justify-center w-14 h-14 rounded-full border-4 border-pink-400 bg-pink-100 dark:bg-[#1f1f26] shadow-lg transition duration-300 hover:scale-105">
+                  <i data-lucide="user-round" class="w-8 h-8 text-pink-400"></i>
+                </span>
+                <div class="ml-3">
+                    <p class="font-semibold text-[#18181b] dark:text-white">{{ user['name'] }}</p>
+                    <p class="text-sm text-gray-500 dark:text-pink-200">{{ user['email'] }}</p>
+                </div>
+            </div>
+            <a href="{{ url_for('logout') }}" class="text-pink-400 text-2xl hover:text-pink-200 transition duration-200" title="Sair">
+                <i data-lucide="log-out" class="w-8 h-8"></i>
+            </a>
+        </div>
+
+        <!-- Sales Data -->
+        <div>
+            <h1 class="text-2xl font-bold mb-5 text-[#18181b] dark:text-pink-200 tracking-tight neon">Minhas Vendas Realizadas</h1>
+            <div class="rounded-3xl bg-white/90 dark:bg-[#181824] shadow-2xl p-0 overflow-x-auto">
+                <table class="min-w-full text-left text-sm">
+                    <thead>
+                        <tr class="bg-pink-100/60 dark:bg-pink-900/40">
+                            <th class="px-6 py-4 font-bold text-[#18181b] dark:text-pink-200">Cliente</th>
+                            <th class="px-6 py-4 font-bold text-[#18181b] dark:text-pink-200">Telefone</th>
+                            <th class="px-6 py-4 font-bold text-[#18181b] dark:text-pink-200">E-mail</th>
+                            <th class="px-6 py-4 font-bold text-[#18181b] dark:text-pink-200">Produto</th>
+                            <th class="px-6 py-4 font-bold text-[#18181b] dark:text-pink-200">Valor</th>
+                            <th class="px-6 py-4 font-bold text-[#18181b] dark:text-pink-200">Data</th>
+                        </tr>
+                    </thead>
+                    <tbody id="salesData" class="divide-y divide-pink-100 dark:divide-pink-900">
+                        <!-- Dados de vendas serão inseridos dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+      </div>
+    </main>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-pink-500 text-white text-sm rounded-full shadow-lg z-[6000]"></div>
+
+<script>
+    // Lottie loading
+    document.addEventListener('DOMContentLoaded', function() {
+        lottie.loadAnimation({
+            container: document.getElementById('lottie-loading'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: 'https://assets3.lottiefiles.com/private_files/lf30_oqpbtola.json'
+        });
+        setTimeout(() => {
+            document.getElementById('loading-overlay').classList.add('loaded');
+        }, 900);
+    });
+
+    // Lucide icons
+    lucide.createIcons();
+
+    // Sidebar/Content Animation Sync (sem focusin/focusout para evitar bug)
+    const sidebar = document.getElementById('premiumSidebar');
+    const mainContent = document.getElementById('mainContent');
+    const dashboardCardWrapper = document.getElementById('dashboardCardWrapper');
+
+    // Larguras
+    const SIDEBAR_COLLAPSED = 4.5; // rem
+    const SIDEBAR_EXPANDED = 17;   // rem
+
+    function setMainMargin(isExpanded) {
+        let ml = isExpanded ? (SIDEBAR_EXPANDED + 2) : (SIDEBAR_COLLAPSED + 2);
+        mainContent.style.marginLeft = ml + 'rem';
+        dashboardCardWrapper.style.marginLeft = isExpanded ? "1rem" : "0.25rem";
+        dashboardCardWrapper.style.width = isExpanded ? "calc(100% - 2rem)" : "100%";
+    }
+
+    // Inicial
+    setMainMargin(false);
+
+    sidebar.addEventListener('mouseenter', function() {
+        sidebar.classList.add('expanded');
+        setMainMargin(true);
+    });
+    sidebar.addEventListener('mouseleave', function() {
+        sidebar.classList.remove('expanded');
+        setMainMargin(false);
+    });
+
+    // Dark/Light mode toggle
+    const themeBtn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    themeBtn.addEventListener('click', () => {
+        const isDark = html.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        document.getElementById('moon-icon').classList.toggle('hidden', isDark);
+        document.getElementById('sun-icon').classList.toggle('hidden', !isDark);
+    });
+    // Set initial icons
+    if(localStorage.getItem('theme') === 'dark') {
+        html.classList.add('dark');
+        document.getElementById('moon-icon').classList.add('hidden');
+        document.getElementById('sun-icon').classList.remove('hidden');
+    }
+
+    // Toast notification
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('active');
+        setTimeout(() => {
+            toast.classList.remove('active');
+        }, 2200);
+    }
+
+    // Fetch and display sales data (ATUALIZADO PARA NOVA API)
+    async function fetchSalesData() {
+        try {
+            const response = await fetch('/api/vendas', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (!response.ok) throw new Error('Erro ao buscar dados de vendas');
+
+            const sales = await response.json();
+            const salesDataContainer = document.getElementById('salesData');
+            salesDataContainer.innerHTML = '';
+
+            // ALERTA DE NENHUMA VENDA
+            if (Array.isArray(sales) && sales.length === 0) {
+                salesDataContainer.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-lg text-gray-400 font-bold bg-pink-50/80 dark:bg-pink-900/30 rounded-2xl">
+                            <i data-lucide="info" class="inline-block w-6 h-6 mr-2 align-text-bottom text-pink-400"></i>
+                            Nenhuma venda realizada ainda.<br>
+                            <span class="text-sm text-gray-400">Assim que você realizar sua primeira venda, ela aparecerá aqui automaticamente!</span>
+                        </td>
+                    </tr>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            sales.forEach(sale => {
+                let valorVenda;
+                if (!sale.produto_preco || sale.produto_preco === null) {
+                    valorVenda = `<span class="text-gray-400 italic">--</span>`;
+                } else if (parseFloat(sale.produto_preco) === 0) {
+                    valorVenda = `<span class="px-3 py-1 rounded-full bg-pink-500/20 text-pink-500 font-bold text-xs">OFERTA GRÁTIS</span>`;
+                } else {
+                    valorVenda = `<span class="px-3 py-1 rounded-full bg-green-500/20 text-green-500 font-bold text-xs">R$ ${parseFloat(sale.produto_preco).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>`;
+                }
+
+                const row = `
+                    <tr class="hover:bg-pink-100/20 dark:hover:bg-pink-900/10 transition-all duration-300">
+                        <td class="px-6 py-4">${sale.cliente || '--'}</td>
+                        <td class="px-6 py-4">${sale.telefone_cliente || '--'}</td>
+                        <td class="px-6 py-4">${sale.email_cliente || '--'}</td>
+                        <td class="px-6 py-4">${sale.produto_nome || '--'}</td>
+                        <td class="px-6 py-4">${valorVenda}</td>
+                        <td class="px-6 py-4">${sale.data_venda ? new Date(sale.data_venda).toLocaleString('pt-BR') : '--'}</td>
+                    </tr>
+                `;
+                salesDataContainer.innerHTML += row;
+            });
+        } catch (error) {
+            console.error('Erro:', error);
+            showToast('Erro ao carregar os dados de vendas.');
+        }
+    }
+
+    fetchSalesData();
+</script>
+</body>
+</html>

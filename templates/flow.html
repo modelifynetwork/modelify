@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelify Interactive</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jointjs/3.6.2/joint.min.css">
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;600&display=swap');
+:root {
+    --primary-color: #FF007F;
+    --secondary-color: #1A1A2E;
+    --accent-color: #E94560;
+    --background-color: #18181b;
+    --text-color: #FFFFFF;
+    --card-background: #232336;
+    --button-hover: #FF4F8B;
+}
+body {
+    background: linear-gradient(135deg, #18181b 0%, #232336 100%) !important;
+    color: var(--text-color);
+    font-family: 'Inter', 'Poppins', 'Montserrat', system-ui, sans-serif;
+}
+    font-family: 'Inter', 'Poppins', sans-serif;
+}
+    font-family: 'Inter', 'Poppins', sans-serif;
+}
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Sidebar: 80px + gap: 32px */
+    padding: 32px 60px 28px 112px;
+    padding-left: calc(80px + 32px); /* Sidebar + gap */
+    width: 100%;
+    background: linear-gradient(99deg, #232336 80%, #1a1a2e 100%);
+    border-bottom: 2.5px solid var(--primary-color);
+    border-radius: 0 0 2rem 2rem;
+    box-shadow: 0 8px 36px 0 #ff007f22, 0 2.5px 0 0 #18181b inset;
+    min-height: 90px;
+    position: relative;
+    z-index: 10;
+    transition: padding .3s cubic-bezier(.23,1.02,.44,1);
+}
+
+.header.expanded {
+    padding-right: 200px;
+    padding-left: calc(80px + 64px); /* Sidebar + gap maior quando expandido */
+}
+
+.header h1 {
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: -1.2px;
+    color: #fff;
+    text-shadow: 0 2px 10px #ff007e35;
+    font-family: 'Poppins', 'Inter', sans-serif;
+    display: flex;
+    align-items: baseline;
+}
+.header h2 {
+    font-size: 1.13rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    margin-left: 10px;
+    letter-spacing: 0.01em;
+    font-family: 'Inter', 'Poppins', sans-serif;
+}
+.header .modelify { color: #fff; }
+.header .fy { color: var(--primary-color); }
+
+/* Botão salvar direito no header */
+.save-export-buttons {
+    position: absolute;
+    top: 32px;
+    right: 64px;
+    z-index: 12;
+    display: flex;
+    gap: 12px;
+}
+.save-export-buttons .save-button {
+    background: var(--primary-color);
+    color: #fff;
+    padding: 9px 23px;
+    border-radius: 20px;
+    font-size: 1.01rem;
+    font-weight: 600;
+    border: none;
+    transition: background .25s, transform .22s;
+    box-shadow: 0 2px 10px #ff007f3c;
+}
+.save-export-buttons .save-button:hover {
+    background: var(--button-hover);
+    transform: scale(1.07);
+}
+
+/* Responsivo: header nunca fica por baixo da sidebar */
+@media (max-width: 900px) {
+    .header, .header.expanded {
+        padding: 26px 6vw 24px 100px;
+        padding-left: calc(70px + 12px);
+    }
+    .save-export-buttons {
+        top: 18px;
+        right: 3vw;
+    }
+}
+.header .modelify { color: #fff; }
+.header .fy { color: var(--primary-color); }
+
+/* Botão salvar direito no header */
+.save-export-buttons {
+    position: absolute;
+    top: 32px;
+    right: 64px;
+    z-index: 12;
+    display: flex;
+    gap: 12px;
+}
+.save-export-buttons .save-button {
+    background: var(--primary-color);
+    color: #fff;
+    padding: 9px 23px;
+    border-radius: 20px;
+    font-size: 1.01rem;
+    font-weight: 600;
+    border: none;
+    transition: background .25s, transform .22s;
+    box-shadow: 0 2px 10px #ff007f3c;
+}
+.save-export-buttons .save-button:hover {
+    background: var(--button-hover);
+    transform: scale(1.07);
+}
+
+/* Corrige overlay do header sobre a sidebar */
+@media (max-width: 900px) {
+    .header, .header.expanded {
+        padding: 26px 10vw 24px 90px;
+        margin-left: 60px;
+    }
+    .save-export-buttons {
+        top: 20px;
+        right: 4vw;
+    }
+}
+.toolbar {
+    position: fixed;
+    top: 110px; /* Move ainda mais pra baixo! */
+    left: 0;
+    width: 80px;
+    height: auto;
+    background: linear-gradient(125deg, #18181b 90%, #232336 120%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 28px 0 28px 0;
+    border-radius: 2rem;
+    border: 1.5px solid #26263a;
+    box-shadow: 0 6px 32px 0 #000c, 0 2px 16px 0 #a78bfa30;
+    z-index: 101;
+}
+
+.toolbar button {
+    background: transparent;
+    color: var(--text-color);
+    padding: 10px 0;
+    border-radius: 15px;
+    transition: background 0.3s, transform 0.3s;
+    font-weight: 600;
+    margin-bottom: 22px;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+.toolbar button:last-child {
+    margin-bottom: 0;
+}
+.toolbar button:hover {
+    background: var(--button-hover);
+    color: #fff;
+    transform: scale(1.10);
+}
+.toolbar button i {
+    font-size: 1.5rem;
+}
+.toolbar button span {
+    position: absolute;
+    left: 70px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--card-background);
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    white-space: nowrap;
+    display: none;
+    font-weight: 600;
+    color: #fff;
+    box-shadow: 0 2px 8px #0003;
+}
+.toolbar button:hover span { display: block; }
+
+/* Responsivo: sidebar desce mais em telas pequenas */
+@media (max-width: 900px) {
+    .toolbar {
+        top: 38px;
+        width: 64px;
+        padding: 16px 0 16px 0;
+        border-radius: 1.2rem;
+    }
+    .toolbar button {
+        width: 44px;
+        height: 44px;
+        font-size: 1.1rem;
+        margin-bottom: 16px;
+    }
+}
+
+.save-export-buttons {
+    position: absolute;
+    top: 16px;
+    right: 40px;
+    display: flex;
+    gap: 12px;
+}
+.save-export-buttons .button, .save-export-buttons .save-button {
+    background: var(--primary-color);
+    color: var(--text-color);
+    padding: 10px 22px;
+    border-radius: 25px;
+    transition: background 0.3s, transform 0.3s;
+    font-weight: 600;
+    font-size: 1.05rem;
+    border: none;
+}
+.save-export-buttons .button:hover, .save-export-buttons .save-button:hover {
+    background: var(--button-hover);
+    transform: scale(1.07);
+}
+
+.content {
+    margin-left: 110px;
+    padding: 32px 40px 32px 10px;
+    min-height: 100vh;
+}
+.flowchart-container {
+    background: var(--card-background);
+    border-radius: 1.5rem;
+    padding: 24px 22px 24px 22px;
+    height: 72vh;
+    box-shadow: 0 4px 24px #0008;
+    position: relative;
+}
+.zoom-controls {
+    position: absolute;
+    bottom: 25px;
+    right: 25px;
+    display: flex;
+    flex-direction: column;
+}
+.zoom-controls button {
+    background: var(--primary-color);
+    color: var(--text-color);
+    padding: 13px;
+    border-radius: 50%;
+    margin-bottom: 8px;
+    transition: background 0.3s, transform 0.3s;
+    font-size: 21px;
+    border: none;
+}
+.zoom-controls button:hover {
+    background: var(--button-hover);
+    transform: scale(1.08);
+}
+
+/* Barra lateral de blocos (expanded-toolbar) */
+.expanded-toolbar {
+    position: fixed;
+    top: 110px; /* igual à toolbar lateral */
+    left: 96px; /* sidebar (80px) + gap (16px) */
+    width: 320px;
+    max-height: 80vh;
+    background: linear-gradient(120deg, #18181b 80%, #232336 100%);
+    border-radius: 2rem;
+    box-shadow: 0 10px 36px 0 #000a, 0 2px 16px 0 #ff007f13;
+    border: 2px solid #232336;
+    padding: 30px 0 24px 0;
+    display: none;
+    flex-direction: column;
+    z-index: 102;
+    overflow-y: auto;
+    transition: left .3s, opacity .2s, box-shadow .3s, background .2s;
+    opacity: 0;
+    pointer-events: none;
+}
+.expanded-toolbar.active {
+    display: flex;
+    opacity: 1;
+    pointer-events: auto;
+    box-shadow: 0 14px 40px 0 #ff007f23, 0 2px 16px 0 #0005;
+}
+
+/* Barra vertical rosa na esquerda */
+.expanded-toolbar::before {
+    content: "";
+    position: absolute;
+    top: 28px;
+    left: 0;
+    width: 4px;
+    height: calc(100% - 56px);
+    background: var(--primary-color);
+    border-radius: 2px;
+    z-index: 1;
+    opacity: 0.92;
+}
+
+/* Conteúdo ajustado por conta da barra rosa */
+.expanded-toolbar > * {
+    padding-left: 32px;
+    padding-right: 22px;
+    position: relative;
+    z-index: 2;
+}
+
+/* Search bar, escura e premium */
+.expanded-toolbar .search-bar {
+    margin-bottom: 24px;
+    width: 100%;
+}
+.expanded-toolbar .search-bar input {
+    width: 100%;
+    padding: 13px 18px;
+    border-radius: 22px;
+    border: none;
+    background-color: #232336;
+    color: #fff;
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+    transition: border .2s, background .2s;
+    box-shadow: 0 1px 8px #0003 inset;
+    letter-spacing: 0.02em;
+}
+
+/* Categoria e títulos */
+.expanded-toolbar .category {
+    margin-bottom: 26px;
+}
+.expanded-toolbar .category h4 {
+    margin-bottom: 13px;
+    font-size: 1.13rem;
+    color: var(--primary-color);
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+/* Ações premium */
+.expanded-toolbar .action {
+    display: flex;
+    align-items: center;
+    padding: 10px 8px 10px 0;
+    margin-bottom: 4px;
+    border-radius: 10px;
+    transition: background 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: 500;
+    color: var(--text-color);
+    gap: 14px;
+}
+.expanded-toolbar .action:hover {
+    background: #232336;
+    box-shadow: 0 2px 8px #ff007f11;
+}
+.expanded-toolbar .action i {
+    font-size: 20px;
+    min-width: 22px;
+}
+.expanded-toolbar .action span {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-color);
+    letter-spacing: 0.01em;
+}
+
+/* Scrollbar custom rosa premium */
+.expanded-toolbar::-webkit-scrollbar {
+    width: 4px;
+}
+.expanded-toolbar::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 7px;
+}
+
+/* Responsivo */
+@media (max-width: 900px) {
+    .expanded-toolbar, .expanded-toolbar.active {
+        left: 68px;
+        width: 90vw;
+        min-width: 0;
+        border-radius: 1rem;
+        padding: 16px 0 14px 0;
+        max-height: 68vh;
+    }
+    .expanded-toolbar > * {
+        padding-left: 17px;
+        padding-right: 12px;
+    }
+    .expanded-toolbar::before {
+        left: 0;
+        top: 14px;
+        height: calc(100% - 28px);
+    }
+}
+
+.expanded-toolbar .search-bar {
+    margin-bottom: 18px;
+    width: 100%;
+}
+.expanded-toolbar .search-bar input {
+    width: 100%;
+    padding: 11px 18px;
+    border-radius: 22px;
+    border: none;
+    background-color: #34344A;
+    color: #ffffff;
+    font-size: 16px;
+    outline: none;
+    font-family: inherit;
+    letter-spacing: 0.02em;
+}
+.expanded-toolbar .category {
+    margin-bottom: 24px;
+}
+.expanded-toolbar .category h4 {
+    margin-bottom: 12px;
+    font-size: 1.19rem;
+    color: var(--primary-color);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+.expanded-toolbar .action {
+    display: flex;
+    align-items: center;
+    padding: 11px 13px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: 500;
+}
+.expanded-toolbar .action:hover {
+    background-color: var(--button-hover);
+    box-shadow: 0 2px 8px #0003;
+}
+.expanded-toolbar .action i {
+    font-size: 22px;
+    margin-right: 11px;
+    min-width: 22px;
+}
+.expanded-toolbar .action span {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-color);
+    letter-spacing: 0.01em;
+}
+
+/* Sidebar de edição/configuração do bloco */
+.sidebar {
+    background: var(--secondary-color);
+    padding: 26px 22px 24px 22px;
+    border-radius: 18px 0 0 18px;
+    width: 320px;
+    min-width: 260px;
+    height: 100vh;
+    position: fixed;
+    right: 0;
+    top: 0;
+    display: none;
+    flex-direction: column;
+    z-index: 110;
+    box-shadow: 0 2px 18px #0008;
+}
+.sidebar.active {
+    display: flex;
+}
+.sidebar h3 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    margin-bottom: 28px;
+    color: var(--primary-color);
+    letter-spacing: -0.5px;
+}
+.sidebar .input-field {
+    background-color: #34344A;
+    border: 2px solid #4A4A6A;
+    color: #ffffff;
+    padding: 14px 18px;
+    border-radius: 22px;
+    margin-bottom: 14px;
+    width: 100%;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+.sidebar .input-field:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+.sidebar textarea.input-field {
+    min-height: 90px;
+    resize: vertical;
+    font-size: 1rem;
+}
+.sidebar .button {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    padding: 14px 0;
+    border-radius: 22px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    border: none;
+    width: 100%;
+    transition: background-color 0.3s, transform 0.3s;
+    margin-top: 10px;
+    letter-spacing: 0.01em;
+}
+.sidebar .button:hover {
+    background-color: var(--button-hover);
+    transform: scale(1.04);
+}
+    </style>
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <div class="header" id="header">
+        <div>
+            <h1><span class="modelify">Modeli</span><span class="fy">fy</span></h1>
+            <h2>Interactive</h2>
+        </div>
+    </div>
+    <!-- Botões de Salvar, Exportar, Fluxogramas -->
+    <div class="save-export-buttons">
+	<button class="save-button" id="saveButton" onclick="saveFlow()">Salvar</button>
+    </div>
+    <!-- Barra de Ferramentas Lateral -->
+    <div class="toolbar">
+        <button class="button" onclick="toggleExpandedToolbar()" title="Ação">
+            <i class="fas fa-cogs"></i>
+            <span>Ação</span>
+        </button>
+        <button class="button" onclick="toggleSegmentacaoToolbar()" title="Adicionar Bloco de Segmentação">
+            <i class="fas fa-filter"></i>
+            <span>Segmentação</span>
+        </button>
+        <button class="button" onclick="toggleIntegracaoToolbar()" title="Adicionar Bloco de Integração">
+            <i class="fas fa-plug"></i>
+            <span>Integração</span>
+        </button>
+        <button class="button" onclick="toggleProdutoToolbar()" title="Adicionar Bloco de Produto">
+            <i class="fas fa-box-open"></i>
+            <span>Produto</span>
+        </button>
+        <button class="button" onclick="deleteSelected()" title="Excluir Selecionado">
+            <i class="fas fa-trash text-red-500"></i>
+            <span>Excluir</span>
+        </button>
+    </div>
+
+    <!-- Barra Lateral de Ações Expansível -->
+    <div class="expanded-toolbar" id="expanded-toolbar">
+        <div class="search-bar">
+            <input type="text" placeholder="Pesquisar ações...">
+        </div>
+        <div class="category">
+            <h4>Ações de Comunicação</h4>
+		<div class="action" onclick="addActionNode('Enviar E-mail', 'fas fa-envelope', '--green-color', 'https://upload.wikimedia.org/wikipedia/commons/4/4e/Gmail_Icon.png')">
+                <i class="fas fa-envelope"></i>
+                <span>Enviar E-mail</span>
+            </div>
+            <div class="action" onclick="addActionNode('Enviar SMS', 'fas fa-sms', '--green-color', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/SMS_Icon.svg/1200px-SMS_Icon.svg.png')">
+                <i class="fas fa-sms"></i>
+                <span>Enviar SMS</span>
+            </div>
+            <div class="action" onclick="addActionNode('Enviar WhatsApp', 'fas fa-whatsapp', '--green-color', 'https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg')">
+                <i class="fas fa-whatsapp"></i>
+                <span>Enviar WhatsApp</span>
+            </div>
+            <div class="action" onclick="addActionNode('Enviar Notificação Push', 'fas fa-bell', '--green-color', 'https://upload.wikimedia.org/wikipedia/commons/6/6c/Push_Notification_Icon.png')">
+                <i class="fas fa-bell"></i>
+                <span>Enviar Notificação Push</span>
+            </div>
+            <div class="action" onclick="addActionNode('Enviar Mensagem no Telegram', 'fas fa-paper-plane', '--green-color', 'https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg')">
+                <i class="fas fa-paper-plane"></i>
+                <span>Enviar Mensagem no Telegram</span>
+            </div>
+            <div class="action" onclick="addActionNode('Publicar Post no Facebook', 'fas fa-bullhorn', '--green-color', 'https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg')">
+                <i class="fas fa-bullhorn"></i>
+                <span>Publicar Post no Facebook</span>
+            </div>
+            <div class="action" onclick="addActionNode('Publicar Tweet no X', 'fas fa-twitter', '--green-color', 'https://upload.wikimedia.org/wikipedia/en/6/60/Twitter_Logo_as_of_2021.svg')">
+                <i class="fas fa-twitter"></i>
+                <span>Publicar Tweet no X (Twitter)</span>
+            </div>
+            <div class="action" onclick="addActionNode('Publicar Post no Instagram', 'fas fa-instagram', '--green-color', 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png')">
+                <i class="fas fa-instagram"></i>
+                <span>Publicar Post no Instagram</span>
+            </div>
+            <div class="action" onclick="addActionNode('Criar Post no LinkedIn', 'fas fa-pencil-alt', '--green-color', 'https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png')">
+                <i class="fas fa-pencil-alt"></i>
+                <span>Criar Post no LinkedIn</span>
+            </div>
+            <div class="action" onclick="addActionNode('Criar Notificação no Slack', 'fas fa-slack', '--green-color', 'https://upload.wikimedia.org/wikipedia/commons/7/76/Slack_Icon.png')">
+                <i class="fas fa-slack"></i>
+                <span>Criar Notificação no Slack</span>
+            </div>
+        </div>
+        <div class="category">
+            <h4>Ações de Vendas e Pagamento</h4>
+            <div class="action" onclick="addActionNode('Aprovar Pagamento', 'fas fa-credit-card', '--green-color', 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Credit_Card_Icon.png')">
+                <i class="fas fa-credit-card"></i>
+                <span>Aprovar Pagamento</span>
+            </div>
+            <div class="action" onclick="addActionNode('Cancelar Pagamento', 'fas fa-times-circle', '--green-color', 'https://upload.wikimedia.org/wikipedia/commons/a/a1/Cancel_Icon.png')">
+                <i class="fas fa-times-circle"></i>
+                <span>Cancelar Pagamento</span>
+            </div>
+            <div class="action" onclick="addActionNode('Reembolsar Pedido', 'fas fa-undo', '--green-color', 'https://upload.wikimedia.org/wikipedia/commons/0/0a/Return_Icon.png')">
+                <i class="fas fa-undo"></i>
+                <span>Reembolsar Pedido</span>
+            </div>
+            <div class="action" onclick="addActionNode('Criar Checkout Personalizado', 'fas fa-rocket', '--green-color', 'https://upload.wikimedia.org/wikipedia/commons/4/4e/Checkout_Icon.png')">
+                <i class="fas fa-rocket"></i>
+                <span>Criar Checkout Personalizado</span>
+            </div>
+            <div class="action" onclick="addActionNode('Aplicar Cupom de Desconto', 'fas fa-gift', '--green-color', 'https://upload.wikimedia.org/wikipedia/commons/8/8c/Coupon_Icon.png')">
+                <i class="fas fa-gift"></i>
+                <span>Aplicar Cupom de Desconto</span>
+            </div>
+            <div class="action" onclick="addActionNode('Enviar Produto Digital', 'fas fa-box', '--green-color', 'https://upload.wikimedia.org/wikipedia/commons/9/9b/Digital_Product_Icon.png')">
+                <i class="fas fa-box"></i>
+                <span>Enviar Produto Digital</span>
+            </div>
+            <div class="action" onclick="addActionNode('Criar Assinatura Recorrente', 'fas fa-lock', '--green-color', 'https://upload.wikimedia.org/wikipedia/commons/1/1d/Subscription_Icon.png')">
+                <i class="fas fa-lock"></i>
+                <span>Criar Assinatura Recorrente</span>
+            </div>
+        </div>
+   </div>
+ 
+    <div class="expanded-toolbar" id="expanded-toolbar-segmentacao">
+	    <div class="search-bar">
+                <input type="text" placeholder="Pesquisar integrações...">
+            </div>
+	<div class="category">
+	    <h4>Ações de Segmentação de Usuários</h4>
+            <div class="action" onclick="addSegmentationNode('Adicionar Tag', 'fas fa-tag', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                <i class="fas fa-tag"></i>
+                <span>Adicionar Tag</span>
+            </div>
+                <div class="action" onclick="addSegmentationNode('Remover Tag', 'fas fa-tag-slash', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-tag-slash"></i>
+                    <span>Remover Tag</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Criar Lead/Contato', 'fas fa-user-plus', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Criar Lead/Contato</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Mover para Segmento', 'fas fa-folder-move', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-folder-move"></i>
+                    <span>Mover para Segmento</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Buscar Usuário', 'fas fa-search', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-search"></i>
+                    <span>Buscar Usuário</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Excluir Usuário', 'fas fa-user-times', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-user-times"></i>
+                    <span>Excluir Usuário</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Bloquear Usuário', 'fas fa-user-slash', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-user-slash"></i>
+                    <span>Bloquear Usuário</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Liberar Acesso à Área de Membros', 'fas fa-unlock', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-unlock"></i>
+                    <span>Liberar Acesso à Área de Membros</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Perfil do Usuário</h4>
+                <div class="action" onclick="addSegmentationNode('Tipo de usuário', 'fas fa-user', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-user"></i>
+                    <span>Tipo de usuário</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Origem da inscrição', 'fas fa-sign-in-alt', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Origem da inscrição</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Nível de assinatura', 'fas fa-star', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-star"></i>
+                    <span>Nível de assinatura</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Tempo desde o cadastro', 'fas fa-calendar-alt', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Tempo desde o cadastro</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Data de nascimento / idade estimada', 'fas fa-birthday-cake', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-birthday-cake"></i>
+                    <span>Data de nascimento / idade estimada</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Atividade no Conteúdo</h4>
+                <div class="action" onclick="addSegmentationNode('Visualizou conteúdo da categoria X', 'fas fa-eye', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-eye"></i>
+                    <span>Visualizou conteúdo da categoria X</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Número de conteúdos visualizados', 'fas fa-list-ol', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-list-ol"></i>
+                    <span>Número de conteúdos visualizados</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Interagiu com conteúdo pago nos últimos X dias', 'fas fa-hand-holding-usd', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-hand-holding-usd"></i>
+                    <span>Interagiu com conteúdo pago nos últimos X dias</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Favoritou conteúdo X', 'fas fa-heart', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-heart"></i>
+                    <span>Favoritou conteúdo X</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Comportamento de Compra</h4>
+                <div class="action" onclick="addSegmentationNode('Realizou a primeira compra', 'fas fa-shopping-cart', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Realizou a primeira compra</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Comprou produto específico (ID ou slug)', 'fas fa-box', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-box"></i>
+                    <span>Comprou produto específico (ID ou slug)</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Assinatura ativa / vencida / cancelada', 'fas fa-credit-card', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Assinatura ativa / vencida / cancelada</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Renovou assinatura', 'fas fa-redo', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-redo"></i>
+                    <span>Renovou assinatura</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Tentativa de pagamento recusada', 'fas fa-ban', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-ban"></i>
+                    <span>Tentativa de pagamento recusada</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Engajamento com Comunicação</h4>
+                <div class="action" onclick="addSegmentationNode('Abriu e-mail de campanha X', 'fas fa-envelope-open', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-envelope-open"></i>
+                    <span>Abriu e-mail de campanha X</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Clicou no botão "Ver Conteúdo" no e-mail', 'fas fa-link', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-link"></i>
+                    <span>Clicou no botão "Ver Conteúdo" no e-mail</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Não abriu nenhum e-mail nos últimos X dias', 'fas fa-envelope', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-envelope"></i>
+                    <span>Não abriu nenhum e-mail nos últimos X dias</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Respondeu enquete ou formulário', 'fas fa-poll', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-poll"></i>
+                    <span>Respondeu enquete ou formulário</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Tags / Segmentos Dinâmicos</h4>
+                <div class="action" onclick="addSegmentationNode('Marcado com interesse em [tema/autor/categoria]', 'fas fa-tags', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-tags"></i>
+                    <span>Marcado com interesse em [tema/autor/categoria]</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Score de engajamento acima de X', 'fas fa-star', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-star"></i>
+                    <span>Score de engajamento acima de X</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Comportamentos de Risco ou Relevância</h4>
+                <div class="action" onclick="addSegmentationNode('Reportou conteúdo como inadequado', 'fas fa-flag', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-flag"></i>
+                    <span>Reportou conteúdo como inadequado</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Fez login mas não assistiu nada', 'fas fa-sign-in-alt', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Fez login mas não assistiu nada</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Visitou a plataforma mais de X vezes nos últimos 7 dias', 'fas fa-eye', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-eye"></i>
+                    <span>Visitou a plataforma mais de X vezes nos últimos 7 dias</span>
+                </div>
+                <div class="action" onclick="addSegmentationNode('Visitou a página de upgrade mas não assinou', 'fas fa-arrow-alt-circle-up', '--blue-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-arrow-alt-circle-up"></i>
+                    <span>Visitou a página de upgrade mas não assinou</span>
+                </div>
+            </div>
+        </div>
+       </div>
+
+        <!-- Barra Lateral de Integração Expansível -->
+        <div class="expanded-toolbar" id="expanded-toolbar-integracao">
+            <div class="search-bar">
+                <input type="text" placeholder="Pesquisar integrações...">
+            </div>
+            <div class="category">
+                <h4>Integrações via API</h4>
+                <div class="action" onclick="addIntegrationNode('Requisição HTTP (Webhook)', 'fas fa-network-wired', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-network-wired"></i>
+                    <span>Requisição HTTP (Webhook)</span>
+                </div>
+                <div class="action" onclick="addIntegrationNode('Receber dados externos (Listener Webhook)', 'fas fa-network-wired', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-network-wired"></i>
+                    <span>Receber dados externos (Listener Webhook)</span>
+                </div>
+                <div class="action" onclick="addIntegrationNode('Enviar dados para API externa', 'fas fa-network-wired', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-network-wired"></i>
+                    <span>Enviar dados para API externa</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Integração com E-mail Marketing</h4>
+                <div class="action" onclick="addIntegrationNode('Adicionar contato à lista', 'fas fa-envelope', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-envelope"></i>
+                    <span>Adicionar contato à lista</span>
+                </div>
+                <div class="action" onclick="addIntegrationNode('Remover contato da lista', 'fas fa-envelope', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-envelope"></i>
+                    <span>Remover contato da lista</span>
+                </div>
+                <div class="action" onclick="addIntegrationNode('Atualizar tag em ferramenta externa', 'fas fa-envelope', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-envelope"></i>
+                    <span>Atualizar tag em ferramenta externa</span>
+                </div>
+                <div class="action" onclick="addIntegrationNode('Enviar campanha de e-mail por ferramenta externa', 'fas fa-envelope', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-envelope"></i>
+                    <span>Enviar campanha de e-mail por ferramenta externa</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Integração com Mensagens</h4>
+                <div class="action" onclick="addIntegrationNode('Enviar mensagem no WhatsApp (via API)', 'fas fa-sms', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-sms"></i>
+                    <span>Enviar mensagem no WhatsApp (via API)</span>
+                </div>
+                <div class="action" onclick="addIntegrationNode('Enviar mensagem no Telegram', 'fas fa-telegram-plane', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-telegram-plane"></i>
+                    <span>Enviar mensagem no Telegram</span>
+                </div>
+                <div class="action" onclick="addIntegrationNode('Enviar SMS', 'fas fa-sms', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-sms"></i>
+                    <span>Enviar SMS</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Integração com Pagamentos</h4>
+                <div class="action" onclick="addIntegrationNode('Verificar status de pagamento externo', 'fas fa-credit-card', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Verificar status de pagamento externo</span>
+                </div>
+                <div class="action" onclick="addIntegrationNode('Atualizar assinatura em sistema de pagamentos', 'fas fa-credit-card', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Atualizar assinatura em sistema de pagamentos</span>
+                </div>
+                <div class="action" onclick="addIntegrationNode('Disparar cobrança por API', 'fas fa-credit-card', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Disparar cobrança por API</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Integração com CRM / ERP / Sistemas de Gestão</h4>
+                <div class="action" onclick="addIntegrationNode('Criar ou atualizar lead em CRM', 'fas fa-address-card', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-address-card"></i>
+                    <span>Criar ou atualizar lead em CRM</span>
+                </div>
+                <div class="action" onclick="addIntegrationNode('Atualizar estágio do funil no CRM', 'fas fa-address-card', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-address-card"></i>
+                    <span>Atualizar estágio do funil no CRM</span>
+                </div>
+                <div class="action" onclick="addIntegrationNode('Enviar tarefa para equipe externa', 'fas fa-tasks', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-tasks"></i>
+                    <span>Enviar tarefa para equipe externa</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Integrações com Arquivos e Mídias</h4>
+                <div class="action" onclick="addIntegrationNode('Upload de arquivo para sistema externo', 'fas fa-upload', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-upload"></i>
+                    <span>Upload de arquivo para sistema externo</span>
+                </div>
+                <div class="action" onclick="addIntegrationNode('Enviar dados para Google Sheets', 'fas fa-file-excel', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-file-excel"></i>
+                    <span>Enviar dados para Google Sheets</span>
+                </div>
+                <div class="action" onclick="addIntegrationNode('Buscar dados de planilha (Sheets ou Excel Online)', 'fas fa-file-excel', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-file-excel"></i>
+                    <span>Buscar dados de planilha (Sheets ou Excel Online)</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Integrações com Autenticação / Usuário</h4>
+                <div class="action" onclick="addIntegrationNode('Criar usuário em sistema externo', 'fas fa-user-plus', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Criar usuário em sistema externo</span>
+                </div>
+                <div class="action" onclick="addIntegrationNode('Sincronizar dados do usuário com outra plataforma', 'fas fa-user-cog', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-user-cog"></i>
+                    <span>Sincronizar dados do usuário com outra plataforma</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Integrações com IA / Ferramentas de automação</h4>
+                <div class="action" onclick="addIntegrationNode('Enviar prompt para API de IA', 'fas fa-robot', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-robot"></i>
+                    <span>Enviar prompt para API de IA</span>
+                </div>
+                <div class="action" onclick="addIntegrationNode('Enviar dados para cenário no Make/Integromat ou Zapier', 'fas fa-network-wired', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-network-wired"></i>
+                    <span>Enviar dados para cenário no Make/Integromat ou Zapier</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Integrações Internas da Plataforma</h4>
+                <div class="action" onclick="addIntegrationNode('Atualizar campo personalizado no banco de dados', 'fas fa-database', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-database"></i>
+                    <span>Atualizar campo personalizado no banco de dados</span>
+                </div>
+                <div class="action" onclick="addIntegrationNode('Enviar evento interno (custom event)', 'fas fa-cogs', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-cogs"></i>
+                    <span>Enviar evento interno (custom event)</span>
+                </div>
+                <div class="action" onclick="addIntegrationNode('Agendar execução de tarefa futura', 'fas fa-calendar-alt', '--purple-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Agendar execução de tarefa futura</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barra Lateral de Produto Expansível -->
+        <div class="expanded-toolbar" id="expanded-toolbar-produto">
+            <div class="search-bar">
+                <input type="text" placeholder="Pesquisar produtos...">
+            </div>
+            <div class="category">
+                <h4>Ofertas e Vendas</h4>
+                <div class="action" onclick="addProductNode('Oferecer produto', 'fas fa-tags', '--orange-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-tags"></i>
+                    <span>Oferecer produto</span>
+                </div>
+                <div class="action" onclick="addProductNode('Oferecer upsell', 'fas fa-tags', '--orange-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-tags"></i>
+                    <span>Oferecer upsell</span>
+                </div>
+                <div class="action" onclick="addProductNode('Oferecer conteúdo avulso pago', 'fas fa-tags', '--orange-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-tags"></i>
+                    <span>Oferecer conteúdo avulso pago</span>
+                </div>
+                <div class="action" onclick="addProductNode('Aplicar desconto promocional', 'fas fa-tags', '--orange-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-tags"></i>
+                    <span>Aplicar desconto promocional</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Ações de Compra e Pagamento</h4>
+                <div class="action" onclick="addProductNode('Verificar se produto foi comprado', 'fas fa-credit-card', '--orange-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Verificar se produto foi comprado</span>
+                </div>
+                <div class="action" onclick="addProductNode('Liberar acesso após pagamento aprovado', 'fas fa-credit-card', '--orange-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Liberar acesso após pagamento aprovado</span>
+                </div>
+                <div class="action" onclick="addProductNode('Bloquear acesso se pagamento não confirmado', 'fas fa-credit-card', '--orange-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Bloquear acesso se pagamento não confirmado</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Controle de Acesso</h4>
+                <div class="action" onclick="addProductNode('Desbloquear produto', 'fas fa-lock-open', '--orange-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-lock-open"></i>
+                    <span>Desbloquear produto</span>
+                </div>
+                <div class="action" onclick="addProductNode('Bloquear produto', 'fas fa-lock', '--orange-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-lock"></i>
+                    <span>Bloquear produto</span>
+                </div>
+                <div class="action" onclick="addProductNode('Liberar acesso por tempo limitado', 'fas fa-clock', '--orange-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-clock"></i>
+                    <span>Liberar acesso por tempo limitado</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Gestão de Assinatura</h4>
+                <div class="action" onclick="addProductNode('Verificar status da assinatura', 'fas fa-check', '--orange-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-check"></i>
+                    <span>Verificar status da assinatura</span>
+                </div>
+                <div class="action" onclick="addProductNode('Alterar plano de assinatura', 'fas fa-exchange-alt', '--orange-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Alterar plano de assinatura</span>
+                </div>
+                <div class="action" onclick="addProductNode('Cancelar assinatura', 'fas fa-times', '--orange-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-times"></i>
+                    <span>Cancelar assinatura</span>
+                </div>
+                <div class="action" onclick="addProductNode('Renovar assinatura manualmente', 'fas fa-redo', '--orange-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-redo"></i>
+                    <span>Renovar assinatura manualmente</span>
+                </div>
+            </div>
+            <div class="category">
+                <h4>Pós-venda e Organização</h4>
+                <div class="action" onclick="addProductNode('Enviar comprovante de compra', 'fas fa-receipt', '--orange-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-receipt"></i>
+                    <span>Enviar comprovante de compra</span>
+                </div>
+                <div class="action" onclick="addProductNode('Adicionar produto ao histórico do usuário', 'fas fa-history', '--orange-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-history"></i>
+                    <span>Adicionar produto ao histórico do usuário</span>
+                </div>
+                <div class="action" onclick="addProductNode('Criar notificação de nova compra', 'fas fa-bell', '--orange-color', 'https://upload.wikimedia.org/wikipedia/commons/6/63/Tag_Icon.png')">
+                    <i class="fas fa-bell"></i>
+                    <span>Criar notificação de nova compra</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <div class="content">
+            <div class="flowchart-container" id="flowchart-container">
+                <!-- Canvas do Fluxograma -->
+            <div id="paper" style="width: 100%; height: 100%; background-color: var(--card-background);"></div>
+            </div>
+            <div class="zoom-controls">
+                <button onclick="zoomIn()"><i class="fas fa-search-plus"></i></button>
+                <button onclick="zoomOut()"><i class="fas fa-search-minus"></i></button>
+            </div>
+        </div>
+
+        <!-- Painel Lateral -->
+        <div class="sidebar" id="sidebar">
+            <h3>Configurar Bloco</h3>
+            <input type="text" class="input-field" placeholder="Nome do Bloco" id="block-name">
+            <textarea class="input-field" placeholder="Descrição" id="block-description"></textarea>
+            <button class="button" onclick="saveBlockConfig()">Salvar Configuração</button>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.4.0/backbone-min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jointjs/3.6.2/joint.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.4.0/backbone-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jointjs/3.6.2/joint.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const graph = new joint.dia.Graph();
+        let currentFlowId = null;
+
+        // Criação do paper (depois do graph definido)
+        const paper = new joint.dia.Paper({
+            el: document.getElementById('paper'),
+            model: graph,
+            width: '100%',
+            height: '100%',
+            gridSize: 10,
+            drawGrid: true,
+            background: { color: '--card-background' },
+            interactive: true
+        });
+
+        // Carrega os dados do fluxograma (se houver)
+	const flowData = {{ flow_data|default('{}')|safe }};
+        if (flowData && flowData.cells) {
+            graph.fromJSON(flowData);
+            currentFlowId = '{{ flow_id }}';
+
+            // Reatribui eventos e corrige atributos dos blocos
+            graph.getCells().forEach(cell => {
+                if (cell.isElement()) {
+                    configurarBloco(cell);
+                }
+            });
+        }
+
+        function configurarBloco(cell) {
+            cell.on('pointerclick', () => {
+                openSidebar(cell);
+            });
+
+            const attrs = cell.attributes.attrs;
+
+            // Corrige imagem
+            if (attrs?.image?.['xlink:href']) {
+                cell.attr({
+                    image: {
+                        'xlink:href': attrs.image['xlink:href'],
+                        width: 20,
+                        height: 20,
+                        x: 65,
+                        y: 5
+                    }
+                });
+            }
+
+            // Corrige rótulo
+            if (attrs?.label?.text) {
+                cell.attr('label/text', attrs.label.text);
+            }
+
+            // Corrige posição (fallback)
+            if (!cell.position()) {
+                const pos = cell.attributes.position || { x: 100, y: 30 };
+                cell.position(pos.x, pos.y);
+            }
+        }
+
+        // --- Funções de criação de blocos ---
+        function criarBloco(tipo, label, color, logoUrl) {
+            const rect = new joint.shapes.standard.Rectangle();
+            rect.position(100, 30);
+            rect.resize(150, 60);
+            rect.attr({
+                body: { fill: color },
+                label: {
+                    text: label,
+                    fill: 'white',
+                    'font-size': 12,
+                    'text-anchor': 'middle',
+                    'ref-x': 0.5,
+                    'ref-y': 0.8,
+                    'x-alignment': 'middle',
+                    'y-alignment': 'middle'
+                },
+                image: {
+                    'xlink:href': logoUrl,
+                    width: 20,
+                    height: 20,
+                    x: 65,
+                    y: 5
+                }
+            });
+            rect.addTo(graph);
+            configurarBloco(rect);
+        }
+
+        window.addActionNode = (label, icon, color, logoUrl) => criarBloco('acao', label, color, logoUrl);
+        window.addSegmentationNode = (label, icon, color, logoUrl) => criarBloco('segmentacao', label, color, logoUrl);
+        window.addIntegrationNode = (label, icon, color, logoUrl) => criarBloco('integracao', label, color, logoUrl);
+        window.addProductNode = (label, icon, color, logoUrl) => criarBloco('produto', label, color, logoUrl);
+
+        // --- Outras funcionalidades ---
+        window.deleteSelected = function () {
+            const selectedCells = paper.findViewsInArea(paper.getArea());
+            selectedCells.forEach(view => view.model.remove());
+        };
+
+        window.saveFlow = function () {
+            const data = graph.toJSON();
+            if (!currentFlowId) {
+                const name = prompt("Digite o nome do fluxograma:");
+                if (!name) return alert("Nome obrigatório.");
+                fetch('/flows', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, data })
+                })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.id) {
+                        currentFlowId = response.id;
+                        window.history.replaceState(null, null, `/flow/${currentFlowId}`);
+                        alert('Fluxograma salvo com sucesso!');
+                    } else {
+                        alert('Erro ao salvar (sem ID retornado).');
+                    }
+                }).catch(err => {
+                    console.error(err);
+                    alert('Erro ao salvar.');
+                });
+            } else {
+                fetch('/flows', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: currentFlowId, name: null, data })
+                })
+                .then(res => {
+                    if (res.ok) alert('Fluxograma atualizado!');
+                    else alert('Erro ao atualizar.');
+                }).catch(err => {
+                    console.error(err);
+                    alert('Erro ao atualizar.');
+                });
+            }
+        };
+
+        window.zoomIn = () => {
+            const scale = paper.scale();
+            paper.scale(scale.sx + 0.1, scale.sy + 0.1);
+        };
+
+        window.zoomOut = () => {
+            const scale = paper.scale();
+            paper.scale(scale.sx - 0.1, scale.sy - 0.1);
+        };
+
+        window.exportFlow = () => {
+            const json = JSON.stringify(graph.toJSON(), null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'fluxograma.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        window.saveBlockConfig = () => {
+            const nodeId = document.getElementById('sidebar').dataset.nodeId;
+            const node = graph.getCell(nodeId);
+            node.attr('label/text', document.getElementById('block-name').value);
+            node.attr('body/description', document.getElementById('block-description').value);
+            document.getElementById('sidebar').classList.remove('active');
+        };
+
+        function openSidebar(node) {
+            document.getElementById('sidebar').classList.add('active');
+            document.getElementById('block-name').value = node.attr('label/text');
+            document.getElementById('block-description').value = node.attr('body/description') || '';
+            document.getElementById('sidebar').dataset.nodeId = node.id;
+        }
+
+        // --- Controles dos toolbars (visibilidade dos menus) ---
+        function closeAllSidebars() {
+            document.querySelectorAll('.expanded-toolbar').forEach(toolbar => toolbar.classList.remove('active'));
+            document.getElementById('header').classList.remove('expanded');
+        }
+
+        function toggleToolbar(id) {
+            const toolbar = document.getElementById(id);
+            const header = document.getElementById('header');
+            const active = toolbar.classList.contains('active');
+            closeAllSidebars();
+            if (!active) {
+                toolbar.classList.add('active');
+                header.classList.add('expanded');
+            }
+        }
+
+        window.toggleExpandedToolbar = () => toggleToolbar('expanded-toolbar');
+        window.toggleSegmentacaoToolbar = () => toggleToolbar('expanded-toolbar-segmentacao');
+        window.toggleIntegracaoToolbar = () => toggleToolbar('expanded-toolbar-integracao');
+        window.toggleProdutoToolbar = () => toggleToolbar('expanded-toolbar-produto');
+    });
+</script>
+
+    </body>
+</html>

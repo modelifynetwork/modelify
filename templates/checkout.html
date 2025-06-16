@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Checkout Premium</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 0% 100%, #3a1b55 0%, #18181b 80%) no-repeat fixed;
+      font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+      color: #f1f1f1;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .particles {
+      position: fixed;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      pointer-events: none; z-index: 0;
+    }
+    .particle {
+      position: absolute;
+      will-change: transform, opacity;
+      border-radius: 50%;
+      opacity: 0.54;
+      animation: float 10s linear infinite;
+      filter: blur(1.3px);
+      pointer-events: none;
+    }
+    @keyframes float {
+      0% { transform: translateY(0) scale(1);}
+      50% { transform: translateY(-90px) scale(1.12);}
+      100% { transform: translateY(0) scale(1);}
+    }
+    .checkout-container {
+      z-index: 1;
+      width: 100vw;
+      max-width: 420px;
+      background: rgba(24,24,27,0.98);
+      border-radius: 18px;
+      box-shadow: 0 8px 44px #ff85b222, 0 2px 0 #ff85b288;
+      overflow: hidden;
+      border: 2px solid #25112e;
+      backdrop-filter: blur(24px) saturate(130%);
+      margin-top: 16px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      min-height: 96vh;
+      position: relative;
+    }
+    .logo {
+      text-align: center;
+      padding: 20px 12px 12px 12px;
+      border-bottom: 1.5px solid #312034;
+      background: transparent;
+    }
+    .logo h1 {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #fff;
+      letter-spacing: -1px;
+      text-shadow: 0 0 24px #ff85b255;
+      font-family: 'Poppins','Inter',sans-serif;
+    }
+    .logo h1 span {
+      background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .product-header {
+      width: 100%;
+      padding: 0;
+      background: transparent;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 1.1rem;
+      border-bottom: 1.5px solid #312034;
+    }
+    .product-cover {
+      width: 102px;
+      height: 102px;
+      border-radius: 14px;
+      object-fit: cover;
+      margin: 18px 0 12px 18px;
+      box-shadow: 0 6px 32px #ff85b244;
+      border: 2.5px solid #ff85b233;
+      background: #232336;
+      flex-shrink: 0;
+    }
+    .product-header-main {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      margin: 18px 0 12px 0;
+      flex: 1;
+    }
+    .product-title-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 2px;
+      flex-wrap: wrap;
+    }
+    .product-title {
+      font-size: 1.13rem;
+      font-weight: bold;
+      color: #fff;
+      margin-top: 0;
+      margin-bottom: 2px;
+      text-shadow: 0 2px 14px #18181bCC, 0 0px 16px #a78bfa99;
+      letter-spacing: 0.01em;
+      background: rgba(0,0,0,0.13);
+      border-radius: 7px;
+      padding: 1px 8px;
+      display: inline-block;
+    }
+    .product-price {
+      font-size: 1.08rem;
+      font-weight: bold;
+      background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+      margin: 0 0 2px 0;
+      letter-spacing: 0.03em;
+    }
+    .product-header-desc {
+      font-size: 1.01rem;
+      color: #e5e5ee;
+      margin-top: 4px;
+      text-shadow: 0 1px 10px #18181bCC, 0 0px 10px #a78bfa55;
+      max-width: 98%;
+      line-height: 1.25;
+    }
+    .badge-seguro {
+      display: inline-flex;
+      align-items: center;
+      background: linear-gradient(90deg, #18181b 0%, #232336 100%);
+      color: #ff85b2;
+      font-size: 0.95em;
+      font-weight: 700;
+      padding: 0.18em 0.95em;
+      border-radius: 999px;
+      border: 1.2px solid #a78bfa55;
+      margin: 0 0 0.3rem 0;
+      box-shadow: 0 1.5px 10px #a78bfa33;
+      opacity: 0.97;
+    }
+    .form-section {
+      padding: 14px 7vw 8px 7vw;
+      background: #18181b;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      flex: 1 1 auto;
+    }
+    .form-section h2 {
+      font-size: 1.07rem;
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 9px;
+      margin-top: 6px;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 8px #ff85b244;
+      text-align: left;
+    }
+    .input-group {
+      position: relative;
+      margin-bottom: 10px;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 13px 15px 13px 38px;
+      border: 1.5px solid #312034;
+      border-radius: 9px;
+      background: rgba(32,8,40,0.44);
+      color: #ff85b2;
+      font-size: 1.01rem;
+      font-family: inherit;
+      font-weight: 500;
+      transition: border-color .2s, box-shadow .2s;
+      box-shadow: 0 1px 8px #a78bfa18;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: #ff85b2;
+      box-shadow: 0 0 6px #a78bfa99;
+      background: rgba(32,8,40,0.62);
+      color: #fff;
+    }
+    .input-group svg {
+      position: absolute;
+      left: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 19px; height: 19px; color: #a78bfa;
+      opacity: 0.82;
+      pointer-events: none;
+    }
+    .payment-options {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      margin-top: 7px;
+    }
+    .payment-option {
+      flex: 1;
+      padding: 8px 0;
+      text-align: center;
+      border-radius: 9px;
+      border: 1.5px solid #312034;
+      background: rgba(32,8,40,0.44);
+      color: #a78bfa;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s cubic-bezier(.62,.04,.7,1.02);
+      font-size: 0.97rem;
+      box-shadow: 0 1px 8px #a78bfa18;
+    }
+    .payment-option.active {
+      background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+      color: #18181b;
+      border-color: #a78bfa;
+      font-weight: 800;
+      box-shadow: 0 4px 18px #ff85b266;
+    }
+    .payment-option:hover {
+      border-color: #ff85b2;
+    }
+    .btn, .btn-free {
+      width: 100%;
+      font-size: 1.13rem;
+      font-weight: bold;
+      padding: 13px 0;
+      border-radius: 100px;
+      cursor: pointer;
+      border: none;
+      margin-top: 10px;
+      letter-spacing: 0.01em;
+      box-shadow: 0 2px 14px #ff85b244;
+      transition: filter .22s cubic-bezier(.62,.04,.7,1.02), box-shadow .22s, transform .16s;
+    }
+    .btn {
+      background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+      color: #fff;
+    }
+    .btn:hover {
+      filter: brightness(1.10) saturate(1.06);
+      box-shadow: 0 6px 24px #a78bfa77;
+      transform: scale(1.025) translateY(-2px);
+    }
+    .btn-free {
+      background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+      color: #18181b;
+      box-shadow: 0 2px 16px #43e97b44;
+    }
+    .btn-free:hover {
+      filter: brightness(1.09) contrast(1.12);
+      box-shadow: 0 8px 30px #43e97b88;
+      transform: scale(1.025) translateY(-2px);
+    }
+    .qrcode-area {
+      margin-top: 20px;
+      text-align: center;
+      display: none;
+    }
+    .qrcode-area img {
+      max-width: 180px;
+      margin: 10px auto;
+      border-radius: 10px;
+      border: 2px solid #a78bfa;
+      box-shadow: 0 3px 18px #a78bfa77;
+    }
+    .summary {
+      background: rgba(32,8,40,0.44);
+      padding: 14px 10px 10px 10px;
+      border-radius: 10px;
+      margin-top: 14px;
+      box-shadow: 0 2px 10px #a78bfa18;
+      font-size: 0.98rem;
+      text-align: center;
+    }
+    .summary h3 {
+      font-size: 1.08rem;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 0 1px 8px #ff85b244;
+    }
+    .summary p {
+      font-size: 0.98rem;
+      margin: 5px 0;
+      color: #b6b6d1;
+    }
+    .summary .price {
+      font-size: 1.05rem;
+      font-weight: bold;
+      background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+      margin-top: 2px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(20, 7, 23, 0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px) saturate(120%);
+    }
+    .modal-content {
+      background: #18181b;
+      padding: 28px 18px 20px 18px;
+      border-radius: 16px;
+      text-align: center;
+      width: 90%;
+      max-width: 350px;
+      box-shadow: 0 4px 20px #a78bfa77;
+      border: 1.5px solid #312034;
+    }
+    .modal-content img {
+      width: 100%;
+      max-width: 230px;
+      height: auto;
+      margin: 18px 0;
+      border-radius: 8px;
+      border: 2px solid #a78bfa;
+      box-shadow: 0 3px 18px #a78bfa44;
+    }
+    .modal-content h3 {
+      color: #fff;
+      font-size: 1.35rem;
+      margin-bottom: 10px;
+    }
+    .modal-content p {
+      color: #b6b6d1;
+      margin-bottom: 17px;
+      font-size: 1rem;
+    }
+    .modal-content button {
+      background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+      color: #fff;
+      font-weight: bold;
+      padding: 9px 20px;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      transition: all 0.22s cubic-bezier(.62,.04,.7,1.02);
+      margin-top: 6px;
+      box-shadow: 0 2px 12px #a78bfa22;
+    }
+    .modal-content button:hover {
+      filter: brightness(1.08);
+      box-shadow: 0 6px 20px #a78bfa55;
+    }
+    .animate-zoomIn {
+      animation: zoomIn 0.5s ease-out forwards;
+    }
+    @keyframes zoomIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @media (max-width: 600px) {
+      .checkout-container {
+        max-width: 99vw;
+        border-radius: 0;
+        margin: 0;
+        width: 100vw;
+        min-height: 100vh;
+      }
+      .product-header {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.6rem;
+      }
+      .product-cover {
+        margin: 16px auto 3px auto;
+      }
+      .product-header-main {
+        margin: 2px 0 0 0;
+        align-items: center;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+  <div class="checkout-container">
+    <div class="logo">
+      <h1>Modeli<span>fy</span></h1>
+    </div>
+    <!-- Product header: capa, nome, preço, desc, badge -->
+    <div class="product-header">
+      <img src="/{{ produto['imagem'] }}" alt="Produto" class="product-cover" />
+      <div class="product-header-main">
+        <span class="badge-seguro">
+          <svg width="17" height="17" fill="none" stroke="#ff85b2" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2l4-4"/></svg>
+          Compra 100% Segura
+        </span>
+        <div class="product-title-row">
+          <div class="product-title">{{ produto['nome'] }}</div>
+          <div class="product-price">R$ {{ produto['preco'] }}</div>
+        </div>
+        <div class="product-header-desc">{{ produto['descricao'] }}</div>
+      </div>
+    </div>
+    <form class="form-section" autocomplete="off" onsubmit="event.preventDefault();">
+      <h2>Seus Dados</h2>
+      <input type="hidden" id="produtoId" value="{{ produto['id'] }}">
+      <div class="input-group">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5.5 21c0-2.8 3-5 6.5-5s6.5 2.2 6.5 5"/></svg>
+        <input type="text" placeholder="Primeiro nome" id="nome" autocomplete="given-name">
+      </div>
+      <div class="input-group">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5.5 21c0-2.8 3-5 6.5-5s6.5 2.2 6.5 5"/></svg>
+        <input type="text" placeholder="Sobrenome" id="sobrenome" autocomplete="family-name">
+      </div>
+      <div class="input-group">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M22 6l-10 7L2 6"/></svg>
+        <input type="email" placeholder="E-mail" id="email" autocomplete="email">
+      </div>
+      <div class="input-group">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01"/><path d="M6 14h.01"/></svg>
+        <input type="tel" placeholder="Celular" id="celular" autocomplete="tel">
+      </div>
+      <div class="input-group">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01"/><path d="M6 14h.01"/></svg>
+	<input type="text" name="cpf" id="cpf" placeholder="000.000.000-00" maxlength="14">
+      </div>
+      <h2>Pagamento</h2>
+      <div id="paymentSection">
+        <div class="payment-options">
+          <div class="payment-option active">Pix</div>
+          <div class="payment-option">Cartão</div>
+          <div class="payment-option">Boleto</div>
+        </div>
+        <button id="btnComprar" class="btn">Comprar com Pix</button>
+      </div>
+      <button id="btnFree" class="btn-free" style="display: none;">ACESSAR GRATUITAMENTE</button>
+      <div id="qrcodeArea" class="qrcode-area">
+        <p>Escaneie o QR Code para pagar:</p>
+        <img id="qrcode" src="" alt="QR Code Pix">
+      </div>
+      <div class="summary">
+        <h3>Resumo da Compra</h3>
+        <p>Produto: <strong>{{ produto['nome'] }}</strong></p>
+        <p class="price">Preço: R$ {{ produto['preco'] }}</p>
+      </div>
+    </form>
+  </div>
+  <!-- Modal de aguardando pagamento -->
+  <div id="modalAguardando" class="modal">
+    <div class="modal-content">
+      <h3>Aguardando pagamento...</h3>
+      <p>Escaneie o QR Code acima ou use o código Pix abaixo para concluir o pagamento.</p>
+      <img id="qrcodeModal" src="" alt="QR Code Pix">
+      <span id="pixCode" style="word-break:break-all;display:block;margin-bottom:10px;"></span>
+      <button id="btnCopiar" onclick="copyPixCode()">Copiar código Pix</button>
+    </div>
+  </div>
+<div id="paymentSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+  <!-- Modal Content -->
+   <div class="bg-gray-900 rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center animate-zoomIn">
+    <div class="text-green-500 mb-4">
+      <!-- Icone de Check -->
+      <svg class="mx-auto w-16 h-16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
+    <h2 class="text-2xl font-bold mb-2">Pagamento Confirmado!</h2>
+    <p class="text-gray-600 mb-6">Seu acesso foi liberado. Aproveite!</p>
+    <button onclick="closeModal()" class="bg-gradient-to-r from-pink-500 to-fuchsia-500 hover:from-pink-600 hover:to-fuchsia-600 text-white font-bold py-2 px-6 rounded-full transition">
+      Acessar Produto
+    </button>
+  </div>
+</div>
+<script>
+const productPrice = {{ produto['preco'] }};
+const btnFree = document.getElementById("btnFree");
+const btnComprar = document.getElementById("btnComprar");
+const paymentSection = document.getElementById("paymentSection");
+const modalAguardando = document.getElementById("modalAguardando");
+const qrcodeModal = document.getElementById("qrcodeModal");
+const pixCodeElement = document.getElementById("pixCode");
+const btnCopiar = document.getElementById("btnCopiar");
+if (productPrice === 0) {
+  paymentSection.style.display = "none";
+  btnFree.style.display = "block";
+} else {
+  btnFree.style.display = "none";
+}
+btnFree.addEventListener("click", async () => {
+  const nome = document.getElementById("nome").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const cpf = document.getElementById("cpf").value.trim();
+  const celular = document.getElementById("celular").value.trim();
+  if (!nome || !email || !cpf || !celular) {
+    alert("Por favor, preencha todos os campos obrigatórios!");
+    return;
+  }
+  try {
+    const response = await fetch("/incrementar_vendas", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ nome, email, cpf, celular })
+    });
+    const data = await response.json();
+    if (response.ok) {
+      alert(data.message || "Acesso concedido com sucesso!");
+      window.location.href = "/agradecimento";
+    } else {
+      alert(data.error || "Erro ao processar acesso gratuito.");
+    }
+  } catch (error) {
+    console.error("Erro:", error);
+    alert("Erro ao processar acesso gratuito.");
+  }
+});
+btnComprar.addEventListener("click", async () => {
+  const nome = document.getElementById("nome").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const cpf = document.getElementById("cpf").value.trim();
+  const celular = document.getElementById("celular").value.trim();
+  const produtoId = document.getElementById('produtoId').value;
+  if (!nome || !email || !cpf || !celular) {
+    alert("Por favor, preencha todos os campos obrigatórios!");
+    return;
+  }
+  try {
+    const response = await fetch("/criar_pagamento_pix", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: produtoId,
+        nome: nome,
+        email: email,
+        cpf: cpf,
+        celular: celular
+      })
+    });
+    const data = await response.json();
+    // Corrigir aqui: aceita tanto base64 quanto url comum
+    if (data.qrcode) {
+      // Detecta se é base64 ou URL (simples)
+      let qrimg = data.qrcode.startsWith("data:image") || data.qrcode.startsWith("/") || data.qrcode.startsWith("http")
+        ? data.qrcode
+        : "data:image/png;base64," + data.qrcode;
+      document.getElementById("qrcode").src = qrimg;
+      qrcodeModal.src = qrimg;
+      localStorage.setItem("payment_id", data.paymentId);
+      localStorage.setItem("id_transacao", data.idTransacao);
+      modalAguardando.style.display = "flex";
+      if (pixCodeElement) {
+        pixCodeElement.innerText = data.qrcode_url || "Código não disponível";
+      }
+      pagamentoInterval = setInterval(verificarPagamento, 3000);
+    } else {
+      alert(data.error || "Erro ao gerar QR Code.");
+    }
+  } catch (error) {
+    console.error("Erro ao processar:", error);
+    alert("Erro ao processar.");
+  }
+});
+function verificarPagamento() {
+  const paymentId = localStorage.getItem("payment_id");
+  if (!paymentId) {
+    console.error("Nenhum payment_id encontrado no localStorage!");
+    return;
+  }
+  fetch(`/verificar-pagamento?payment_id=${paymentId}`)
+    .then(response => {
+      if (!response.ok) throw new Error(`Erro na resposta da API: ${response.statusText}`);
+      return response.json();
+    })
+    .then(data => {
+      if (data && data.status === "approved") {
+        clearInterval(pagamentoInterval);
+        modalAguardando.style.display = "none";
+        showModal();
+      }
+    })
+    .catch(error => {
+      console.error("Erro ao verificar pagamento:", error);
+    });
+}
+function showModal() {
+  // Mostra modal de sucesso
+  document.getElementById('paymentSuccessModal').classList.remove('hidden');
+
+  // Pega o email do formulário
+  const email = document.getElementById('email').value.trim();
+  const produtoId = document.getElementById('produtoId').value;
+
+  // Chama a API para registrar a chave
+  fetch('/registrar_chave', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({email: email, produto_id: produtoId})
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.access_key) {
+        // Exemplo: mostra a chave no modal (opcional)
+        alert("Sua chave de acesso foi enviada por E-mail! Use ela para acessar os conteúdos.");
+        // Ou atualize algum elemento do modal para mostrar a chave
+        // document.getElementById('suaChave').innerText = data.access_key;
+      }
+    })
+    .catch(err => {
+      console.error('Erro ao gerar chave:', err);
+    });
+}
+
+function closeModal() {
+  document.getElementById('paymentSuccessModal').classList.add('hidden');
+  window.location.href = "/acessar_conteudos";
+}
+function copyPixCode() {
+  const pixCode = pixCodeElement.innerText;
+  navigator.clipboard.writeText(pixCode).then(() => {
+    alert("Código Pix copiado!");
+  });
+}
+// Fundo animado
+function randomInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+function createParticle() {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  const size = randomInt(18, 38);
+  p.style.width = p.style.height = size + 'px';
+  p.style.left = randomInt(-10, 95) + 'vw';
+  p.style.top = randomInt(0, 95) + 'vh';
+  p.style.background = `radial-gradient(circle at 60% 40%, #ff85b2 0%, #a78bfa 90%)`;
+  p.style.opacity = Math.random() * 0.19 + 0.09;
+  p.style.animationDuration = randomInt(9, 16) + 's';
+  p.style.animationDelay = -randomInt(2, 16) + 's';
+  document.getElementById('particles').appendChild(p);
+}
+for (let i = 0; i < 18; i++) createParticle();
+</script>
+</body>
+</html>

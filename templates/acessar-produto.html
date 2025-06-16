@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Cliente</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --primary-color: #ff007f;
+      --secondary-color: #1a1a1a;
+      --background-color: #ffffff;
+      --card-color: #f7f7f7;
+      --text-color: #333333;
+      --hover-color: rgba(255, 0, 127, 0.2);
+      --border-color: #dddddd;
+    }
+
+    body {
+      background-color: var(--background-color);
+      color: var(--text-color);
+    }
+
+    .sidebar {
+      background-color: var(--secondary-color);
+      color: #ffffff;
+    }
+
+    .menu-item:hover {
+      background: var(--hover-color);
+    }
+
+    .card {
+      background: var(--card-color);
+      color: var(--text-color);
+    }
+  </style>
+</head>
+<body class="flex h-screen">
+
+  <!-- Sidebar -->
+  <aside class="sidebar w-64 p-6 flex flex-col justify-between">
+    <div>
+      <h2 class="text-2xl font-bold mb-8">Minha Conta</h2>
+      <nav class="space-y-4">
+        <a href="#" class="block py-2 px-3 rounded menu-item">Meus Conteúdos</a>
+        <a href="#" class="block py-2 px-3 rounded menu-item">Alterar Senha</a>
+        <a href="#" class="block py-2 px-3 rounded menu-item">Suporte</a>
+      </nav>
+    </div>
+    <button class="mt-8 bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700">Sair</button>
+  </aside>
+
+  <!-- Conteúdo -->
+  <main class="flex-1 p-8 overflow-y-auto">
+    <h1 class="text-3xl font-bold mb-6">Olá, bem-vindo ao seu painel!</h1>
+
+    <!-- Produtos / Módulos -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="card rounded-lg shadow-md p-4">
+        <h2 class="text-xl font-semibold mb-2">Produto 1</h2>
+        <p class="mb-4 text-sm">Acesso completo ao módulo X. Assista, leia ou baixe o conteúdo agora.</p>
+        <button class="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700">Acessar</button>
+      </div>
+      <div class="card rounded-lg shadow-md p-4">
+        <h2 class="text-xl font-semibold mb-2">Produto 2</h2>
+        <p class="mb-4 text-sm">Conteúdo exclusivo para membros. Vídeos, PDFs e mais.</p>
+        <button class="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700">Acessar</button>
+      </div>
+      <!-- Adicione mais blocos de produtos dinamicamente -->
+    </div>
+  </main>
+
+</body>
+</html>

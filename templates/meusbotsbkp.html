@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Bots | Modelify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        html, body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #18181b 0%, #23272f 100%);
+        }
+        ::selection { background: #ff85b2; color: #fff; }
+        ::-webkit-scrollbar { width: 10px; background: #242438; }
+        ::-webkit-scrollbar-thumb { background: #ff85b2; border-radius: 10px; }
+        .pulse {
+            position: relative;
+            width: 16px;
+            height: 16px;
+        }
+        .pulse-dot {
+            position: absolute;
+            left: 0; top: 0;
+            width: 16px; height: 16px;
+            border-radius: 9999px;
+            background: #4ade80; /* green-400 */
+            animation: pulse-bot 1.2s infinite;
+            opacity: 0.7;
+        }
+        .pulse-center {
+            position: absolute;
+            left: 4px; top: 4px;
+            width: 8px; height: 8px;
+            border-radius: 9999px;
+            background: #22c55e; /* green-500 */
+            z-index: 1;
+        }
+        @keyframes pulse-bot {
+            0% { transform: scale(1); opacity: 0.7; }
+            70% { transform: scale(2); opacity: 0; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            font-weight: 700;
+        }
+        /* Sidebar Premium Flutuante */
+        .premium-sidebar {
+          position: fixed;
+          top: 2.5vh;
+          left: 2vw;
+          height: 95vh;
+          width: 4.5rem;
+          z-index: 40;
+          background: linear-gradient(120deg, #18181b 85%, #23272f 120%);
+          border-radius: 2.5rem;
+          box-shadow:
+            0 2px 16px 0 #9b6cf32a,
+            0 2px 8px 0 #0005,
+            0 0 0 1.5px #26263a inset;
+          overflow: hidden;
+          border: 1.5px solid #26263a;
+          transition: width 0.33s cubic-bezier(.4,2,.3,1), box-shadow 0.3s;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          padding: 0.5rem 0.2rem;
+        }
+        .premium-sidebar.expanded {
+          width: 17rem;
+          box-shadow: 0 16px 54px 0 #a78bfa40, 0 1.5px 8px #ff85b240;
+        }
+        .premium-sidebar .sidebar-label {
+          opacity: 0;
+          transition: opacity .2s;
+          white-space: nowrap;
+        }
+        .premium-sidebar.expanded .sidebar-label {
+          opacity: 1;
+        }
+        .premium-sidebar .sidebar-link {
+          justify-content: center;
+          transition: background 0.2s, color 0.2s, justify-content 0.3s;
+        }
+        .premium-sidebar.expanded .sidebar-link {
+          justify-content: flex-start;
+        }
+        .premium-sidebar .sidebar-link .sidebar-label {
+          display: none;
+        }
+        .premium-sidebar.expanded .sidebar-link .sidebar-label {
+          display: inline;
+        }
+        .premium-sidebar:hover,
+        .premium-sidebar:focus-within {
+          width: 17rem !important;
+        }
+        .premium-sidebar:hover .sidebar-label,
+        .premium-sidebar:focus-within .sidebar-label {
+          opacity: 1 !important;
+          display: inline !important;
+        }
+        .premium-sidebar .brand {
+          opacity: 0;
+          transition: opacity 0.2s;
+          pointer-events: none;
+          height: 0;
+        }
+        .premium-sidebar.expanded .brand,
+        .premium-sidebar:hover .brand,
+        .premium-sidebar:focus-within .brand {
+          opacity: 1;
+          pointer-events: auto;
+          height: auto;
+        }
+        @media (max-width: 900px) {
+          .premium-sidebar, .premium-sidebar.expanded { left: 1vw; width: 3.5rem; }
+          .premium-sidebar.expanded { width: 99vw !important; border-radius: 2.5rem; }
+        }
+        .dashboard-card-wrapper {
+            border-radius: 1.5rem;
+            box-shadow: 0 6px 40px 0 #00000022, 0 2px 8px #a78bfa11;
+            background: rgba(25, 25, 36, 0.92);
+            padding: 2rem 1.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            min-height: 90vh;
+            transition: margin-left 0.33s cubic-bezier(.4,2,.3,1), width 0.33s cubic-bezier(.4,2,.3,1);
+        }
+        @media (max-width: 900px) {
+            .dashboard-card-wrapper {
+                border-radius: 1rem;
+                padding: 1rem 0.5rem;
+            }
+        }
+        .sidebar-link .sidebar-label .pulse {
+          animation: none !important;
+        }
+        .sidebar-link:hover, .sidebar-link:focus {
+          box-shadow: 0 2px 16px 0 #a78bfa15, 0 2px 8px 0 #0005;
+          transform: scale(1.03);
+        }
+    </style>
+</head>
+<body class="min-h-screen transition-colors duration-500 text-[#18181b] dark:text-[#f6f6f6] bg-[#18181b]">
+
+<div class="flex h-screen overflow-hidden bg-gradient-to-br from-[#181824] via-[#181824] to-[#232336]" style="position:relative;z-index:1;">
+    <!-- Sidebar Premium Flutuante -->
+    <aside id="premiumSidebar" class="premium-sidebar group" tabindex="0">
+      <div>
+        <div class="brand flex items-center gap-2 mx-5 mt-8 mb-7">
+          <span class="text-2xl font-extrabold text-white">Modeli<span class="gradient-text">fy</span></span>
+        </div>
+        <ul class="flex flex-col gap-2">
+          <li>
+            <a href="/dashboard" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="layout-dashboard" class="w-6 h-6 text-pink-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Painel</span>
+            </a>
+          </li>
+          <li>
+            <a href="/vendas" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="shopping-bag" class="w-6 h-6 text-green-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Vendas</span>
+            </a>
+          </li>
+          <li>
+            <a href="/afiliados" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="users" class="w-6 h-6 text-blue-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Afiliados</span>
+            </a>
+          </li>
+          <li>
+            <a href="/produtos" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="package" class="w-6 h-6 text-yellow-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Produtos</span>
+            </a>
+          </li>
+          <li>
+            <a href="/meus_bots" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl bg-pink-400/10 text-pink-400 scale-105 group transition">
+              <i data-lucide="bot" class="w-6 h-6 text-blue-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Bots</span>
+            </a>
+          </li>
+          <li>
+            <a href="/aulas" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-400/10 group transition">
+              <i data-lucide="graduation-cap" class="w-6 h-6 text-fuchsia-400"></i>
+              <span class="sidebar-label text-base font-medium ml-1">Aulas Gratuitas</span>
+            </a>
+          </li>
+          <li>
+            <a href="/saque" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-2xl bg-[#262e2a] border border-green-400/30 hover:bg-green-400/10 hover:text-green-400 transition">
+              <span class="flex items-center justify-center rounded-xl bg-gradient-to-br from-green-400/80 to-emerald-600 w-9 h-9 shadow border border-green-400/40">
+                <i data-lucide="wallet" class="w-6 h-6 text-white"></i>
+              </span>
+              <span class="sidebar-label text-base font-semibold tracking-wide ml-1">Saque</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="mb-6 flex flex-col items-center gap-6">
+        <button id="theme-toggle" class="w-10 h-10 rounded-full bg-pink-500/20 hover:bg-pink-400/50 flex items-center justify-center transition">
+          <i data-lucide="moon" class="w-6 h-6 text-pink-400" id="moon-icon"></i>
+          <i data-lucide="sun" class="w-6 h-6 text-yellow-400 hidden" id="sun-icon"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="mainContent" class="flex-1 flex flex-col transition-all duration-300" style="margin-left:6.5rem;">
+      <div class="dashboard-card-wrapper max-w-7xl mx-auto">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl md:text-3xl font-bold text-[#18181b] dark:text-pink-200 tracking-tight">Meus Bots</h2>
+            <a href="/criar_bot" class="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-br from-pink-500 to-fuchsia-500 text-white font-bold shadow hover:scale-105 hover:bg-pink-600 active:scale-95 transition-all duration-300">
+                <i data-lucide="plus-circle" class="w-5 h-5"></i> Novo Bot
+            </a>
+        </div>
+        <div class="overflow-x-auto">
+        <table class="min-w-full rounded-3xl bg-white/90 dark:bg-[#181824] shadow-xl text-sm" id="bots-table">
+          <thead>
+            <tr class="bg-pink-50 dark:bg-[#232336] border-b border-pink-100 dark:border-pink-900 text-[#18181b] dark:text-pink-200">
+              <th class="px-5 py-4 text-left font-semibold">BOT</th>
+              <th class="px-5 py-4 text-left font-semibold">TOKEN</th>
+              <th class="px-5 py-4 text-left font-semibold">LINK</th>
+              <th class="px-5 py-4 text-center font-semibold">STATUS</th>
+              <th class="px-5 py-4 text-left font-semibold">CRIADO EM</th>
+              <th class="px-5 py-4 text-left font-semibold">PALAVRA-CHAVE</th>
+              <th class="px-5 py-4 text-left font-semibold">MENSAGEM</th>
+              <th class="px-5 py-4 text-center font-semibold">AÇÕES</th>
+            </tr>
+          </thead>
+          <tbody id="bots-tbody">
+            <tr id="bots-loading"><td colspan="8" class="py-10 text-center text-gray-400">Carregando bots...</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </main>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    lucide.createIcons();
+    // sidebar animation
+    const sidebar = document.getElementById('premiumSidebar');
+    const mainContent = document.getElementById('mainContent');
+    const dashboardCardWrapper = document.getElementById('dashboardCardWrapper');
+    const SIDEBAR_COLLAPSED = 4.5; // rem
+    const SIDEBAR_EXPANDED = 17;   // rem
+    function setMainMargin(isExpanded) {
+        let ml = isExpanded ? (SIDEBAR_EXPANDED + 2) : (SIDEBAR_COLLAPSED + 2);
+        mainContent.style.marginLeft = ml + 'rem';
+        if (dashboardCardWrapper) {
+            dashboardCardWrapper.style.marginLeft = isExpanded ? "1rem" : "0.25rem";
+            dashboardCardWrapper.style.width = isExpanded ? "calc(100% - 2rem)" : "100%";
+        }
+    }
+    setMainMargin(false);
+    sidebar.addEventListener('mouseenter', function() {
+        sidebar.classList.add('expanded');
+        setMainMargin(true);
+    });
+    sidebar.addEventListener('mouseleave', function() {
+        sidebar.classList.remove('expanded');
+        setMainMargin(false);
+    });
+
+    // Carregar bots via AJAX
+    fetch('/api/meus_bots')
+      .then(r => r.json())
+      .then(bots => {
+        const tbody = document.getElementById("bots-tbody");
+        tbody.innerHTML = "";
+        if(!bots.length) {
+          tbody.innerHTML = `<tr><td colspan="8" class="text-center text-gray-400 py-12">
+            Você ainda não criou nenhum bot.<br>
+            <a href="/criar_bot" class="inline-block mt-4 px-6 py-3 rounded-2xl bg-gradient-to-br from-pink-500 to-fuchsia-500 text-white font-bold shadow hover:scale-105 hover:bg-pink-600 active:scale-95 transition-all duration-300">
+              <i data-lucide="plus-circle" class="w-5 h-5"></i> Criar seu primeiro Bot
+            </a></td></tr>`;
+          lucide.createIcons();
+          return;
+        }
+        bots.forEach(bot => {
+          tbody.innerHTML += `
+            <tr class="group border-b border-pink-50 dark:border-pink-900 hover:bg-pink-50 dark:hover:bg-[#232336] transition">
+              <td class="px-5 py-5 whitespace-nowrap">
+                <div class="flex items-center gap-3">
+                  ${bot.photo_filename
+                    ? `<img src="/static/${bot.photo_filename}" alt="${bot.bot_name}" class="w-11 h-11 rounded-full object-cover border-2 border-pink-400 shadow">`
+                    : `<div class="w-11 h-11 rounded-full bg-pink-100 flex items-center justify-center text-pink-400 text-xl border-2 border-pink-400 shadow">
+                        <i data-lucide="bot"></i>
+                      </div>`
+                  }
+                  <div>
+                    <div class="font-bold text-base text-[#18181b] dark:text-pink-100 truncate">${bot.bot_name}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-5 py-5 whitespace-nowrap text-xs text-gray-500 dark:text-pink-200">${bot.bot_token.slice(0,8)}...</td>
+              <td class="px-5 py-5 whitespace-nowrap">
+                <a href="https://web.telegram.org/a/#${bot.link_username}" target="_blank" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-pink-400/10 text-pink-500 text-xs font-bold hover:bg-pink-400/20 transition">
+                  <i data-lucide="send" class="w-4 h-4"></i> Chat Bot
+                </a>
+              </td>
+              <td class="px-5 py-5 text-center">
+                ${bot.ativo
+                  ? `<span class="inline-flex items-center px-1">
+                        <span class="pulse"><span class="pulse-dot"></span><span class="pulse-center"></span></span>
+                        <span class="ml-2 font-semibold text-green-500">Ativo</span>
+                     </span>`
+                  : `<span class="inline-flex items-center px-1">
+                        <span class="w-4 h-4 rounded-full bg-gray-400 border-[3px] border-white"></span>
+                        <span class="ml-2 font-semibold text-gray-400">Pausado</span>
+                     </span>`
+                }
+              </td>
+              <td class="px-5 py-5 whitespace-nowrap text-xs text-gray-500 dark:text-pink-200">${bot.created_at ? bot.created_at.slice(0,10) : ''}</td>
+              <td class="px-5 py-5 whitespace-nowrap text-xs text-gray-500 dark:text-pink-200">${bot.confirmation_keyword || ''}</td>
+              <td class="px-5 py-5 whitespace-nowrap text-xs text-gray-500 dark:text-pink-200">${bot.confirmation_message ? (bot.confirmation_message.length > 18 ? bot.confirmation_message.slice(0,18) + '...' : bot.confirmation_message) : ''}</td>
+              <td class="px-5 py-5 text-center">
+                <div class="flex gap-2 justify-center">
+                  <a href="/editar_bot/${bot.id}" class="px-4 py-2 rounded-2xl bg-pink-100 dark:bg-pink-900 text-pink-500 dark:text-pink-200 font-semibold shadow hover:bg-pink-400 hover:text-white transition-all duration-300 flex items-center gap-2 text-xs">
+                    <i data-lucide="edit-3" class="w-4 h-4"></i> Editar
+                  </a>
+                  ${bot.ativo
+                    ? `<form method="POST" action="/pausar_bot/${bot.id}">
+                        <button type="submit" class="px-4 py-2 rounded-2xl bg-yellow-100 dark:bg-yellow-900 text-yellow-500 font-semibold shadow hover:bg-yellow-400 hover:text-white transition-all duration-300 flex items-center gap-2 text-xs">
+                          <i data-lucide="pause-circle" class="w-4 h-4"></i> Pausar
+                        </button>
+                      </form>`
+                    : `<form method="POST" action="/ativar_bot/${bot.id}">
+                        <button type="submit" class="px-4 py-2 rounded-2xl bg-green-100 dark:bg-green-900 text-green-500 font-semibold shadow hover:bg-green-400 hover:text-white transition-all duration-300 flex items-center gap-2 text-xs">
+                          <i data-lucide="play-circle" class="w-4 h-4"></i> Ativar
+                        </button>
+                      </form>`
+                  }
+                  <form method="POST" action="/excluir_bot/${bot.id}">
+                    <button type="submit" class="p-2 rounded-full bg-pink-50 dark:bg-pink-900 text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-800 transition" title="Excluir bot">
+                      <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+        lucide.createIcons();
+      });
+});
+</script>
+</body>
+</html>

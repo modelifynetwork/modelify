@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #ff007f;
+            --secondary-color: #1e1e2e;
+            --accent-color: #2a2a3a;
+        body {
+            background-color: #0f0f1e;
+        }
+	}
+        .sidebar {
+            width: 25%;
+            min-width: 250px;
+            max-width: 320px;
+            background: var(--secondary-color);
+            transition: all 0.3s ease-in-out;
+        }
+        .sidebar:hover {
+            background: var(--accent-color);
+        }
+        .menu-item:hover {
+            background: rgba(255, 0, 127, 0.3);
+            transition: background 0.2s;
+        }
+        .card {
+            background: var(--secondary-color);
+        }
+        .logout-btn {
+            background: var(--primary-color);
+            transition: background 0.3s;
+        }
+        .logout-btn:hover {
+            background: #cc0066;
+        }
+        .highlight {
+            background-color: #2d3748;
+        }
+        .fluxograma-container {
+            display: flex;
+            align-items: center;
+            background: #28a745;
+            padding: 5px;
+            border-radius: 8px;
+            transition: width 0.3s ease-in-out;
+            overflow: hidden;
+            width: 38px;
+        }
+        .fluxograma-container:hover {
+            width: 163px;
+        }
+        .fluxograma-text {
+            opacity: 0;
+            white-space: nowrap;
+            transition: opacity 0.3s;
+        }
+        .fluxograma-container:hover .fluxograma-text {
+            opacity: 1;
+            margin-left: 8px;
+        }
+        .container {
+            text-align: left;
+            margin-top: 50px;
+        }
+        .imagens {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .imagens img {
+            width: 200px;
+            height: auto;
+            border-radius: 10px;
+        }
+        .pasta-btn {
+            background: linear-gradient(145deg, #f06292, #d81b60);
+            color: white;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .pasta-btn:hover {
+            background: linear-gradient(145deg, #d81b60, #f06292);
+        }
+        .pasta-btn svg {
+            margin-right: 10px;
+        }
+        .profile-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal {
+            background-color: #1e1e2e;
+            border-radius: 10px;
+            padding: 20px;
+            width: 80%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 {
+            font-size: 1.5rem;
+            color: white;
+        }
+        .tabs {
+            display: flex;
+            gap: 15px;
+        }
+        .tab-button {
+            padding: 10px;
+            background-color: #2a2a3a;
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .tab-button:hover {
+            background-color: #ff007f;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+	/* Estilo da imagem */
+	.profile-img {
+	    width: 100px; /* Ajuste conforme necessário */
+	    height: 100px; /* Ajuste conforme necessário */
+	    object-fit: cover;
+	    border-radius: 50%;
+	    margin-right: 20px; /* Espaçamento entre imagem e texto */
+	}
+	
+	/* Container de texto ao lado da imagem */
+	.card-content {
+	    display: flex;
+	    align-items: center; /* Alinha a imagem e o texto no centro verticalmente */
+	}
+	
+	/* Estilo do container de texto */
+	.text-container {
+	    display: flex;
+	    flex-direction: column;
+	    justify-content: center;
+	    align-items: flex-start;
+	}
+	
+	/* Texto animado */
+	.animated-text {
+	    font-size: 20px; /* Tamanho do texto */
+	    font-weight: bold;
+	    color: #fff;
+	    opacity: 0; /* Começa invisível */
+	    animation: fadeIn 2s forwards; /* Aparece suavemente */
+	    margin-top: 10px;
+	}
+	
+	/* Animação de fade-in */
+	@keyframes fadeIn {
+	    0% {
+	        opacity: 0;
+	        transform: translateX(-20px); /* Começa deslocado à esquerda */
+	    }
+	    100% {
+	        opacity: 1;
+	        transform: translateX(0); /* Move para a posição original */
+	    }
+	}
+
+    </style>
+</head>
+<body class="bg-black text-white">
+    <div class="flex h-screen">
+        <div class="sidebar text-white p-5 flex flex-col justify-between rounded-r-2xl shadow-lg">
+            <div>
+                <h1 class="text-2xl font-bold"><span class="text-white">Modeli</span><span class="text-pink-500">fy</span></h1>
+                <hr class="border-gray-600 my-4">
+                <ul class="space-y-3">
+	            <li class="p-3 rounded cursor-pointer menu-item" onclick="window.location.href='/dashboard'">Painel</li>
+                    <li class="p-3 rounded cursor-pointer menu-item" onclick="window.location.href='/vendas'">Vendas</li>
+                    <li class="p-3 rounded cursor-pointer menu-item" onclick="window.location.href='/aff'">Afiliados</li>
+                    <li class="p-3 rounded cursor-pointer menu-item" onclick="window.location.href='/produtos'">Produtos</li>
+                    <li class="p-3 rounded cursor-pointer menu-item" onclick="window.location.href='/aulas'">Aulas Gratuitas</li>
+                </ul>
+                <h2 class="text-lg font-semibold mt-5">MODELOS IA</h2>
+                <hr class="border-gray-600 my-4">
+                <ul class="space-y-3">
+                    <li class="p-3 rounded cursor-pointer menu-item">Modelos Salvas</li>
+                    <li class="p-3 rounded cursor-pointer menu-item">Gerar Modelo IA</li>
+                    <li class="p-3 rounded cursor-pointer menu-item">Gerar Vozes</li>
+                    <li class="p-3 rounded cursor-pointer menu-item">Gerar Dados</li>
+                    <li class="p-3 text-gray-500">Gerar Produto + Funil (Em breve)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="flex-1 p-5">
+            <div class="flex justify-between items-center space-x-4 mb-5">
+                <div class="flex items-center">
+                    <img src="{{ user['picture'] }}" alt="User" class="w-12 h-12 rounded-full border-2 border-pink-500">
+                    <div class="ml-3">
+                        <p class="font-semibold">{{ user['name'] }}</p>
+                        <p class="text-sm text-gray-400">{{ user['email'] }}</p>
+                    </div>
+                    <div class="fluxograma-container ml-3">
+		        <img src="https://i.ibb.co/TDYPK8QJ/fluxograma-icon-removebg-preview.png" alt="Fluxograma" onclick="window.location.href='/flow'" class="w-6 h-6">
+                        <span class="fluxograma-text">Fluxos de Venda</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('logout') }}" class="text-white text-2xl">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+
+            <div class="container">
+                <h2 class="text-2xl font-semibold mb-5">Gerar Modelo Estruturada</h2>
+                <form method="POST" action="/ia">
+                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                        Gerar Modelo
+                    </button>
+                </form>
+
+                {% if modelo %}
+		<div class="card mt-5 p-4 rounded-lg border-2 border-purple-500 cursor-pointer" onclick="openModal()">
+    		<div class="card-content">
+    		    <img src="{{ modelo['profile_img'] }}" alt="Modelo Profile" class="profile-img">
+        
+       		 <!-- Texto animado -->
+       		 <div class="text-container">
+  		          <h3 class="text-white mt-2">CLIQUE PARA ACESSAR E BAIXAR OS CONTEÚDOS DA SUA MODELO!</h3>
+  		          <p class="animated-text">Modelo Gerada</p>
+    		    </div>
+    		</div>
+		</div>
+
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Detalhes do Modelo</h3>
+                <button onclick="closeModal()" class="text-white text-2xl">&times;</button>
+            </div>
+            <div class="tabs">
+                <button class="tab-button" onclick="showTab('descricao')">Conteúdo da Modelo</button>
+                <button class="tab-button" onclick="showTab('dados')">Dados para Criar Modelo</button>
+                <button class="tab-button" onclick="showTab('fotos')">Fotos Instagram</button>
+            </div>
+            <div class="tab-content descricao active">
+                <p>Descrição da modelo selecionada. Aqui você pode adicionar informações relevantes sobre a modelo.</p>
+            </div>
+            <div class="tab-content dados">
+                <p>Informações técnicas ou dados usados para gerar o modelo. Dados específicos da pasta, como a origem da imagem.</p>
+            </div>
+            <div class="tab-content fotos">
+                <div class="imagens">
+                    {% if imagens %}
+                        {% for img in imagens %}
+                            <img src="{{ img }}" alt="Imagem gerada" class="mt-2">
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal() {
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`.${tabName}`).classList.add('active');
+        }
+    </script>
+</body>
+</html>
