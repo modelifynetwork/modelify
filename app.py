@@ -121,7 +121,7 @@ google = oauth.register(
     client_secret=app.config['GOOGLE_CLIENT_SECRET'],
     server_metadata_url=app.config['GOOGLE_DISCOVERY_URL'],
     client_kwargs={'scope': 'openid email profile'},
-    redirect_uri='http://127.0.0.1:5000/auth/google/callback'
+    redirect_uri='https://modelify.onrender.com/auth/google/callback'
 )
 
 @app.errorhandler(Exception)
