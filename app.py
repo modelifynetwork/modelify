@@ -10,7 +10,7 @@ from PIL import Image
 from werkzeug.utils import secure_filename
 from flask import Flask, redirect, url_for, session, render_template
 from authlib.integrations.flask_client import OAuth
-from flask_session import Session
+# from flask_session import Session
 from flask import send_from_directory
 import json
 import uuid
@@ -101,10 +101,10 @@ for key, value in os.environ.items():
     print(f"{key} = {value}")
 
 # Configuração da sessão
-app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SESSION_PERMANENT'] = True
+#app.config['SESSION_TYPE'] = 'filesystem'
+#app.config['SESSION_PERMANENT'] = True
 app.config['UPLOAD_FOLDER'] = 'static/uploads'  # Pasta para wsalvar as imagens
-Session(app)
+#Session(app)
 
 # Configurações do OAuth
 oauth = OAuth(app)
