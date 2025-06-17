@@ -20,7 +20,7 @@ from datetime import datetime
 from email.mime.text import MIMEText
 
 def connect_db():
-    return sqlite3.connect('/data/database.db')
+    return sqlite3.connect('/db/database.db')
 
 mp = mercadopago.SDK("APP_USR-6436253612422218-033017-115c16f1f9ddf7fca0c289fb9f1081a8-2359242973")
 stripe.api_key = os.getenv("STRIPE_API_KEY")
