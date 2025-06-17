@@ -1127,8 +1127,7 @@ def checkout(uuid):
 def fluxograma(uuid):
     # Conexão com o banco de dados
     with connect_db() as conn:
-	cursor = conn.cursor()
-        # Busca o produto pelo UUID (extraído da URL, está como parte de url_checkout)
+        cursor = conn.cursor()
         cursor.execute('''
             SELECT id, nome, preco, imagem, quantidade_vendas, usuario_email, descricao, url_checkout, url_flow 
             FROM produtos 
