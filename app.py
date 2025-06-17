@@ -1554,8 +1554,8 @@ def bot(product_uuid):
     conn = connect_db()
     cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute(
-        'SELECT id, nome, preco, uuid FROM produtos WHERE uuid = %s AND usuario_email = %s',
-        (product_uuid, user_email)
+    'SELECT id, nome, preco, uuid FROM produtos WHERE uuid = %s AND LOWER(usuario_email) = LOWER(%s)',
+    (product_uuid, user_email)
     )
     produto = cursor.fetchone()
     conn.close()
