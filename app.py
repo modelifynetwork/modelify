@@ -1241,16 +1241,14 @@ def get_tasks():
     if 'user' not in session:
         return jsonify({'error': 'Não autenticado'}), 401
     user_email = session['user']['email']
-    conn = get_db()
-    tasks = conn.execute(
+    conn = connect_db()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cursor.execute(
         "SELECT * FROM tasks WHERE user_email = %s", (user_email,)
-    ).fetchall()
+    )
+    tasks = cursor.fetchall()
     conn.close()
     return jsonify([dict(row) for row in tasks])
-
-def get_db():
-    conn = connect_db()
-    return conn
 
 @app.route('/api/tasks', methods=['POST'])
 def add_task():
