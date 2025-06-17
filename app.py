@@ -101,6 +101,8 @@ print("=== VARIÁVEIS DE AMBIENTE NO RENDER ===")
 for key, value in os.environ.items():
     print(f"{key} = {value}")
 
+print("DB path:", os.path.abspath("database.db"))
+
 # Configuração da sessão
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_PERMANENT'] = True
