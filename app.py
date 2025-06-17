@@ -438,7 +438,7 @@ def editar_bot(bot_id):
     if 'user' not in session or 'email' not in session['user']:
         return redirect(url_for('login'))
     user_email = session['user']['email']
-    conn = connect_db())
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM bots WHERE id=? AND user_email=?", (bot_id, user_email))
     bot = cursor.fetchone()
