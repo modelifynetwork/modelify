@@ -26,7 +26,7 @@ def connect_db():
 mp = mercadopago.SDK("APP_USR-6436253612422218-033017-115c16f1f9ddf7fca0c289fb9f1081a8-2359242973")
 stripe.api_key = os.getenv("STRIPE_API_KEY")
 app = Flask(__name__, static_folder='static')
-app.secret_key = os.urandom(24)
+app.secret_key = "10012006ZeusErosLupeBemLoko"
 CORS(app)
 
 MAX_FILE_SIZE = 2 * 1024 * 1024  # 2 MB
