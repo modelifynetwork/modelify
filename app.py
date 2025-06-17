@@ -143,8 +143,8 @@ def api_vendas():
     if not user_email:
         return jsonify({"error": "Usuário não autenticado"}), 401
 
-    with sqlite3.connect('database.db') as conn:
-        conn.row_factory = sqlite3.Row
+    with connect_db() as conn:
+	conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute('''
             SELECT
@@ -921,7 +921,7 @@ def criar_pagamento_pix_telegram():
 
         id_transacao = str(uuid.uuid4())
 
-        conn = sqlite3.connect("database.db")
+        conn = connect_db()
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
@@ -1126,8 +1126,8 @@ def checkout(uuid):
 @app.route('/<uuid>/flow', methods=['GET'])
 def fluxograma(uuid):
     # Conexão com o banco de dados
-    with sqlite3.connect('database.db') as conn:
-        cursor = conn.cursor()
+    with connect_db() as conn:
+	cursor = conn.cursor()
         # Busca o produto pelo UUID (extraído da URL, está como parte de url_checkout)
         cursor.execute('''
             SELECT id, nome, preco, imagem, quantidade_vendas, usuario_email, descricao, url_checkout, url_flow 
@@ -1315,7 +1315,7 @@ def delete_task(task_id):
     return jsonify({'success': True})
 
 def get_receita_gerada(user_email):
-    with sqlite3.connect('database.db') as conn:
+    with connect_db() as conn:
         cursor = conn.cursor()
         cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = ?', (user_email,))
         receita_gerada = cursor.fetchone()[0]
@@ -1324,7 +1324,7 @@ def get_receita_gerada(user_email):
     return receita_gerada
 
 def get_saldo_disponivel(user_email):
-    with sqlite3.connect('database.db') as conn:
+    with connect_db() as conn:
         cursor = conn.cursor()
         # Receita total (vendas)
         cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = ?', (user_email,))
@@ -1379,7 +1379,7 @@ def saque():
         status       = 'pendente'
         data_pedido  = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        with sqlite3.connect('database.db') as conn:
+        with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute('''
                 INSERT INTO saques (user_email, nome_completo, chave_pix, data_pedido, status, banco, tipo_chave, valor)
@@ -1404,7 +1404,7 @@ def saque():
     )
 
 def get_receita_gerada(user_email):
-    with sqlite3.connect('database.db') as conn:
+    with connect_db() as conn:
         cursor = conn.cursor()
         cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = ?', (user_email,))
         receita_gerada = cursor.fetchone()[0]
@@ -1445,7 +1445,7 @@ def flows():
 
         flow_data_str = json.dumps(flow_data)  # Converte dict para string
 
-        with sqlite3.connect('database.db') as conn:
+        with connect_db() as conn:
             cursor = conn.cursor()
             try:
                 cursor.execute('''
@@ -1461,7 +1461,7 @@ def flows():
 
     if request.method == 'GET':
         user_email = session['user']['email']
-        with sqlite3.connect('database.db') as conn:
+        with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute('''
                 SELECT id, nome FROM fluxogramas WHERE usuario_email = ?
@@ -1508,7 +1508,7 @@ def flow():
     return render_template('flow.html', user=session['user'])
 
     user_email = session['user']['email']
-    with sqlite3.connect('database.db') as conn:
+    with connect_db() as conn:
         cursor = conn.cursor()
         cursor.execute('''
             SELECT dados, nome FROM fluxogramas WHERE id = ? AND usuario_email = ?
@@ -1600,7 +1600,7 @@ def auth_google_callback():
         user_info = google.parse_id_token(token, nonce=None)
         session['user'] = {'email': user_info['email']}
 
-        with sqlite3.connect('database.db') as conn:
+        with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute('''
                 INSERT OR IGNORE INTO usuarios (nome, email, google_id)
@@ -1704,7 +1704,7 @@ def adicionar_produto():
             return jsonify({"error": "O preço deve ser um número válido!"}), 400
 
         # Salvar os dados do produto no banco de dados
-        with sqlite3.connect('database.db') as conn:
+        with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute('''
                 INSERT INTO produtos (usuario_email, nome, preco, url_checkout)
@@ -1723,7 +1723,7 @@ def deletar_produto(id):
         return redirect(url_for('login'))
 
     usuario_email = session['user']['email']
-    with sqlite3.connect('database.db') as conn:
+    with connect_db() as conn:
         cursor = conn.cursor()
         cursor.execute('DELETE FROM produtos WHERE id = ? AND usuario_email = ?', (id, usuario_email))
         conn.commit()
