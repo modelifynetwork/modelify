@@ -256,8 +256,6 @@ def add_content_produto():
 
 @app.route('/editar_produto/<product_uuid>', methods=['GET'])
 def editar_produto(product_uuid):
-    if 'user' not in session:
-        return redirect(url_for('login'))
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM produtos WHERE uuid = ?", (product_uuid,))
