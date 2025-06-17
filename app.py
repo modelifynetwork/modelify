@@ -1,3 +1,4 @@
+import psycopg2
 import smtplib
 from flask import Flask, redirect, url_for, session, render_template, request, jsonify
 import requests
@@ -11,7 +12,6 @@ from authlib.integrations.flask_client import OAuth
 from flask_session import Session
 from flask import send_from_directory
 import json
-import sqlite3
 import uuid
 import random
 import os
@@ -82,13 +82,13 @@ Equipe Modelify
 def inserir_acesso(email, access_key, produto_uuid):
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT access_key FROM acessos WHERE email = ? AND produto_uuid = ?", (email, produto_uuid))
+    cursor.execute("SELECT access_key FROM acessos WHERE email = % AND produto_uuid = %s", (email, produto_uuid))
     existe = cursor.fetchone()
     if existe:
         conn.close()
         return existe[0]
     cursor.execute(
-        "INSERT INTO acessos (email, access_key, produto_uuid, criado_em) VALUES (?, ?, ?, ?)",
+        "INSERT INTO acessos (email, access_key, produto_uuid, criado_em) VALUES (%s, %s, %s, %s)",
         (email, access_key, produto_uuid, datetime.utcnow())
     )
     conn.commit()
@@ -151,7 +151,7 @@ def api_vendas():
                 produto_nome, valor as produto_preco,
                 criado_em as data_venda
             FROM pagamentos
-            WHERE user_email = ?
+            WHERE user_email = %s
             ORDER BY criado_em DESC
         ''', (user_email,))
         for row in cursor.fetchall():
@@ -344,7 +344,7 @@ def add_content_produto():
         cursor.execute(
             """
             INSERT INTO conteudos (email_usuario, nome, conteudo, produto_uuid, data_envio)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
             """,
             (email_usuario, nome, conteudo_url, produto_uuid, data_envio)
         )
@@ -368,7 +368,7 @@ def add_content_produto():
 def editar_produto(product_uuid):
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM produtos WHERE uuid = ?", (product_uuid,))
+    cursor.execute("SELECT * FROM produtos WHERE uuid = %s", (product_uuid,))
     produto = cursor.fetchone()
     conn.close()
     if not produto:
@@ -403,13 +403,13 @@ def excluir_produto(product_uuid):
 
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM produtos WHERE uuid = ? AND usuario_email = ?', (product_uuid, user_email))
+    cursor.execute('SELECT * FROM produtos WHERE uuid = %s AND usuario_email = %s', (product_uuid, user_email))
     produto = cursor.fetchone()
     if not produto:
         conn.close()
         return jsonify({'error': 'Produto não encontrado ou acesso negado'}), 404
 
-    cursor.execute('DELETE FROM produtos WHERE uuid = ?', (product_uuid,))
+    cursor.execute('DELETE FROM produtos WHERE uuid = %s', (product_uuid,))
     conn.commit()
     conn.close()
 
@@ -428,7 +428,7 @@ def salvar_edicao_produto():
     # Conectar ao banco e buscar o produto
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM produtos WHERE uuid = ?", (product_uuid,))
+    cursor.execute("SELECT * FROM produtos WHERE uuid = %s", (product_uuid,))
     produto = cursor.fetchone()
     if not produto:
         conn.close()
@@ -460,8 +460,8 @@ def salvar_edicao_produto():
     # Atualizar no banco
     cursor.execute("""
         UPDATE produtos
-        SET nome=?, preco=?, imagem=?, descricao=?, categoria=?
-        WHERE uuid=?
+        SET nome=%s, preco=%s, imagem=%s, descricao=%s, categoria=%s
+        WHERE uuid=%s
     """, (nome, preco, imagem, descricao, categoria, product_uuid))
 
     conn.commit()
@@ -476,9 +476,9 @@ def api_meus_bots():
     conn = connect_db()
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT *, COALESCE(ativo, 1) as ativo FROM bots WHERE user_email=? ORDER BY created_at DESC", (user_email,))
+        cursor.execute("SELECT *, COALESCE(ativo, 1) as ativo FROM bots WHERE user_email=%s ORDER BY created_at DESC", (user_email,))
     except sqlite3.OperationalError:
-        cursor.execute("SELECT * FROM bots WHERE user_email=? ORDER BY created_at DESC", (user_email,))
+        cursor.execute("SELECT * FROM bots WHERE user_email=%s ORDER BY created_at DESC", (user_email,))
     bots = []
     for row in cursor.fetchall():
         bot = dict(row)
@@ -494,11 +494,11 @@ def pausar_bot(bot_id):
     user_email = session['user']['email']
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT uuid FROM bots WHERE id=? AND user_email=?", (bot_id, user_email))
+    cursor.execute("SELECT uuid FROM bots WHERE id=%s AND user_email=%s", (bot_id, user_email))
     row = cursor.fetchone()
     product_uuid = row["uuid"] if row else None
     try:
-        conn.execute("UPDATE bots SET ativo=0 WHERE id=? AND user_email=?", (bot_id, user_email))
+        conn.execute("UPDATE bots SET ativo=0 WHERE id=%s AND user_email=%s", (bot_id, user_email))
         conn.commit()
     except Exception as e:
         print("Erro ao pausar bot:", e)
@@ -514,11 +514,11 @@ def ativar_bot(bot_id):
     user_email = session['user']['email']
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT uuid FROM bots WHERE id=? AND user_email=?", (bot_id, user_email))
+    cursor.execute("SELECT uuid FROM bots WHERE id=%s AND user_email=%s", (bot_id, user_email))
     row = cursor.fetchone()
     product_uuid = row["uuid"] if row else None
     try:
-        conn.execute("UPDATE bots SET ativo=1 WHERE id=? AND user_email=?", (bot_id, user_email))
+        conn.execute("UPDATE bots SET ativo=1 WHERE id=%s AND user_email=%s", (bot_id, user_email))
         conn.commit()
     except Exception as e:
         print("Erro ao ativar bot:", e)
@@ -534,10 +534,10 @@ def excluir_bot(bot_id):
     user_email = session['user']['email']
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT uuid FROM bots WHERE id=? AND user_email=?", (bot_id, user_email))
+    cursor.execute("SELECT uuid FROM bots WHERE id=%s AND user_email=%s", (bot_id, user_email))
     row = cursor.fetchone()
     product_uuid = row["uuid"] if row else None
-    conn.execute("DELETE FROM bots WHERE id=? AND user_email=?", (bot_id, user_email))
+    conn.execute("DELETE FROM bots WHERE id=%s AND user_email=%s", (bot_id, user_email))
     conn.commit()
     conn.close()
     if product_uuid:
@@ -551,7 +551,7 @@ def editar_bot(bot_id):
     user_email = session['user']['email']
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM bots WHERE id=? AND user_email=?", (bot_id, user_email))
+    cursor.execute("SELECT * FROM bots WHERE id=%s AND user_email=%s", (bot_id, user_email))
     bot = cursor.fetchone()
     if not bot:
         conn.close()
@@ -586,8 +586,8 @@ def editar_bot(bot_id):
                 foto = f"bots/{filename}"
         cursor.execute("""
             UPDATE bots
-               SET bot_name=?, bot_token=?, mensagens=?, botao_texto=?, group_id=?, link_vip=?, oferta=?, photo_filename=?
-             WHERE id=? AND user_email=?
+               SET bot_name=%s, bot_token=%s, mensagens=%s, botao_texto=%s, group_id=%s, link_vip=%s, oferta=%s, photo_filename=%s
+             WHERE id=%s AND user_email=%s
         """, (bot_name, bot_token, mensagens_json, botao_texto, group_id, link_vip, oferta, foto, bot_id, user_email))
         conn.commit()
         product_uuid = bot["uuid"]
@@ -610,7 +610,7 @@ def get_content():
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT id, email_usuario, nome, conteudo, produto_uuid, data_envio FROM conteudos WHERE email_usuario = ?",
+            "SELECT id, email_usuario, nome, conteudo, produto_uuid, data_envio FROM conteudos WHERE email_usuario = %s",
             (email_usuario,)
         )
         conteudos = cursor.fetchall()
@@ -682,7 +682,7 @@ def api_criar_bot():
         conn = connect_db()
         cursor = conn.cursor()
         # Verifica se existe este produto E se ele pertence ao usuário logado
-        cursor.execute('SELECT uuid FROM produtos WHERE uuid = ? AND usuario_email = ?', (product_uuid, user_email))
+        cursor.execute('SELECT uuid FROM produtos WHERE uuid = %s AND usuario_email = %s', (product_uuid, user_email))
         produto = cursor.fetchone()
         if not produto:
             conn.close()
@@ -692,7 +692,7 @@ def api_criar_bot():
         cursor.execute('''
             INSERT INTO bots
                 (user_email, bot_name, bot_token, mensagens, botao_texto, group_id, photo_filename, link_vip, oferta, uuid)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         ''', (
             user_email, bot_name, bot_token, mensagens_json, botao_texto,
             group_id, photo_filename, link_vip, oferta, product_uuid
@@ -710,7 +710,7 @@ def criar_bot_form(product_uuid):
     conn = connect_db()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM produtos WHERE uuid = ?', (product_uuid,))
+    cursor.execute('SELECT * FROM produtos WHERE uuid = %s', (product_uuid,))
     produto = cursor.fetchone()
     conn.close()
 
@@ -754,7 +754,7 @@ def acesso_conteudos():
     # 1. Buscar todos os produtos que o cliente tem acesso
     cursor.execute("""
         SELECT produto_uuid FROM acessos
-        WHERE email = ? AND access_key = ?
+        WHERE email = %s AND access_key = %s
     """, (cliente_email, access_key))
     produto_uuids = [row['produto_uuid'] for row in cursor.fetchall() if row['produto_uuid']]
 
@@ -762,7 +762,7 @@ def acesso_conteudos():
     conteudos = []
 
     if produto_uuids:
-        placeholders = ','.join(['?'] * len(produto_uuids))
+        placeholders = ','.join(['%s'] * len(produto_uuids))
 
         # 2. Buscar detalhes dos produtos
         cursor.execute(f"""
@@ -799,7 +799,7 @@ def registrar_chave():
     # Busca o produto_uuid no banco de dados usando produto_id
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT uuid FROM produtos WHERE id = ?", (produto_id,))
+    cursor.execute("SELECT uuid FROM produtos WHERE id = %s", (produto_id,))
     result = cursor.fetchone()
     if not result:
         conn.close()
@@ -830,7 +830,7 @@ def painel_auth():
 
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM acessos WHERE email = ? AND access_key = ?", (email, chave))
+    cursor.execute("SELECT * FROM acessos WHERE email = %s AND access_key = %s", (email, chave))
     resultado = cursor.fetchone()
     conn.close()
     if resultado:
@@ -861,7 +861,7 @@ def criar_pagamento_pix():
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute(
-            'SELECT nome, preco, uuid, usuario_email FROM produtos WHERE id = ?', (produto_id,)
+            'SELECT nome, preco, uuid, usuario_email FROM produtos WHERE id = %s', (produto_id,)
         )
         produto = cursor.fetchone()
 
@@ -905,7 +905,7 @@ def criar_pagamento_pix():
                 '''INSERT INTO pagamentos (
                     id, produto_id, produto_nome, valor, status, qrcode_base64, qrcode_url, pix_copia_cola, uuid,
                     cliente, telefone_cliente, email_cliente, user_email
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''',
                 (
                     id_transacao, produto_id, produto_nome, produto_preco, "PENDENTE", pix_data['qr_code_base64'],
                     pix_data["qr_code"], pix_data["qr_code"], produto_uuid,
@@ -914,7 +914,7 @@ def criar_pagamento_pix():
             )
 
             cursor.execute(
-                'UPDATE produtos SET quantidade_vendas = quantidade_vendas + 1 WHERE uuid = ?',
+                'UPDATE produtos SET quantidade_vendas = quantidade_vendas + 1 WHERE uuid = %s',
                 (produto_uuid,)
             )
 
@@ -984,7 +984,7 @@ def atualizar_pagamento():
         cursor = conn.cursor()
 
         # Atualizar o status do pagamento no banco de dados
-        cursor.execute('UPDATE pagamentos SET status = ? WHERE id = ?', (novo_status, payment_id))
+        cursor.execute('UPDATE pagamentos SET status = %s WHERE id = %s', (novo_status, payment_id))
         conn.commit()
         conn.close()
 
@@ -1038,7 +1038,7 @@ def criar_pagamento_pix_telegram():
         cursor = conn.cursor()
 
         cursor.execute(
-            'SELECT id, usuario_email, preco FROM produtos WHERE uuid = ?', (produto_uuid,)
+            'SELECT id, usuario_email, preco FROM produtos WHERE uuid = %s', (produto_uuid,)
         )
         produto = cursor.fetchone()
         if not produto:
@@ -1077,7 +1077,7 @@ def criar_pagamento_pix_telegram():
                 '''INSERT INTO pagamentos (
                     id, bot_id, produto_id, produto_nome, valor, status, qrcode_base64, qrcode_url, pix_copia_cola, uuid,
                     cliente, telefone_cliente, email_cliente, user_email, telegram_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''',
                 (
                     id_transacao, bot_id, produto_id, produto_nome, preco, "PENDENTE",
                     pix_data['qr_code_base64'], pix_data["qr_code"], pix_data["qr_code"], produto_uuid,
@@ -1087,7 +1087,7 @@ def criar_pagamento_pix_telegram():
 
             # INCREMENTA QUANTIDADE DE VENDAS
             cursor.execute(
-                'UPDATE produtos SET quantidade_vendas = COALESCE(quantidade_vendas, 0) + 1 WHERE uuid = ?',
+                'UPDATE produtos SET quantidade_vendas = COALESCE(quantidade_vendas, 0) + 1 WHERE uuid = %s',
                 (produto_uuid,)
             )
 
@@ -1184,7 +1184,7 @@ def salvar_produto():
         cursor.execute(
             """
             INSERT INTO produtos (nome, preco, imagem, usuario_email, descricao, url_checkout, url_flow, uuid, categoria)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (nome, preco, imagem_path, usuario_email, descricao, url_checkout, url_flow, produto_uuid, categoria)
         )
@@ -1214,7 +1214,7 @@ def checkout(uuid):
 
     # Busca o produto pelo UUID contido na URL de checkout
     cursor.execute(
-        'SELECT id, nome, descricao, preco, imagem, url_flow FROM produtos WHERE url_checkout LIKE ?',
+        'SELECT id, nome, descricao, preco, imagem, url_flow FROM produtos WHERE url_checkout LIKE %s',
         (f'%/checkout/{uuid}',)
     )
     produto = cursor.fetchone()
@@ -1243,7 +1243,7 @@ def fluxograma(uuid):
         cursor.execute('''
             SELECT id, nome, preco, imagem, quantidade_vendas, usuario_email, descricao, url_checkout, url_flow 
             FROM produtos 
-            WHERE url_checkout LIKE ?
+            WHERE url_checkout LIKE %s
         ''', (f'%/checkout/{uuid}',))
         produto = cursor.fetchone()
 
@@ -1311,19 +1311,19 @@ def dashboard():
     cursor = conn.cursor()
 
     # Total de vendas
-    cursor.execute('SELECT SUM(quantidade_vendas) FROM produtos WHERE usuario_email = ?', (user_email,))
+    cursor.execute('SELECT SUM(quantidade_vendas) FROM produtos WHERE usuario_email = %s', (user_email,))
     total_sales = cursor.fetchone()[0] or 0
 
     # Receita gerada
-    cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = ?', (user_email,))
+    cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = %s', (user_email,))
     receita_gerada = cursor.fetchone()[0] or 0.0
 
     # Total de produtos vendidos
-    cursor.execute('SELECT COUNT(*) FROM produtos WHERE usuario_email = ? AND quantidade_vendas > 0', (user_email,))
+    cursor.execute('SELECT COUNT(*) FROM produtos WHERE usuario_email = %s AND quantidade_vendas > 0', (user_email,))
     produtos_vendidos = cursor.fetchone()[0] or 0
 
     # Busca bots do usuário
-    cursor.execute('SELECT * FROM bots WHERE user_email = ?', (user_email,))
+    cursor.execute('SELECT * FROM bots WHERE user_email = %s', (user_email,))
     bots_rows = cursor.fetchall()
 
     user_bots = []
@@ -1362,7 +1362,7 @@ def get_tasks():
     user_email = session['user']['email']
     conn = get_db()
     tasks = conn.execute(
-        "SELECT * FROM tasks WHERE user_email = ?", (user_email,)
+        "SELECT * FROM tasks WHERE user_email = %s", (user_email,)
     ).fetchall()
     conn.close()
     return jsonify([dict(row) for row in tasks])
@@ -1387,7 +1387,7 @@ def add_task():
         return jsonify({'error': 'Título obrigatório'}), 400
     conn = get_db()
     conn.execute(
-        "INSERT INTO tasks (user_email, title, category, priority, due_date, completed) VALUES (?, ?, ?, ?, ?, 0)",
+        "INSERT INTO tasks (user_email, title, category, priority, due_date, completed) VALUES (%s, %s, %s, %s, %s, 0)",
         (user_email, title, category, priority, due_date)
     )
     conn.commit()
@@ -1404,7 +1404,7 @@ def update_task(task_id):
     # Você pode adicionar outros campos se quiser
     conn = get_db()
     conn.execute(
-        "UPDATE tasks SET completed = ? WHERE id = ? AND user_email = ?",
+        "UPDATE tasks SET completed = %s WHERE id = %s AND user_email = %s",
         (completed, task_id, user_email)
     )
     conn.commit()
@@ -1418,7 +1418,7 @@ def delete_task(task_id):
     user_email = session['user']['email']
     conn = get_db()
     conn.execute(
-        "DELETE FROM tasks WHERE id = ? AND user_email = ?",
+        "DELETE FROM tasks WHERE id = %s AND user_email = %s",
         (task_id, user_email)
     )
     conn.commit()
@@ -1428,7 +1428,7 @@ def delete_task(task_id):
 def get_receita_gerada(user_email):
     with connect_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = ?', (user_email,))
+        cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = v', (user_email,))
         receita_gerada = cursor.fetchone()[0]
         if receita_gerada is None:
             receita_gerada = 0.0
@@ -1438,10 +1438,10 @@ def get_saldo_disponivel(user_email):
     with connect_db() as conn:
         cursor = conn.cursor()
         # Receita total (vendas)
-        cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = ?', (user_email,))
+        cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = %s', (user_email,))
         receita_gerada = cursor.fetchone()[0] or 0.0
         # Total de saques já realizados (exceto cancelados)
-        cursor.execute("SELECT SUM(valor) FROM saques WHERE user_email = ? AND status != 'cancelado'", (user_email,))
+        cursor.execute("SELECT SUM(valor) FROM saques WHERE user_email = %s AND status != 'cancelado'", (user_email,))
         total_sacado = cursor.fetchone()[0] or 0.0
     saldo_disponivel = receita_gerada - total_sacado
     return round(saldo_disponivel, 2)
@@ -1494,7 +1494,7 @@ def saque():
             cursor = conn.cursor()
             cursor.execute('''
                 INSERT INTO saques (user_email, nome_completo, chave_pix, data_pedido, status, banco, tipo_chave, valor)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             ''', (user_email, nome_completo, chave_pix, data_pedido, status, banco, tipo_chave, valor))
             conn.commit()
 
@@ -1517,7 +1517,7 @@ def saque():
 def get_receita_gerada(user_email):
     with connect_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = ?', (user_email,))
+        cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = %s', (user_email,))
         receita_gerada = cursor.fetchone()[0]
         if receita_gerada is None:
             receita_gerada = 0.0
@@ -1561,7 +1561,7 @@ def flows():
             try:
                 cursor.execute('''
                     INSERT INTO fluxogramas (id, usuario_email, nome, dados)
-                    VALUES (?, ?, ?, ?)
+                    VALUES (%s, %s, %s, %s)
                     ON CONFLICT(id) DO UPDATE SET nome=excluded.nome, dados=excluded.dados
                 ''', (flow_id, user_email, flow_name, flow_data_str))
                 conn.commit()
@@ -1575,7 +1575,7 @@ def flows():
         with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                SELECT id, nome FROM fluxogramas WHERE usuario_email = ?
+                SELECT id, nome FROM fluxogramas WHERE usuario_email = %s
             ''', (user_email,))
             fluxos = cursor.fetchall()
 
@@ -1593,7 +1593,7 @@ def load_or_delete_flow(flow_id):
 
     # Se o método for DELETE
     if request.method == 'DELETE':
-        cursor.execute("DELETE FROM fluxogramas WHERE id = ?", (flow_id,))
+        cursor.execute("DELETE FROM fluxogramas WHERE id = %s", (flow_id,))
         conn.commit()
         conn.close()
 
@@ -1605,7 +1605,7 @@ def load_or_delete_flow(flow_id):
 
     # Se o método for GET
     elif request.method == 'GET':
-        cursor.execute("SELECT * FROM fluxogramas WHERE id = ?", (flow_id,))
+        cursor.execute("SELECT * FROM fluxogramas WHERE id = %s", (flow_id,))
         flow = cursor.fetchone()
         conn.close()
 
@@ -1622,7 +1622,7 @@ def flow():
     with connect_db() as conn:
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT dados, nome FROM fluxogramas WHERE id = ? AND usuario_email = ?
+            SELECT dados, nome FROM fluxogramas WHERE id = %s AND usuario_email = %s
         ''', (flow_id, user_email))
         fluxo = cursor.fetchone()
 
@@ -1638,7 +1638,7 @@ def membros(product_uuid):
 
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM produtos WHERE uuid = ?', (product_uuid,))
+    cursor.execute('SELECT * FROM produtos WHERE uuid = %s', (product_uuid,))
     product = cursor.fetchone()
     conn.close()
 
@@ -1679,7 +1679,7 @@ def bot(product_uuid):
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute(
-        'SELECT id, nome, preco, uuid FROM produtos WHERE uuid = ? AND usuario_email = ?',
+        'SELECT id, nome, preco, uuid FROM produtos WHERE uuid = %s AND usuario_email = %s',
         (product_uuid, user_email)
     )
     produto = cursor.fetchone()
@@ -1715,7 +1715,7 @@ def auth_google_callback():
             cursor = conn.cursor()
             cursor.execute('''
                 INSERT OR IGNORE INTO usuarios (nome, email, google_id)
-                VALUES (?, ?, ?)
+                VALUES (%s, %s, %s)
             ''', (user_info['name'], user_info['email'], user_info['sub']))
             conn.commit()
 
@@ -1753,7 +1753,7 @@ def get_produtos(email_usuario):
     conn.row_factory = sqlite3.Row  # Permite acessar por nome da coluna
     cursor = conn.cursor()
     # Filtra os produtos pelo email do usuário
-    cursor.execute('SELECT * FROM produtos WHERE usuario_email = ?', (email_usuario,))
+    cursor.execute('SELECT * FROM produtos WHERE usuario_email = %s', (email_usuario,))
     produtos = cursor.fetchall()
     conn.close()
     return produtos
@@ -1819,7 +1819,7 @@ def adicionar_produto():
             cursor = conn.cursor()
             cursor.execute('''
                 INSERT INTO produtos (usuario_email, nome, preco, url_checkout)
-                VALUES (?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s)
             ''', (usuario_email, nome, preco, url_checkout))
             conn.commit()
 
@@ -1836,7 +1836,7 @@ def deletar_produto(id):
     usuario_email = session['user']['email']
     with connect_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('DELETE FROM produtos WHERE id = ? AND usuario_email = ?', (id, usuario_email))
+        cursor.execute('DELETE FROM produtos WHERE id = %s AND usuario_email = %s', (id, usuario_email))
         conn.commit()
 
     return jsonify({"message": "Produto excluído com sucesso!"})
