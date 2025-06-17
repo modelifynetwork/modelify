@@ -24,6 +24,11 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+if not os.path.exists("database.db"):
+    print("⚠️ database.db NÃO existe, criando...")
+else:
+    print("✅ database.db existe, size:", os.path.getsize("database.db"))
+
 mp = mercadopago.SDK("APP_USR-6436253612422218-033017-115c16f1f9ddf7fca0c289fb9f1081a8-2359242973")
 stripe.api_key = os.getenv("STRIPE_API_KEY")
 app = Flask(__name__, static_folder='static')
@@ -100,8 +105,6 @@ def inserir_acesso(email, access_key, produto_uuid):
 print("=== VARIÁVEIS DE AMBIENTE NO RENDER ===")
 for key, value in os.environ.items():
     print(f"{key} = {value}")
-
-print("DB path:", os.path.abspath("database.db"))
 
 # Configuração da sessão
 app.config['SESSION_TYPE'] = 'filesystem'
