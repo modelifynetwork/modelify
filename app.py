@@ -1,3 +1,4 @@
+import psycopg2.extras
 import psycopg2
 import smtplib
 from flask import Flask, redirect, url_for, session, render_template, request, jsonify
@@ -81,8 +82,8 @@ Equipe Modelify
 # --- Função para inserir ou resgatar chave do banco ---
 def inserir_acesso(email, access_key, produto_uuid):
     conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT access_key FROM acessos WHERE email = % AND produto_uuid = %s", (email, produto_uuid))
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cursor.execute("SELECT access_key FROM acessos WHERE email = %s AND produto_uuid = %s", (email, produto_uuid))
     existe = cursor.fetchone()
     if existe:
         conn.close()
@@ -143,8 +144,7 @@ def api_vendas():
         return jsonify({"error": "Usuário não autenticado"}), 401
 
     with connect_db() as conn:
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute('''
             SELECT
                 cliente, telefone_cliente, email_cliente,
@@ -340,7 +340,7 @@ def add_content_produto():
     # Insere no banco
     try:
         conn = connect_db()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute(
             """
             INSERT INTO conteudos (email_usuario, nome, conteudo, produto_uuid, data_envio)
@@ -367,7 +367,7 @@ def add_content_produto():
 @app.route('/editar_produto/<product_uuid>', methods=['GET'])
 def editar_produto(product_uuid):
     conn = connect_db()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute("SELECT * FROM produtos WHERE uuid = %s", (product_uuid,))
     produto = cursor.fetchone()
     conn.close()
@@ -402,7 +402,7 @@ def excluir_produto(product_uuid):
     user_email = session['user']['email']
 
     conn = connect_db()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute('SELECT * FROM produtos WHERE uuid = %s AND usuario_email = %s', (product_uuid, user_email))
     produto = cursor.fetchone()
     if not produto:
@@ -427,7 +427,7 @@ def salvar_edicao_produto():
 
     # Conectar ao banco e buscar o produto
     conn = connect_db()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute("SELECT * FROM produtos WHERE uuid = %s", (product_uuid,))
     produto = cursor.fetchone()
     if not produto:
@@ -474,7 +474,7 @@ def api_meus_bots():
         return jsonify([])
     user_email = session['user']['email']
     conn = connect_db()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     try:
         cursor.execute("SELECT *, COALESCE(ativo, 1) as ativo FROM bots WHERE user_email=%s ORDER BY created_at DESC", (user_email,))
     except sqlite3.OperationalError:
@@ -493,7 +493,7 @@ def pausar_bot(bot_id):
         return redirect(url_for('login'))
     user_email = session['user']['email']
     conn = connect_db()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute("SELECT uuid FROM bots WHERE id=%s AND user_email=%s", (bot_id, user_email))
     row = cursor.fetchone()
     product_uuid = row["uuid"] if row else None
@@ -513,7 +513,7 @@ def ativar_bot(bot_id):
         return redirect(url_for('login'))
     user_email = session['user']['email']
     conn = connect_db()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute("SELECT uuid FROM bots WHERE id=%s AND user_email=%s", (bot_id, user_email))
     row = cursor.fetchone()
     product_uuid = row["uuid"] if row else None
@@ -533,7 +533,7 @@ def excluir_bot(bot_id):
         return redirect(url_for('login'))
     user_email = session['user']['email']
     conn = connect_db()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute("SELECT uuid FROM bots WHERE id=%s AND user_email=%s", (bot_id, user_email))
     row = cursor.fetchone()
     product_uuid = row["uuid"] if row else None
@@ -550,7 +550,7 @@ def editar_bot(bot_id):
         return redirect(url_for('login'))
     user_email = session['user']['email']
     conn = connect_db()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute("SELECT * FROM bots WHERE id=%s AND user_email=%s", (bot_id, user_email))
     bot = cursor.fetchone()
     if not bot:
@@ -607,8 +607,7 @@ def get_content():
 
     try:
         conn = connect_db()
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
+	cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute(
             "SELECT id, email_usuario, nome, conteudo, produto_uuid, data_envio FROM conteudos WHERE email_usuario = %s",
             (email_usuario,)
@@ -680,7 +679,7 @@ def api_criar_bot():
 
     try:
         conn = connect_db()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         # Verifica se existe este produto E se ele pertence ao usuário logado
         cursor.execute('SELECT uuid FROM produtos WHERE uuid = %s AND usuario_email = %s', (product_uuid, user_email))
         produto = cursor.fetchone()
@@ -708,8 +707,7 @@ def api_criar_bot():
 def criar_bot_form(product_uuid):
     # Busca o produto pelo UUID na tabela produtos
     conn = connect_db()
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute('SELECT * FROM produtos WHERE uuid = %s', (product_uuid,))
     produto = cursor.fetchone()
     conn.close()
@@ -748,8 +746,7 @@ def acesso_conteudos():
     access_key = session['cliente_key']
 
     conn = connect_db()
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # 1. Buscar todos os produtos que o cliente tem acesso
     cursor.execute("""
@@ -798,7 +795,7 @@ def registrar_chave():
 
     # Busca o produto_uuid no banco de dados usando produto_id
     conn = connect_db()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute("SELECT uuid FROM produtos WHERE id = %s", (produto_id,))
     result = cursor.fetchone()
     if not result:
@@ -829,7 +826,7 @@ def painel_auth():
         return jsonify({"error": "E-mail e chave obrigatórios"}), 400
 
     conn = connect_db()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute("SELECT * FROM acessos WHERE email = %s AND access_key = %s", (email, chave))
     resultado = cursor.fetchone()
     conn.close()
@@ -858,8 +855,7 @@ def criar_pagamento_pix():
 
         # Buscar o produto NO BANCO, incluindo o email do usuário dono do produto
         conn = connect_db()
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute(
             'SELECT nome, preco, uuid, usuario_email FROM produtos WHERE id = %s', (produto_id,)
         )
@@ -981,7 +977,7 @@ def atualizar_pagamento():
 
         # Conectar ao banco de dados
         conn = connect_db()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
         # Atualizar o status do pagamento no banco de dados
         cursor.execute('UPDATE pagamentos SET status = %s WHERE id = %s', (novo_status, payment_id))
@@ -1034,8 +1030,7 @@ def criar_pagamento_pix_telegram():
         id_transacao = str(uuid.uuid4())
 
         conn = connect_db()
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
         cursor.execute(
             'SELECT id, usuario_email, preco FROM produtos WHERE uuid = %s', (produto_uuid,)
@@ -1180,7 +1175,7 @@ def salvar_produto():
 
         # Inserir os dados no banco de dados
         conn = connect_db()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute(
             """
             INSERT INTO produtos (nome, preco, imagem, usuario_email, descricao, url_checkout, url_flow, uuid, categoria)
@@ -1209,8 +1204,7 @@ def afiliado(uuid):
 @app.route('/checkout/<uuid>', methods=['GET'])
 def checkout(uuid):
     conn = connect_db()
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # Busca o produto pelo UUID contido na URL de checkout
     cursor.execute(
@@ -1239,7 +1233,7 @@ def checkout(uuid):
 def fluxograma(uuid):
     # Conexão com o banco de dados
     with connect_db() as conn:
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute('''
             SELECT id, nome, preco, imagem, quantidade_vendas, usuario_email, descricao, url_checkout, url_flow 
             FROM produtos 
@@ -1307,8 +1301,7 @@ def dashboard():
 
     # Conexão com banco via função segura
     conn = connect_db()
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # Total de vendas
     cursor.execute('SELECT SUM(quantidade_vendas) FROM produtos WHERE usuario_email = %s', (user_email,))
@@ -1369,7 +1362,6 @@ def get_tasks():
 
 def get_db():
     conn = connect_db()
-    conn.row_factory = sqlite3.Row
     return conn
 
 @app.route('/api/tasks', methods=['POST'])
@@ -1427,7 +1419,7 @@ def delete_task(task_id):
 
 def get_receita_gerada(user_email):
     with connect_db() as conn:
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = v', (user_email,))
         receita_gerada = cursor.fetchone()[0]
         if receita_gerada is None:
@@ -1436,7 +1428,7 @@ def get_receita_gerada(user_email):
 
 def get_saldo_disponivel(user_email):
     with connect_db() as conn:
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         # Receita total (vendas)
         cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = %s', (user_email,))
         receita_gerada = cursor.fetchone()[0] or 0.0
@@ -1491,7 +1483,7 @@ def saque():
         data_pedido  = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         with connect_db() as conn:
-            cursor = conn.cursor()
+            cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             cursor.execute('''
                 INSERT INTO saques (user_email, nome_completo, chave_pix, data_pedido, status, banco, tipo_chave, valor)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
@@ -1516,7 +1508,7 @@ def saque():
 
 def get_receita_gerada(user_email):
     with connect_db() as conn:
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = %s', (user_email,))
         receita_gerada = cursor.fetchone()[0]
         if receita_gerada is None:
@@ -1527,7 +1519,6 @@ def get_receita_gerada(user_email):
 def painel_saques():
     import sqlite3
     conn = connect_db()
-    conn.row_factory = sqlite3.Row
     cur = conn.cursor()
     # Saques pendentes
     cur.execute("SELECT * FROM saques WHERE status!='liberado' ORDER BY data_pedido DESC")
@@ -1557,7 +1548,7 @@ def flows():
         flow_data_str = json.dumps(flow_data)  # Converte dict para string
 
         with connect_db() as conn:
-            cursor = conn.cursor()
+            cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             try:
                 cursor.execute('''
                     INSERT INTO fluxogramas (id, usuario_email, nome, dados)
@@ -1573,7 +1564,7 @@ def flows():
     if request.method == 'GET':
         user_email = session['user']['email']
         with connect_db() as conn:
-            cursor = conn.cursor()
+            cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             cursor.execute('''
                 SELECT id, nome FROM fluxogramas WHERE usuario_email = %s
             ''', (user_email,))
@@ -1588,8 +1579,7 @@ def load_or_delete_flow(flow_id):
 
     # Conexão com o banco de dados
     conn = connect_db()
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # Se o método for DELETE
     if request.method == 'DELETE':
@@ -1620,7 +1610,7 @@ def flow():
 
     user_email = session['user']['email']
     with connect_db() as conn:
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute('''
             SELECT dados, nome FROM fluxogramas WHERE id = %s AND usuario_email = %s
         ''', (flow_id, user_email))
@@ -1637,7 +1627,7 @@ def membros(product_uuid):
         return redirect(url_for('login'))
 
     conn = connect_db()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute('SELECT * FROM produtos WHERE uuid = %s', (product_uuid,))
     product = cursor.fetchone()
     conn.close()
@@ -1676,8 +1666,7 @@ def bot(product_uuid):
 
     user_email = session['user']['email']
     conn = connect_db()
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute(
         'SELECT id, nome, preco, uuid FROM produtos WHERE uuid = %s AND usuario_email = %s',
         (product_uuid, user_email)
@@ -1712,7 +1701,7 @@ def auth_google_callback():
         session['user'] = {'email': user_info['email']}
 
         with connect_db() as conn:
-            cursor = conn.cursor()
+            cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             cursor.execute('''
                 INSERT OR IGNORE INTO usuarios (nome, email, google_id)
                 VALUES (%s, %s, %s)
@@ -1728,8 +1717,7 @@ def auth_google_callback():
 @app.route('/produtos')
 def listar_produtos():
     conn = connect_db()
-    cursor = conn.cursor()
-
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute('SELECT id, nome, descricao, preco, imagem, url_checkout, url_flow FROM produtos')
     rows = cursor.fetchall()
     conn.close()
@@ -1750,8 +1738,7 @@ def listar_produtos():
 
 def get_produtos(email_usuario):
     conn = connect_db()
-    conn.row_factory = sqlite3.Row  # Permite acessar por nome da coluna
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     # Filtra os produtos pelo email do usuário
     cursor.execute('SELECT * FROM produtos WHERE usuario_email = %s', (email_usuario,))
     produtos = cursor.fetchall()
@@ -1835,7 +1822,7 @@ def deletar_produto(id):
 
     usuario_email = session['user']['email']
     with connect_db() as conn:
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute('DELETE FROM produtos WHERE id = %s AND usuario_email = %s', (id, usuario_email))
         conn.commit()
 
