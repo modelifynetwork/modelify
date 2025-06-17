@@ -1096,37 +1096,31 @@ def afiliado(uuid):
 
 @app.route('/checkout/<uuid>', methods=['GET'])
 def checkout(uuid):
-    # Conexão com o banco de dados
-    with sqlite3.connect('database.db') as conn:
-        cursor = conn.cursor()
-        # Busca o produto pelo UUID no URL de checkout
-        cursor.execute(
-            'SELECT id, nome, descricao, preco, imagem, url_flow FROM produtos WHERE url_checkout LIKE ?',
-            (f'%/checkout/{uuid}',)
-        )
+    conn = connect_db()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
 
-        produto = cursor.fetchone()
+    # Busca o produto pelo UUID contido na URL de checkout
+    cursor.execute(
+        'SELECT id, nome, descricao, preco, imagem, url_flow FROM produtos WHERE url_checkout LIKE ?',
+        (f'%/checkout/{uuid}',)
+    )
+    produto = cursor.fetchone()
+    conn.close()
 
-    # Verifica se o produto foi encontrado
     if not produto:
         return "Produto não encontrado", 404
 
-    # Certifique-se de que a tupla tem os índices esperados
-    if len(produto) < 5:
-        return "Erro: Dados do produto incompletos", 500
-
-    # Dados do produto extraídos do banco
     product_details = {
-        'id': produto[0],
-        'nome': produto[1],
-        'descricao': produto[2],
-        'preco': produto[3],
-        'imagem': produto[4],
-        'url_flow': produto[5],
+        'id': produto['id'],
+        'nome': produto['nome'],
+        'descricao': produto['descricao'],
+        'preco': produto['preco'],
+        'imagem': produto['imagem'],
+        'url_flow': produto['url_flow'],
         'uuid': uuid
     }
 
-    # Renderiza a página de checkout com os detalhes do produto
     return render_template('checkout.html', produto=product_details)
 
 @app.route('/<uuid>/flow', methods=['GET'])
