@@ -144,7 +144,7 @@ def api_vendas():
         return jsonify({"error": "Usuário não autenticado"}), 401
 
     with connect_db() as conn:
-	conn.row_factory = sqlite3.Row
+    conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute('''
             SELECT
