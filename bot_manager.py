@@ -22,7 +22,7 @@ POLL_INTERVAL = 5  # segundos
 MERCADOPAGO_ACCESS_TOKEN = "APP_USR-6436253612422218-033017-115c16f1f9ddf7fca0c289fb9f1081a8-2359242973"
 
 # URL do backend Flask, pode ser sobrescrito por variável de ambiente (ideal para produção!)
-FLASK_URL = os.environ.get("FLASK_URL", "http://127.0.0.1:8080")
+FLASK_URL = os.environ.get("FLASK_URL", "https://modelify.onrender.com/")
 
 def get_bots_snapshot():
     conn = connect_db()
