@@ -13,7 +13,8 @@ import mercadopago  # Para consulta de pagamento Mercado Pago
 
 # Caminho do banco no volume persistente do Fly.io
 def connect_db():
-    return sqlite3.connect('/db/database.db')
+    db_path = os.path.join(os.path.dirname(__file__), 'db', 'database.db')
+    return sqlite3.connect(db_path)
     
 POLL_INTERVAL = 5  # segundos
 
