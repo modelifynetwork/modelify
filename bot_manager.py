@@ -120,7 +120,7 @@ async def verificar_pagamentos_aprovados():
     sdk = mercadopago.SDK(MERCADOPAGO_ACCESS_TOKEN)
     while True:
         try:
-            conn = sqlite3.connect(DATABASE)
+            conn = connect_db()
             cursor = conn.cursor()
             cursor.execute("SELECT id FROM pagamentos WHERE status = 'PENDENTE'")
             pagamentos = cursor.fetchall()
@@ -146,7 +146,7 @@ async def entregar_vip(bot_token):
     bot = Bot(token=bot_token)
     while True:
         try:
-            conn = sqlite3.connect(DATABASE)
+            conn = connect_db()
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             cursor.execute("""
