@@ -362,7 +362,7 @@ def api_meus_bots():
     if 'user' not in session or 'email' not in session['user']:
         return jsonify([])
     user_email = session['user']['email']
-    conn = get_db_connection()
+    conn = connect_db()
     cursor = conn.cursor()
     try:
         cursor.execute("SELECT *, COALESCE(ativo, 1) as ativo FROM bots WHERE user_email=? ORDER BY created_at DESC", (user_email,))
@@ -381,7 +381,7 @@ def pausar_bot(bot_id):
     if 'user' not in session or 'email' not in session['user']:
         return redirect(url_for('login'))
     user_email = session['user']['email']
-    conn = get_db_connection()
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("SELECT uuid FROM bots WHERE id=? AND user_email=?", (bot_id, user_email))
     row = cursor.fetchone()
@@ -401,7 +401,7 @@ def ativar_bot(bot_id):
     if 'user' not in session or 'email' not in session['user']:
         return redirect(url_for('login'))
     user_email = session['user']['email']
-    conn = get_db_connection()
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("SELECT uuid FROM bots WHERE id=? AND user_email=?", (bot_id, user_email))
     row = cursor.fetchone()
@@ -421,7 +421,7 @@ def excluir_bot(bot_id):
     if 'user' not in session or 'email' not in session['user']:
         return redirect(url_for('login'))
     user_email = session['user']['email']
-    conn = get_db_connection()
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("SELECT uuid FROM bots WHERE id=? AND user_email=?", (bot_id, user_email))
     row = cursor.fetchone()
@@ -438,7 +438,7 @@ def editar_bot(bot_id):
     if 'user' not in session or 'email' not in session['user']:
         return redirect(url_for('login'))
     user_email = session['user']['email']
-    conn = get_db_connection()
+    conn = connect_db())
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM bots WHERE id=? AND user_email=?", (bot_id, user_email))
     bot = cursor.fetchone()
@@ -746,7 +746,7 @@ def criar_pagamento_pix():
             return jsonify({"error": "ID do produto não fornecido"}), 400
 
         # Buscar o produto NO BANCO, incluindo o email do usuário dono do produto
-        conn = get_db_connection()
+        conn = connect_db()
         cursor = conn.cursor()
         cursor.execute(
             'SELECT nome, preco, uuid, usuario_email FROM produtos WHERE id = ?', (produto_id,)
@@ -868,7 +868,7 @@ def atualizar_pagamento():
             return jsonify({"error": "ID do pagamento ou status não fornecido"}), 400
 
         # Conectar ao banco de dados
-        conn = get_db_connection()
+        conn = connect_db()
         cursor = conn.cursor()
 
         # Atualizar o status do pagamento no banco de dados
@@ -1064,7 +1064,7 @@ def salvar_produto():
         print("  categoria:", categoria, type(categoria))
 
         # Inserir os dados no banco de dados
-        conn = get_db_connection()
+        conn = connect_db()
         cursor = conn.cursor()
         cursor.execute(
             """
