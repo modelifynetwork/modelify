@@ -607,7 +607,7 @@ def get_content():
 
     try:
         conn = connect_db()
-	cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute(
             "SELECT id, email_usuario, nome, conteudo, produto_uuid, data_envio FROM conteudos WHERE email_usuario = %s",
             (email_usuario,)
