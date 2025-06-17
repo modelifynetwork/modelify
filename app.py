@@ -1197,53 +1197,54 @@ def dashboard():
 
     user_email = session['user']['email']
 
-    # Busca as tarefas do banco de dados para o usuário logado
-    with sqlite3.connect('database.db') as conn:
-        cursor = conn.cursor()
+    # Conexão com banco via função segura
+    conn = connect_db()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
 
-        # Calcula o total de vendas para o usuário logado
-        cursor.execute('SELECT SUM(quantidade_vendas) FROM produtos WHERE usuario_email = ?', (user_email,))
-        total_sales = cursor.fetchone()[0] or 0  # Caso seja None, retorna 0
+    # Total de vendas
+    cursor.execute('SELECT SUM(quantidade_vendas) FROM produtos WHERE usuario_email = ?', (user_email,))
+    total_sales = cursor.fetchone()[0] or 0
 
-        # Calcula a receita gerada
-        cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = ?', (user_email,))
-        receita_gerada = cursor.fetchone()[0]
-        if receita_gerada is None:
-            receita_gerada = 0.0
+    # Receita gerada
+    cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = ?', (user_email,))
+    receita_gerada = cursor.fetchone()[0] or 0.0
 
-        # Calcula o total de produtos vendidos (produtos com pelo menos uma venda)
-        cursor.execute('SELECT COUNT(*) FROM produtos WHERE usuario_email = ? AND quantidade_vendas > 0', (user_email,))
-        produtos_vendidos = cursor.fetchone()[0] or 0
+    # Total de produtos vendidos
+    cursor.execute('SELECT COUNT(*) FROM produtos WHERE usuario_email = ? AND quantidade_vendas > 0', (user_email,))
+    produtos_vendidos = cursor.fetchone()[0] or 0
 
-        # Busca todos os bots do usuário logado
-        cursor.execute('SELECT * FROM bots WHERE user_email = ?', (user_email,))
-        bots_rows = cursor.fetchall()
-        user_bots = []
-        for row in bots_rows:
-            # Se usar sqlite3.Row, pode simplesmente: dict(row)
-            bot = {
-                'id': row[0],
-                'user_email': row[1],
-                'bot_name': row[2],
-                'bot_token': row[3],
-                'welcome_message': row[4],
-                'confirmation_keyword': row[5],
-                'confirmation_message': row[6],
-                'group_id': row[7],
-                'photo_filename': row[8],
-                'created_at': row[9],
-                'link_username': (row[3].split(":")[0] if ":" in row[3] else row[3])
-            }
-            user_bots.append(bot)
+    # Busca bots do usuário
+    cursor.execute('SELECT * FROM bots WHERE user_email = ?', (user_email,))
+    bots_rows = cursor.fetchall()
 
-    # Renderiza o dashboard com as tarefas do banco de dados, o total de vendas, receita gerada, produtos vendidos e bots
+    user_bots = []
+    for row in bots_rows:
+        bot = {
+            'id': row['id'],
+            'user_email': row['user_email'],
+            'bot_name': row['bot_name'],
+            'bot_token': row['bot_token'],
+            'welcome_message': row['welcome_message'],
+            'confirmation_keyword': row['confirmation_keyword'],
+            'confirmation_message': row['confirmation_message'],
+            'group_id': row['group_id'],
+            'photo_filename': row['photo_filename'],
+            'created_at': row['created_at'],
+            'link_username': (row['bot_token'].split(":")[0] if ":" in row['bot_token'] else row['bot_token'])
+        }
+        user_bots.append(bot)
+
+    conn.close()
+
+    # Renderiza com variáveis
     return render_template(
         'dashboard.html',
         user=session['user'],
         total_sales=total_sales,
         receita_gerada=receita_gerada,
         produtos_vendidos=produtos_vendidos,
-        user_bots=user_bots  # <-- importante para o include funcionar!
+        user_bots=user_bots
     )
 
 @app.route('/api/tasks', methods=['GET'])
