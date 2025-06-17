@@ -999,6 +999,9 @@ def criar_pagamento_pix_telegram():
 
 @app.route('/salvar_produto', methods=['POST'])
 def salvar_produto():
+    # Verifica se o usuário está logado
+    if 'user' not in session or 'email' not in session['user']:
+        return jsonify({'error': 'Usuário não autenticado!'}), 401
     try:
         nome = request.form.get('nome')
         preco = request.form.get('preco')
