@@ -1593,8 +1593,9 @@ def bot(product_uuid):
 
 @app.route('/auth/google')
 def auth_google():
+    # Se estiver no Render, manda pra URL de produção
     return google.authorize_redirect(
-        redirect_uri="http://127.0.0.1:8080/auth/google/callback"
+        redirect_uri="https://modelify.onrender.com/auth/google/callback"
     )
 
 @app.route('/auth/google/callback')
