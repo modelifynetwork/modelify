@@ -1187,7 +1187,6 @@ def dashboard():
 
     user_email = session['user']['email']
 
-    # Conexão com banco via função segura
     conn = connect_db()
     cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
@@ -1203,39 +1202,15 @@ def dashboard():
     cursor.execute('SELECT COUNT(*) FROM produtos WHERE usuario_email = %s AND quantidade_vendas > 0', (user_email,))
     produtos_vendidos = cursor.fetchone()[0] or 0
 
-    # Busca bots do usuário
-    cursor.execute('SELECT * FROM bots WHERE user_email = %s', (user_email,))
-    bots_rows = cursor.fetchall()
-
-    user_bots = []
-    for row in bots_rows:
-        bot = {
-            'id': row['id'],
-            'user_email': row['user_email'],
-            'bot_name': row['bot_name'],
-            'bot_token': row['bot_token'],
-            'welcome_message': row['welcome_message'],
-            'confirmation_keyword': row['confirmation_keyword'],
-            'confirmation_message': row['confirmation_message'],
-            'group_id': row['group_id'],
-            'photo_filename': row['photo_filename'],
-            'created_at': row['created_at'],
-            'link_username': (row['bot_token'].split(":")[0] if ":" in row['bot_token'] else row['bot_token'])
-        }
-        user_bots.append(bot)
-
     conn.close()
 
-    # Renderiza com variáveis
     return render_template(
         'dashboard.html',
         user=session['user'],
         total_sales=total_sales,
         receita_gerada=receita_gerada,
-        produtos_vendidos=produtos_vendidos,
-        user_bots=user_bots
+        produtos_vendidos=produtos_vendidos
     )
-
 @app.route('/api/tasks', methods=['GET'])
 def get_tasks():
     if 'user' not in session:
