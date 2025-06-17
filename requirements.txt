@@ -24,3 +24,4 @@ Pillow==11.1.0
 
 # servidor WSGI para deploy
 gunicorn==20.1.0
+psycopg2-binary
