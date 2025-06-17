@@ -19,15 +19,8 @@ import secrets
 from datetime import datetime
 from email.mime.text import MIMEText
 
-def get_db_connection():
-    conn = sqlite3.connect('database.db')
-    conn.row_factory = sqlite3.Row
-    return conn
-
-if not os.path.exists("database.db"):
-    print("⚠️ database.db NÃO existe, criando...")
-else:
-    print("✅ database.db existe, size:", os.path.getsize("database.db"))
+def connect_db():
+    return sqlite3.connect('/data/database.db')
 
 mp = mercadopago.SDK("APP_USR-6436253612422218-033017-115c16f1f9ddf7fca0c289fb9f1081a8-2359242973")
 stripe.api_key = os.getenv("STRIPE_API_KEY")
@@ -87,7 +80,7 @@ Equipe Modelify
 
 # --- Função para inserir ou resgatar chave do banco ---
 def inserir_acesso(email, access_key, produto_uuid):
-    conn = sqlite3.connect('database.db')
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("SELECT access_key FROM acessos WHERE email = ? AND produto_uuid = ?", (email, produto_uuid))
     existe = cursor.fetchone()
@@ -234,7 +227,7 @@ def add_content_produto():
 
     # Insere no banco
     try:
-        conn = sqlite3.connect('database.db')
+        conn = connect_db()
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -261,7 +254,7 @@ def add_content_produto():
 
 @app.route('/editar_produto/<product_uuid>', methods=['GET'])
 def editar_produto(product_uuid):
-    conn = sqlite3.connect('database.db')
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM produtos WHERE uuid = ?", (product_uuid,))
     produto = cursor.fetchone()
@@ -296,7 +289,7 @@ def excluir_produto(product_uuid):
 
     user_email = session['user']['email']
 
-    conn = sqlite3.connect('database.db')
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM produtos WHERE uuid = ? AND usuario_email = ?', (product_uuid, user_email))
     produto = cursor.fetchone()
@@ -321,7 +314,7 @@ def salvar_edicao_produto():
         return jsonify({'error': 'Produto não identificado'}), 400
 
     # Conectar ao banco e buscar o produto
-    conn = sqlite3.connect('database.db')
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM produtos WHERE uuid = ?", (product_uuid,))
     produto = cursor.fetchone()
@@ -501,7 +494,7 @@ def get_content():
     email_usuario = session['user']['email']
 
     try:
-        conn = sqlite3.connect('database.db')
+        conn = connect_db()
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute(
@@ -574,7 +567,7 @@ def api_criar_bot():
             photo_filename = f"bots/{filename}"
 
     try:
-        conn = sqlite3.connect('database.db')
+        conn = connect_db()
         cursor = conn.cursor()
         # Verifica se existe este produto E se ele pertence ao usuário logado
         cursor.execute('SELECT uuid FROM produtos WHERE uuid = ? AND usuario_email = ?', (product_uuid, user_email))
@@ -602,7 +595,7 @@ def api_criar_bot():
 @app.route('/criar_bot/<product_uuid>')
 def criar_bot_form(product_uuid):
     # Busca o produto pelo UUID na tabela produtos
-    conn = sqlite3.connect('database.db')
+    conn = connect_db()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM produtos WHERE uuid = ?', (product_uuid,))
@@ -642,7 +635,7 @@ def acesso_conteudos():
     cliente_email = session['cliente_email']
     access_key = session['cliente_key']
 
-    conn = sqlite3.connect('database.db')
+    conn = connect_db()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
@@ -692,7 +685,7 @@ def registrar_chave():
         return jsonify({"error": "email e produto_id obrigatórios"}), 400
 
     # Busca o produto_uuid no banco de dados usando produto_id
-    conn = sqlite3.connect('database.db')
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("SELECT uuid FROM produtos WHERE id = ?", (produto_id,))
     result = cursor.fetchone()
@@ -723,7 +716,7 @@ def painel_auth():
     if not chave or not email:
         return jsonify({"error": "E-mail e chave obrigatórios"}), 400
 
-    conn = sqlite3.connect('database.db')
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM acessos WHERE email = ? AND access_key = ?", (email, chave))
     resultado = cursor.fetchone()
@@ -1265,7 +1258,7 @@ def get_tasks():
     return jsonify([dict(row) for row in tasks])
 
 def get_db():
-    conn = sqlite3.connect('database.db')
+    conn = connect_db()
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -1423,7 +1416,7 @@ def get_receita_gerada(user_email):
 @app.route('/10012006/admin/saques/financeiro')
 def painel_saques():
     import sqlite3
-    conn = sqlite3.connect('database.db')
+    conn = connect_db()
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
     # Saques pendentes
@@ -1484,7 +1477,7 @@ def load_or_delete_flow(flow_id):
         return redirect(url_for('login'))
 
     # Conexão com o banco de dados
-    conn = sqlite3.connect('database.db')
+    conn = connect_db()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
@@ -1533,7 +1526,7 @@ def membros(product_uuid):
     if 'user' not in session:
         return redirect(url_for('login'))
 
-    conn = sqlite3.connect('database.db')
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM produtos WHERE uuid = ?', (product_uuid,))
     product = cursor.fetchone()
@@ -1572,7 +1565,7 @@ def bot(product_uuid):
         return redirect(url_for('login'))
 
     user_email = session['user']['email']
-    conn = sqlite3.connect('database.db')
+    conn = connect_db()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute(
@@ -1624,7 +1617,7 @@ def auth_google_callback():
 
 @app.route('/produtos')
 def listar_produtos():
-    conn = sqlite3.connect('database.db')
+    conn = connect_db()
     cursor = conn.cursor()
 
     cursor.execute('SELECT id, nome, descricao, preco, imagem, url_checkout, url_flow FROM produtos')
@@ -1646,7 +1639,7 @@ def listar_produtos():
     return render_template('produtos.html', user=session.get('user'), produtos=produtos)
 
 def get_produtos(email_usuario):
-    conn = sqlite3.connect('database.db')
+    conn = connect_db()
     conn.row_factory = sqlite3.Row  # Permite acessar por nome da coluna
     cursor = conn.cursor()
     # Filtra os produtos pelo email do usuário
