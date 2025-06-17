@@ -1211,6 +1211,7 @@ def dashboard():
         receita_gerada=receita_gerada,
         produtos_vendidos=produtos_vendidos
     )
+
 @app.route('/api/tasks', methods=['GET'])
 def get_tasks():
     if 'user' not in session:
