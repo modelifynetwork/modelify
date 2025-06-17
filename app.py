@@ -121,7 +121,6 @@ google = oauth.register(
     client_secret=app.config['GOOGLE_CLIENT_SECRET'],
     server_metadata_url=app.config['GOOGLE_DISCOVERY_URL'],
     client_kwargs={'scope': 'openid email profile'},
-    redirect_uri='https://modelify.onrender.com/auth/google/callback'
 )
 
 @app.errorhandler(Exception)
@@ -1594,8 +1593,9 @@ def bot(product_uuid):
 
 @app.route('/auth/google')
 def auth_google():
-        callback_url = url_for('auth_google_callback', _external=True)
-        return google.authorize_redirect(callback_url)
+    return google.authorize_redirect(
+        redirect_uri="http://127.0.0.1:8080/auth/google/callback"
+    )
 
 @app.route('/auth/google/callback')
 def auth_google_callback():
