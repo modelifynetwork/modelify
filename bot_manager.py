@@ -12,7 +12,9 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler
 import mercadopago  # Para consulta de pagamento Mercado Pago
 
 # Caminho do banco no volume persistente do Fly.io
-DATABASE = "database.db"
+def connect_db():
+    return sqlite3.connect('/db/database.db')
+    
 POLL_INTERVAL = 5  # segundos
 
 # Mercado Pago token
@@ -22,7 +24,7 @@ MERCADOPAGO_ACCESS_TOKEN = "APP_USR-6436253612422218-033017-115c16f1f9ddf7fca0c2
 FLASK_URL = os.environ.get("FLASK_URL", "http://127.0.0.1:8080")
 
 def get_bots_snapshot():
-    conn = sqlite3.connect(DATABASE)
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT bot_token, mensagens, botao_texto, id, oferta, link_vip, uuid
