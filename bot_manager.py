@@ -9,20 +9,18 @@ import base64
 from io import BytesIO
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Bot
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler
-import mercadopago  # Para consulta de pagamento Mercado Pago
+import mercadopago
 import threading
 
 # Importa o app Flask já pronto
 from app import app as flask_app
 
-# Caminho do banco (agora Postgres, igual ao Flask!)
 def connect_db():
     return psycopg2.connect(os.environ.get('DATABASE_URL'), cursor_factory=psycopg2.extras.DictCursor)
 
 POLL_INTERVAL = 5  # segundos
 
 MERCADOPAGO_ACCESS_TOKEN = "APP_USR-6436253612422218-033017-115c16f1f9ddf7fca0c289fb9f1081a8-2359242973"
-
 FLASK_URL = os.environ.get("FLASK_URL", "https://modelify.onrender.com/")
 
 def get_bots_snapshot():
@@ -36,7 +34,6 @@ def get_bots_snapshot():
     """)
     bots = cursor.fetchall()
     conn.close()
-    # Evita tokens duplicados (por segurança)
     unique_bots = []
     seen_tokens = set()
     for bot in bots:
@@ -47,21 +44,13 @@ def get_bots_snapshot():
     hash_str = "".join([str(dict(bot)) for bot in unique_bots])
     return hashlib.md5(hash_str.encode()).hexdigest(), unique_bots
 
+# === PATCH PRINCIPAL AQUI: use só run_polling para v20+ ===
 async def run_bot(app):
     print("[DEBUG] Iniciando bot polling!")
-    await app.initialize()
-    await app.start()
-    await app.updater.start_polling()
     try:
-        while True:
-            await asyncio.sleep(3600)
-    except asyncio.CancelledError:
-        print("[DEBUG] Bot polling cancelado!")
-    finally:
-        await app.updater.stop()
-        await app.stop()
-        await app.shutdown()
-        print("[DEBUG] Bot polling finalizado!")
+        await app.run_polling()
+    except Exception as e:
+        print(f"[DEBUG] Bot polling finalizado por erro: {e}")
 
 def build_app(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, uuid):
     app = Application.builder().token(token).build()
@@ -206,6 +195,9 @@ async def manage_bots():
     verificador_task = None
     while True:
         current_hash, bots_info = get_bots_snapshot()
+        print(f"[DEBUG] Bots ativos encontrados: {len(bots_info)}")
+        for bot in bots_info:
+            print(f"[DEBUG] Bot: {bot['bot_token'][:8]} id:{bot['id']}")
         if current_hash != last_hash:
             print("[BotManager] Mudança detectada na tabela bots. Reiniciando bots ativos...")
             # Cancela tarefas antigas
