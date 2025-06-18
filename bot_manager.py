@@ -207,11 +207,9 @@ async def manage_bots():
             # Cancela tarefas antigas
             for app, task in running:
                 try:
-                    await app.stop()
-                    await app.shutdown()
-                    task.cancel()
+                    task.cancel()  # <-- Corrigido: só cancelar a task!
                 except Exception as e:
-                    print(f"[BotManager] Erro ao parar bot: {e}")
+                    print(f"[BotManager] Erro ao cancelar bot: {e}")
             running.clear()
             bots_tokens.clear()
             await asyncio.sleep(1)
