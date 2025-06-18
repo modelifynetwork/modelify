@@ -32,14 +32,14 @@ def get_bots_info():
     """)
     bots = cursor.fetchall()
     conn.close()
-    unique_bots = []
     seen_tokens = set()
     for bot in bots:
         token = bot['bot_token']
-        if token and token not in seen_tokens:
-            unique_bots.append(bot)
-            seen_tokens.add(token)
-    return unique_bots
+        if token in seen_tokens:
+            print(f"[FATAL] TOKEN DUPLICADO ATIVO: {token[:10]}...")
+            exit(1)
+        seen_tokens.add(token)
+    return bots
 
 def run_bot_proc(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, uuid):
     import asyncio
