@@ -9,21 +9,18 @@ import base64
 from io import BytesIO
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Bot
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler
-import mercadopago  # Para consulta de pagamento Mercado Pago
+import mercadopago
 import threading
 import sys
 
-# Importa o app Flask já pronto
 from app import app as flask_app
 
-# Caminho do banco (agora Postgres, igual ao Flask!)
 def connect_db():
     return psycopg2.connect(os.environ.get('DATABASE_URL'), cursor_factory=psycopg2.extras.DictCursor)
 
 POLL_INTERVAL = 5  # segundos
 
 MERCADOPAGO_ACCESS_TOKEN = "APP_USR-6436253612422218-033017-115c16f1f9ddf7fca0c289fb9f1081a8-2359242973"
-
 FLASK_URL = os.environ.get("FLASK_URL", "https://modelify.onrender.com/")
 
 def get_bots_snapshot():
@@ -37,7 +34,6 @@ def get_bots_snapshot():
     """)
     bots = cursor.fetchall()
     conn.close()
-    # Evita tokens duplicados (por segurança)
     unique_bots = []
     seen_tokens = set()
     for bot in bots:
@@ -48,7 +44,6 @@ def get_bots_snapshot():
     hash_str = "".join([str(dict(bot)) for bot in unique_bots])
     return hashlib.md5(hash_str.encode()).hexdigest(), unique_bots
 
-# PATCH: Use apenas run_polling() para python-telegram-bot v20+
 async def run_bot(app):
     print("[DEBUG] Iniciando bot polling!")
     try:
@@ -207,7 +202,7 @@ async def manage_bots():
             # Cancela tarefas antigas
             for app, task in running:
                 try:
-                    task.cancel()  # <-- Corrigido: só cancelar a task!
+                    task.cancel()  # <-- Só cancela a task!
                 except Exception as e:
                     print(f"[BotManager] Erro ao cancelar bot: {e}")
             running.clear()
@@ -249,7 +244,7 @@ if __name__ == "__main__":
     flask_thread.daemon = True
     flask_thread.start()
 
-    # Compatibilidade Windows (se rodar local)
+    # Compat Windows
     if sys.platform.startswith('win'):
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
