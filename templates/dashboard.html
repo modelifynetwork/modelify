@@ -172,7 +172,9 @@
         padding: 1rem 0.5rem;
         min-height: 60vh;
         margin-left: 0 !important;
-        width: 100% !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        box-sizing: border-box;
     }
 }
         .sidebar-link .sidebar-label .pulse {
@@ -199,7 +201,7 @@
 
 <div class="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-[#181824] via-[#181824] to-[#232336]" style="position:relative;z-index:1;">
     <!-- Sidebar Premium Flutuante -->
-    <aside id="premiumSidebar" class="premium-sidebar group z-50" tabindex="0">
+    <aside id="premiumSidebar" class="premium-sidebar group z-50 hidden md:flex" tabindex="0">
       <div>
         <div class="brand flex items-center gap-2 mx-5 mt-8 mb-7">
           <span class="text-2xl font-extrabold text-white">Modeli<span class="gradient-text">fy</span></span>
@@ -249,7 +251,7 @@
 
     <!-- Main Content -->
     <main id="mainContent" class="flex-1 flex flex-col transition-all duration-300 md:ml-[6.5rem] ml-0">
-      <div class="dashboard-card-wrapper" id="dashboardCardWrapper">
+      <div class="dashboard-card-wrapper px-1 md:px-6">
 
         <!-- ABAS PRINCIPAIS -->
 	<!-- ABAS PRINCIPAIS -->
@@ -292,7 +294,7 @@
           <!-- Dashboard Overview -->
           <h2 class="text-3xl font-bold mb-6 text-[#18181b] dark:text-pink-200 tracking-tight neon">Dashboard</h2>
           <!-- Sales Cards -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+          <div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4 md:gap-5 mb-8">
               <div class="p-6 rounded-3xl bg-white/90 dark:bg-[#181824] shadow-xl hover:scale-105 transition-all duration-300 group">
                   <h3 class="text-base font-medium text-gray-400 dark:text-pink-200">Total de Vendas</h3>
                   <p class="text-3xl font-extrabold text-pink-500 dark:text-pink-400 mt-2" id="totalSales">{{ total_sales }}</p>
@@ -311,7 +313,7 @@
               </div>
           </div>
           <!-- Task Stats -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+          <div class="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-5 mb-8">
               <div class="p-6 rounded-3xl bg-white/90 dark:bg-[#181824] shadow-xl hover:scale-105 transition-all duration-300 group">
                   <h3 class="text-base font-medium text-gray-400 dark:text-pink-200">Total de Tarefas</h3>
                   <p class="text-3xl font-extrabold text-pink-500 dark:text-pink-400 mt-2" id="totalTasks">0</p>
@@ -395,6 +397,9 @@
           </div>
         </div>
       </div>
+	    <button id="openSidebar" class="md:hidden fixed top-4 left-4 z-[10000] bg-pink-500 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg">
+  		<i data-lucide="menu" class="w-7 h-7"></i>
+	</button>
     </main>
 </div>
 
@@ -403,6 +408,11 @@
 
 <script>
     // --- ABAS ---
+    // Mobile sidebar toggle
+        document.getElementById('openSidebar').onclick = function() {
+        document.getElementById('premiumSidebar').classList.toggle('hidden');
+        document.getElementById('premiumSidebar').classList.toggle('flex');
+        };
     function showTab(tab) {
       document.querySelectorAll('.tab-main').forEach(btn => {
         btn.classList.remove('bg-pink-500', 'text-white');
