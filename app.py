@@ -1381,7 +1381,7 @@ def get_receita_gerada(user_email):
 def painel_saques():
     import sqlite3
     conn = connect_db()
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     # Saques pendentes
     cur.execute("SELECT * FROM saques WHERE status!='liberado' ORDER BY data_pedido DESC")
     saques_pendentes = cur.fetchall()
