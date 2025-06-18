@@ -9,8 +9,11 @@ import base64
 from io import BytesIO
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Bot
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler
-
 import mercadopago  # Para consulta de pagamento Mercado Pago
+import threading
+
+# Importa o app Flask já pronto
+from app import app as flask_app
 
 # Caminho do banco (agora Postgres, igual ao Flask!)
 def connect_db():
@@ -232,15 +235,14 @@ async def manage_bots():
             last_hash = current_hash
         await asyncio.sleep(POLL_INTERVAL)
 
-from app import app as flask_app
-
-import threading
-
 def start_flask():
-    flask_app.run(host="0.0.0.0", port=8080)
+    flask_app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
 
 if __name__ == "__main__":
     print("[BotManager] Iniciando monitoramento dos bots...")
+    flask_thread = threading.Thread(target=start_flask)
+    flask_thread.daemon = True
+    flask_thread.start()
     try:
         asyncio.run(manage_bots())
     except KeyboardInterrupt:
