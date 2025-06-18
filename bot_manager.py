@@ -5,12 +5,13 @@ import json
 import requests
 import base64
 from io import BytesIO
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Bot
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler
 import mercadopago
 import threading
 import multiprocessing
 import sys
+import time
 
 from app import app as flask_app
 
@@ -24,7 +25,7 @@ def get_bots_info():
     conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT bot_token, mensagens, botao_texto, id, oferta, link_vip, uuid
+        SELECT DISTINCT bot_token, mensagens, botao_texto, id, oferta, link_vip, uuid
         FROM bots
         WHERE ativo=1
         ORDER BY bot_token
@@ -35,7 +36,7 @@ def get_bots_info():
     seen_tokens = set()
     for bot in bots:
         token = bot['bot_token']
-        if token not in seen_tokens:
+        if token and token not in seen_tokens:
             unique_bots.append(bot)
             seen_tokens.add(token)
     return unique_bots
@@ -99,12 +100,14 @@ def run_bot_proc(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, u
 
     # Windows async policy
     if sys.platform.startswith('win'):
+        import asyncio
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     try:
         app = build_app()
         asyncio.run(app.run_polling())
     except Exception as e:
         print(f"[BotManager] Bot {str(token)[:8]} morreu: {e}")
+        time.sleep(5)
 
 def start_flask():
     flask_app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
@@ -117,6 +120,12 @@ if __name__ == "__main__":
     flask_thread.start()
 
     bots_info = get_bots_info()
+    tokens = [x['bot_token'] for x in bots_info]
+    # Check for duplicate tokens
+    if len(tokens) != len(set(tokens)):
+        print("[FATAL] Há tokens duplicados no banco! Isso causará CONFLICT.")
+        sys.exit(1)
+
     procs = []
     for bot in bots_info:
         token = bot['bot_token']
