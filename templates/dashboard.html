@@ -15,6 +15,8 @@
         html, body {
             font-family: 'Inter', 'Poppins', 'Outfit', system-ui, sans-serif;
             background: linear-gradient(135deg, #18181b 0%, #23272f 100%);
+            min-height: 100vh;
+    /* NÃO coloque overflow:hidden aqui! */
         }
         ::selection {
             background: #ff85b2;
@@ -153,22 +155,26 @@
           .premium-sidebar.expanded { width: 99vw !important; border-radius: 2.5rem; }
         }
         /* Dashboard Card Wrapper */
-        .dashboard-card-wrapper {
-            border-radius: 1.5rem;
-            box-shadow: 0 6px 40px 0 #00000022, 0 2px 8px #a78bfa11;
-            background: rgba(25, 25, 36, 0.92);
-            padding: 2rem 1.5rem;
-            margin-top: 0.5rem;
-            margin-bottom: 0.5rem;
-            min-height: 90vh;
-            transition: margin-left 0.33s cubic-bezier(.4,2,.3,1), width 0.33s cubic-bezier(.4,2,.3,1);
-        }
-        @media (max-width: 900px) {
-            .dashboard-card-wrapper {
-                border-radius: 1rem;
-                padding: 1rem 0.5rem;
-            }
-        }
+.dashboard-card-wrapper {
+    border-radius: 1.5rem;
+    box-shadow: 0 6px 40px 0 #00000022, 0 2px 8px #a78bfa11;
+    background: rgba(25, 25, 36, 0.92);
+    padding: 2rem 1.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    min-height: 70vh;
+    width: 100%;
+    transition: margin-left 0.33s cubic-bezier(.4,2,.3,1), width 0.33s cubic-bezier(.4,2,.3,1);
+}
+@media (max-width: 900px) {
+    .dashboard-card-wrapper {
+        border-radius: 1rem;
+        padding: 1rem 0.5rem;
+        min-height: 60vh;
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
         .sidebar-link .sidebar-label .pulse {
           animation: none !important;
         }
@@ -191,9 +197,9 @@
     <div id="lottie-loading" class="w-24 h-24"></div>
 </div>
 
-<div class="flex h-screen overflow-hidden bg-gradient-to-br from-[#181824] via-[#181824] to-[#232336]" style="position:relative;z-index:1;">
+<div class="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-[#181824] via-[#181824] to-[#232336]" style="position:relative;z-index:1;">
     <!-- Sidebar Premium Flutuante -->
-    <aside id="premiumSidebar" class="premium-sidebar group" tabindex="0">
+    <aside id="premiumSidebar" class="premium-sidebar group z-50" tabindex="0">
       <div>
         <div class="brand flex items-center gap-2 mx-5 mt-8 mb-7">
           <span class="text-2xl font-extrabold text-white">Modeli<span class="gradient-text">fy</span></span>
@@ -242,7 +248,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main id="mainContent" class="flex-1 flex flex-col transition-all duration-300" style="margin-left:6.5rem;">
+    <main id="mainContent" class="flex-1 flex flex-col transition-all duration-300 md:ml-[6.5rem] ml-0">
       <div class="dashboard-card-wrapper" id="dashboardCardWrapper">
 
         <!-- ABAS PRINCIPAIS -->
