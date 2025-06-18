@@ -1,3 +1,4 @@
+from flask_session import Session
 import psycopg2.extras
 import psycopg2
 import smtplib
@@ -25,8 +26,11 @@ def connect_db():
 
 mp = mercadopago.SDK("APP_USR-6436253612422218-033017-115c16f1f9ddf7fca0c289fb9f1081a8-2359242973")
 stripe.api_key = os.getenv("STRIPE_API_KEY")
-app = Flask(__name__, static_folder='static')
-app.secret_key = "10012006ZeusErosLupeBemLoko"
+app = Flask(__name__, static_folder='static')  # 1. crie o app
+app.secret_key = "10012006ZeusErosLupeBemLoko" # 2. defina secret_key
+app.config['SESSION_TYPE'] = 'filesystem'      # 3. configure SESSION_TYPE
+app.config['SESSION_PERMANENT'] = False
+Session(app)                                   
 CORS(app)
 
 MAX_FILE_SIZE = 2 * 1024 * 1024  # 2 MB
