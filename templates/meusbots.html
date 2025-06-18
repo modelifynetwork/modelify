@@ -442,11 +442,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     <i data-lucide="edit-3" class="w-4 h-4"></i> Editar
                   </a>
                   ${bot.ativo
-                    ? `<form method="POST" action="/pausar_bot/${bot.id}">
-                        <button type="submit" class="px-4 py-2 rounded-2xl bg-yellow-100 dark:bg-yellow-900 text-yellow-500 font-semibold shadow hover:bg-yellow-400 hover:text-white transition-all duration-300 flex items-center gap-2 text-xs">
-                          <i data-lucide="pause-circle" class="w-4 h-4"></i> Pausar
-                        </button>
-                      </form>`
+                   ? `<!-- <form method="POST" action="/pausar_bot/${bot.id}">
+    <button ...> ...Pausar...</button>
+  </form> -->`
                     : `<form method="POST" action="/ativar_bot/${bot.id}">
                         <button type="submit" class="px-4 py-2 rounded-2xl bg-green-100 dark:bg-green-900 text-green-500 font-semibold shadow hover:bg-green-400 hover:text-white transition-all duration-300 flex items-center gap-2 text-xs">
                           <i data-lucide="play-circle" class="w-4 h-4"></i> Ativar
