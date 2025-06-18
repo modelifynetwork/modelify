@@ -406,7 +406,7 @@ def ativar_bot(bot_id):
     row = cursor.fetchone()
     product_uuid = row["uuid"] if row else None
     try:
-        conn.execute("UPDATE bots SET ativo=1 WHERE id=%s AND user_email=%s", (bot_id, user_email))
+        cursor.execute("UPDATE bots SET ativo=1 WHERE id=%s AND user_email=%s", (bot_id, user_email))  # <-- corrigido aqui
         conn.commit()
     except Exception as e:
         print("Erro ao ativar bot:", e)
@@ -414,7 +414,7 @@ def ativar_bot(bot_id):
     if product_uuid:
         return redirect(url_for("bot", product_uuid=product_uuid))
     return redirect(request.referrer or url_for("dashboard"))
-
+	
 @app.route("/excluir_bot/<int:bot_id>", methods=["POST"])
 def excluir_bot(bot_id):
     if 'user' not in session or 'email' not in session['user']:
