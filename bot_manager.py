@@ -241,9 +241,6 @@ def start_flask():
 
 if __name__ == "__main__":
     print("[BotManager] Iniciando monitoramento dos bots...")
-    flask_thread = threading.Thread(target=start_flask)
-    flask_thread.daemon = True
-    flask_thread.start()
     try:
         asyncio.run(manage_bots())
     except KeyboardInterrupt:
