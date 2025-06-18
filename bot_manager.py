@@ -1,5 +1,6 @@
 import os
-import sqlite3
+import psycopg2
+import psycopg2.extras
 import asyncio
 import hashlib
 import json
@@ -11,17 +12,14 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler
 
 import mercadopago  # Para consulta de pagamento Mercado Pago
 
-# Caminho do banco no volume persistente do Fly.io
+# Caminho do banco (agora Postgres, igual ao Flask!)
 def connect_db():
-    db_path = os.path.join(os.path.dirname(__file__), 'db', 'database.db')
-    return sqlite3.connect(db_path)
-    
+    return psycopg2.connect(os.environ.get('DATABASE_URL'), cursor_factory=psycopg2.extras.DictCursor)
+
 POLL_INTERVAL = 5  # segundos
 
-# Mercado Pago token
 MERCADOPAGO_ACCESS_TOKEN = "APP_USR-6436253612422218-033017-115c16f1f9ddf7fca0c289fb9f1081a8-2359242973"
 
-# URL do backend Flask, pode ser sobrescrito por variável de ambiente (ideal para produção!)
 FLASK_URL = os.environ.get("FLASK_URL", "https://modelify.onrender.com/")
 
 def get_bots_snapshot():
@@ -39,10 +37,11 @@ def get_bots_snapshot():
     unique_bots = []
     seen_tokens = set()
     for bot in bots:
-        if bot[0] not in seen_tokens:
+        token = bot['bot_token']
+        if token not in seen_tokens:
             unique_bots.append(bot)
-            seen_tokens.add(bot[0])
-    hash_str = "".join([str(bot) for bot in unique_bots])
+            seen_tokens.add(token)
+    hash_str = "".join([str(dict(bot)) for bot in unique_bots])
     return hashlib.md5(hash_str.encode()).hexdigest(), unique_bots
 
 async def run_bot(app):
@@ -53,14 +52,12 @@ async def run_bot(app):
 def build_app(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, uuid):
     app = Application.builder().token(token).build()
 
-    # Handler para /start
     async def start(update, context):
         print(f"[DEBUG] Recebido /start de {update.effective_user.id}")
         try:
             mensagens = json.loads(mensagens_json) if mensagens_json else []
             for msg in mensagens:
                 await update.message.reply_text(msg)
-            # Botão com texto customizado
             keyboard = [
                 [InlineKeyboardButton(botao_texto or "QUERO TER ACESSO AO VIP", callback_data="quero_vip")]
             ]
@@ -73,13 +70,12 @@ def build_app(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, uuid
             await update.message.reply_text("Erro ao processar as mensagens automáticas. Por favor, tente novamente.")
             print(f"[BotManager] Erro no envio de mensagens automáticas: {e}")
 
-    # Handler do botão (callback)
     async def button_callback(update, context):
         query = update.callback_query
         await query.answer()
 
         payload = {
-            "uuid": uuid,  # uuid do produto/bot (vem do banco bots)
+            "uuid": uuid,
             "produto_nome": "Acesso VIP",
             "telegram_id": query.from_user.id,
             "bot_id": bot_id
@@ -92,7 +88,6 @@ def build_app(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, uuid
                 qrcode_base64 = data.get('qrcode')
                 pix_copia_cola = data.get('pix_copia_cola')
 
-                # Envia o QRCode como imagem (converte base64 para BytesIO)
                 if qrcode_base64:
                     if qrcode_base64.startswith('data:image'):
                         qrcode_base64 = qrcode_base64.split(',')[1]
@@ -102,7 +97,6 @@ def build_app(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, uuid
                     bio.seek(0)
                     await query.message.reply_photo(bio, caption="Escaneie o QRCode ou copie o código Pix abaixo:")
 
-                # Envia o copia-e-cola
                 if pix_copia_cola:
                     await query.message.reply_text(f"`{pix_copia_cola}`", parse_mode="Markdown")
 
@@ -117,7 +111,6 @@ def build_app(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, uuid
     print(f"[DEBUG] build_app finalizado para token {token[:10]}")
     return app
 
-# Verifica pagamentos pendentes e atualiza status se aprovado no Mercado Pago
 async def verificar_pagamentos_aprovados():
     sdk = mercadopago.SDK(MERCADOPAGO_ACCESS_TOKEN)
     while True:
@@ -126,14 +119,15 @@ async def verificar_pagamentos_aprovados():
             cursor = conn.cursor()
             cursor.execute("SELECT id FROM pagamentos WHERE status = 'PENDENTE'")
             pagamentos = cursor.fetchall()
-            for (id_transacao,) in pagamentos:
+            for row in pagamentos:
+                id_transacao = row['id']
                 try:
                     resultado = sdk.payment().search({"external_reference": id_transacao})
                     results = resultado["response"].get("results", [])
                     if results:
                         status_mp = results[0]["status"]
                         if status_mp == "approved":
-                            cursor.execute("UPDATE pagamentos SET status = 'APROVADO' WHERE id = ?", (id_transacao,))
+                            cursor.execute("UPDATE pagamentos SET status = 'APROVADO' WHERE id = %s", (id_transacao,))
                             conn.commit()
                             print(f"[Verificador] Pagamento {id_transacao} aprovado!")
                 except Exception as e:
@@ -143,13 +137,11 @@ async def verificar_pagamentos_aprovados():
             print(f"[Verificador] Erro ao verificar pagamentos: {e}")
         await asyncio.sleep(10)
 
-# Rotina: entrega link VIP se pagamento aprovado
 async def entregar_vip(bot_token):
     bot = Bot(token=bot_token)
     while True:
         try:
             conn = connect_db()
-            conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             cursor.execute("""
                 SELECT p.telegram_id, b.link_vip, p.id
@@ -162,9 +154,9 @@ async def entregar_vip(bot_token):
             """)
             rows = cursor.fetchall()
             for row in rows:
-                telegram_id = row["telegram_id"]
-                link_vip = row["link_vip"]
-                id_pagamento = row["id"]
+                telegram_id = row['telegram_id']
+                link_vip = row['link_vip']
+                id_pagamento = row['id']
 
                 if not telegram_id or not link_vip:
                     continue
@@ -179,7 +171,7 @@ async def entregar_vip(bot_token):
                         parse_mode="Markdown"
                     )
                     cursor.execute(
-                        "UPDATE pagamentos SET link_entregue = 1, atualizado_em = CURRENT_TIMESTAMP WHERE id = ?",
+                        "UPDATE pagamentos SET link_entregue = 1, atualizado_em = CURRENT_TIMESTAMP WHERE id = %s",
                         (id_pagamento,)
                     )
                     conn.commit()
@@ -205,8 +197,6 @@ async def manage_bots():
             # Cancela tarefas antigas
             for app, task in running:
                 try:
-                    if hasattr(app, "updater"):
-                        await app.updater.stop()
                     await app.stop()
                     await app.shutdown()
                     task.cancel()
@@ -218,7 +208,13 @@ async def manage_bots():
             # Inicia bots novos
             for bot in bots_info:
                 try:
-                    token, mensagens_json, botao_texto, bot_id, oferta, link_vip, uuid = bot
+                    token = bot['bot_token']
+                    mensagens_json = bot['mensagens']
+                    botao_texto = bot['botao_texto']
+                    bot_id = bot['id']
+                    oferta = bot['oferta']
+                    link_vip = bot['link_vip']
+                    uuid = bot['uuid']
                     print(f"[DEBUG] Preparando para iniciar bot {token[:10]}")
                     app = build_app(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, uuid)
                     task = asyncio.create_task(run_bot(app))
@@ -226,7 +222,7 @@ async def manage_bots():
                     bots_tokens.append(token)
                     print(f"[BotManager] Bot {token[:10]}... iniciado.")
                 except Exception as e:
-                    print(f"[BotManager] Erro ao iniciar bot {token[:10]}...: {e}")
+                    print(f"[BotManager] Erro ao iniciar bot {bot.get('bot_token', '')[:10]}...: {e}")
             # Inicia a rotina de entrega VIP para cada bot ativo
             for bot_token in bots_tokens:
                 asyncio.create_task(entregar_vip(bot_token))
@@ -236,25 +232,19 @@ async def manage_bots():
             last_hash = current_hash
         await asyncio.sleep(POLL_INTERVAL)
 
-### INICIALIZAÇÃO FLASK E BOTS PARA FLY.IO
-
-from app import app as flask_app  # importa seu Flask principal
+from app import app as flask_app
 
 import threading
 
 def start_flask():
-    # Importante: Fly.io espera na porta 8080!
     flask_app.run(host="0.0.0.0", port=8080)
 
 if __name__ == "__main__":
     print("[BotManager] Iniciando monitoramento dos bots...")
-    # Roda o Flask numa thread separada
     flask_thread = threading.Thread(target=start_flask)
     flask_thread.daemon = True
     flask_thread.start()
-    # Roda o sistema dos bots no thread principal
     try:
-        # Certifique-se de ter a coluna 'link_entregue' em pagamentos!
         asyncio.run(manage_bots())
     except KeyboardInterrupt:
         print("[BotManager] Encerrado pelo usuário.")
