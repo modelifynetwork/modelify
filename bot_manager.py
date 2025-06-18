@@ -46,9 +46,7 @@ def get_bots_snapshot():
     return hashlib.md5(hash_str.encode()).hexdigest(), unique_bots
 
 async def run_bot(app):
-    await app.initialize()
-    await app.start()
-    await app.updater.start_polling()
+    await app.run_polling()
 
 def build_app(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, uuid):
     app = Application.builder().token(token).build()
