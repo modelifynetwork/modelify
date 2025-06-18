@@ -48,9 +48,18 @@ def get_bots_snapshot():
     return hashlib.md5(hash_str.encode()).hexdigest(), unique_bots
 
 async def run_bot(app):
-    print("[DEBUG] Iniciando run_polling para bot!")
-    await app.run_polling()
-    print("[DEBUG] run_polling finalizado para bot!")
+    print("[DEBUG] Iniciando bot polling!")
+    await app.start()
+    await app.updater.start_polling()
+    try:
+        while True:
+            await asyncio.sleep(3600)
+    except asyncio.CancelledError:
+        print("[DEBUG] Bot polling cancelado!")
+    finally:
+        await app.updater.stop()
+        await app.stop()
+        print("[DEBUG] Bot polling finalizado!")
 
 def build_app(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, uuid):
     app = Application.builder().token(token).build()
