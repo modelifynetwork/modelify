@@ -49,16 +49,17 @@ def get_bots_snapshot():
 
 async def run_bot(app):
     print("[DEBUG] Iniciando bot polling!")
+    await app.initialize()
     await app.start()
-    await app.updater.start_polling()
     try:
+        await app.bot.initialize()  # só se necessário, depende da versão
         while True:
             await asyncio.sleep(3600)
     except asyncio.CancelledError:
         print("[DEBUG] Bot polling cancelado!")
     finally:
-        await app.updater.stop()
         await app.stop()
+        await app.shutdown()
         print("[DEBUG] Bot polling finalizado!")
 
 def build_app(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, uuid):
