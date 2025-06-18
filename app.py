@@ -524,6 +524,8 @@ def get_content():
 @app.route('/api/criar_bot', methods=['POST'])
 def api_criar_bot():
     import json
+    import uuid
+    from werkzeug.utils import secure_filename
 
     # Garante usuário logado
     if 'user' not in session or 'email' not in session['user']:
@@ -569,7 +571,10 @@ def api_criar_bot():
         conn = connect_db()
         cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         # Verifica se existe este produto E se ele pertence ao usuário logado
-        cursor.execute('SELECT uuid FROM produtos WHERE uuid = %s AND usuario_email = %s', (product_uuid, user_email))
+        cursor.execute(
+            'SELECT uuid FROM produtos WHERE uuid = %s AND usuario_email = %s',
+            (product_uuid, user_email)
+        )
         produto = cursor.fetchone()
         if not produto:
             conn.close()
@@ -580,17 +585,18 @@ def api_criar_bot():
             INSERT INTO bots
                 (user_email, bot_name, bot_token, mensagens, botao_texto, group_id, photo_filename, link_vip, oferta, uuid)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
         ''', (
             user_email, bot_name, bot_token, mensagens_json, botao_texto,
             group_id, photo_filename, link_vip, oferta, product_uuid
         ))
+        bot_id = cursor.fetchone()[0]
         conn.commit()
-        bot_id = cursor.lastrowid
         conn.close()
-        return jsonify({'success': True, 'bot_id': bot_id}), 201
+        return jsonify({'success': True, 'bot_id': bot_id, 'product_uuid': product_uuid}), 201
     except Exception as e:
         return jsonify({'error': f'Erro ao salvar bot: {e}'}), 500
-
+	    
 @app.route('/criar_bot/<product_uuid>')
 def criar_bot_form(product_uuid):
     # Busca o produto pelo UUID na tabela produtos
