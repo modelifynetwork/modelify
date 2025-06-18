@@ -46,13 +46,16 @@ def get_bots_snapshot():
     return hashlib.md5(hash_str.encode()).hexdigest(), unique_bots
 
 async def run_bot(app):
+    print("[DEBUG] Iniciando run_polling para bot!")
     await app.run_polling()
+    print("[DEBUG] run_polling finalizado para bot!")
 
 def build_app(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, uuid):
     app = Application.builder().token(token).build()
 
     # Handler para /start
     async def start(update, context):
+        print(f"[DEBUG] Recebido /start de {update.effective_user.id}")
         try:
             mensagens = json.loads(mensagens_json) if mensagens_json else []
             for msg in mensagens:
@@ -111,6 +114,7 @@ def build_app(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, uuid
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_callback, pattern="^quero_vip$"))
+    print(f"[DEBUG] build_app finalizado para token {token[:10]}")
     return app
 
 # Verifica pagamentos pendentes e atualiza status se aprovado no Mercado Pago
@@ -201,7 +205,8 @@ async def manage_bots():
             # Cancela tarefas antigas
             for app, task in running:
                 try:
-                    await app.updater.stop()
+                    if hasattr(app, "updater"):
+                        await app.updater.stop()
                     await app.stop()
                     await app.shutdown()
                     task.cancel()
@@ -214,6 +219,7 @@ async def manage_bots():
             for bot in bots_info:
                 try:
                     token, mensagens_json, botao_texto, bot_id, oferta, link_vip, uuid = bot
+                    print(f"[DEBUG] Preparando para iniciar bot {token[:10]}")
                     app = build_app(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, uuid)
                     task = asyncio.create_task(run_bot(app))
                     running.append((app, task))
