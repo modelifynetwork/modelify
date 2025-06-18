@@ -425,13 +425,13 @@ def excluir_bot(bot_id):
     cursor.execute("SELECT uuid FROM bots WHERE id=%s AND user_email=%s", (bot_id, user_email))
     row = cursor.fetchone()
     product_uuid = row["uuid"] if row else None
-    conn.execute("DELETE FROM bots WHERE id=%s AND user_email=%s", (bot_id, user_email))
+    cursor.execute("DELETE FROM bots WHERE id=%s AND user_email=%s", (bot_id, user_email))  # <-- Aqui corrigido
     conn.commit()
     conn.close()
     if product_uuid:
         return redirect(url_for("bot", product_uuid=product_uuid))
     return redirect(request.referrer or url_for("dashboard"))
-
+	
 @app.route("/editar_bot/<int:bot_id>", methods=["GET", "POST"])
 def editar_bot(bot_id):
     if 'user' not in session or 'email' not in session['user']:
