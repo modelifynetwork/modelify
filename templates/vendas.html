@@ -16,10 +16,7 @@
             font-family: 'Inter','Poppins','Outfit',system-ui,sans-serif;
             background: linear-gradient(135deg, #18181b 0%, #23272f 100%);
         }
-        ::selection {
-            background: #ff85b2;
-            color: #fff;
-        }
+        ::selection { background: #ff85b2; color: #fff; }
         ::-webkit-scrollbar { width: 10px; background: #242438; }
         ::-webkit-scrollbar-thumb { background: #ff85b2; border-radius: 10px; }
         #loading-overlay {
@@ -32,19 +29,9 @@
             justify-content: center;
             transition: opacity 0.5s;
         }
-        #loading-overlay.loaded {
-            opacity: 0;
-            pointer-events: none;
-        }
-        .toast {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s;
-        }
-        .toast.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        #loading-overlay.loaded { opacity: 0; pointer-events: none; }
+        .toast { opacity: 0; pointer-events: none; transition: opacity 0.5s; }
+        .toast.active { opacity: 1; pointer-events: auto; }
         .gradient-text {
             background: linear-gradient(90deg, #ff85b2 0%, #a78bfa 100%);
             -webkit-background-clip: text;
@@ -53,7 +40,6 @@
             text-fill-color: transparent;
             font-weight: 700;
         }
-        /* Sidebar Premium Flutuante */
         .premium-sidebar {
           position: fixed;
           top: 2.5vh;
@@ -137,17 +123,76 @@
             transition: margin-left 0.33s cubic-bezier(.4,2,.3,1), width 0.33s cubic-bezier(.4,2,.3,1);
         }
         @media (max-width: 900px) {
-            .dashboard-card-wrapper {
-                border-radius: 1rem;
-                padding: 1rem 0.5rem;
-            }
+            .dashboard-card-wrapper { border-radius: 1rem; padding: 1rem 0.5rem; }
         }
-        .sidebar-link .sidebar-label .pulse {
-          animation: none !important;
-        }
+        .sidebar-link .sidebar-label .pulse { animation: none !important; }
         .sidebar-link:hover, .sidebar-link:focus {
           box-shadow: 0 2px 16px 0 #a78bfa15, 0 2px 8px 0 #0005;
           transform: scale(1.03);
+        }
+        /* Tabela bonita de vendas */
+        .tabela-vendas thead tr {
+            background: #fdf2fa;
+        }
+        .dark .tabela-vendas thead tr {
+            background: #232336;
+        }
+        .tabela-vendas th, .tabela-vendas td {
+            padding-left: 1.25rem;
+            padding-right: 1.25rem;
+            padding-top: 1.1rem;
+            padding-bottom: 1.1rem;
+            text-align: left;
+        }
+        .tabela-vendas th {
+            font-weight: 600;
+            color: #18181b;
+        }
+        .dark .tabela-vendas th {
+            color: #e879f9;
+        }
+        .tabela-vendas tr {
+            transition: background 0.2s;
+        }
+        .tabela-vendas tr:hover {
+            background: #ffe4f3;
+        }
+        .dark .tabela-vendas tr:hover {
+            background: #232336;
+        }
+        .tabela-vendas .badge-telegram {
+            background: linear-gradient(90deg, #19c7ff 10%, #a78bfa 90%);
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.95em;
+            border-radius: 999px;
+            padding: 0.2em 0.95em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3em;
+        }
+        .tabela-vendas .badge-status {
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 0.2em 0.8em;
+            font-size: .95em;
+        }
+        .tabela-vendas .badge-aprovado {
+            background: #d1fae5;
+            color: #059669;
+        }
+        .tabela-vendas .badge-pendente {
+            background: #fff7ed;
+            color: #ea580c;
+        }
+        .tabela-vendas .badge-cancelado {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .tabela-vendas .badge-gratis {
+            background: #f3e8ff;
+            color: #a21caf;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -230,16 +275,17 @@
         <!-- Sales Data -->
         <div>
             <h1 class="text-2xl font-bold mb-5 text-[#18181b] dark:text-pink-200 tracking-tight neon">Minhas Vendas Realizadas</h1>
-            <div class="rounded-3xl bg-white/90 dark:bg-[#181824] shadow-2xl p-0 overflow-x-auto">
-                <table class="min-w-full text-left text-sm">
+            <div class="rounded-2xl bg-white/95 dark:bg-[#181824] shadow p-0 overflow-x-auto">
+                <table class="min-w-full text-left text-sm tabela-vendas">
                     <thead>
-                        <tr class="bg-pink-100/60 dark:bg-pink-900/40">
-                            <th class="px-6 py-4 font-bold text-[#18181b] dark:text-pink-200">Cliente</th>
-                            <th class="px-6 py-4 font-bold text-[#18181b] dark:text-pink-200">Telefone</th>
-                            <th class="px-6 py-4 font-bold text-[#18181b] dark:text-pink-200">E-mail</th>
-                            <th class="px-6 py-4 font-bold text-[#18181b] dark:text-pink-200">Produto</th>
-                            <th class="px-6 py-4 font-bold text-[#18181b] dark:text-pink-200">Valor</th>
-                            <th class="px-6 py-4 font-bold text-[#18181b] dark:text-pink-200">Data</th>
+                        <tr class="border-b border-pink-100 dark:border-pink-900">
+                            <th>Cliente</th>
+                            <th>Telefone</th>
+                            <th>E-mail</th>
+                            <th>Produto</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                            <th>Data</th>
                         </tr>
                     </thead>
                     <tbody id="salesData" class="divide-y divide-pink-100 dark:divide-pink-900">
@@ -273,14 +319,12 @@
     // Lucide icons
     lucide.createIcons();
 
-    // Sidebar/Content Animation Sync (sem focusin/focusout para evitar bug)
+    // Sidebar/Content Animation Sync
     const sidebar = document.getElementById('premiumSidebar');
     const mainContent = document.getElementById('mainContent');
     const dashboardCardWrapper = document.getElementById('dashboardCardWrapper');
-
-    // Larguras
-    const SIDEBAR_COLLAPSED = 4.5; // rem
-    const SIDEBAR_EXPANDED = 17;   // rem
+    const SIDEBAR_COLLAPSED = 4.5;
+    const SIDEBAR_EXPANDED = 17;
 
     function setMainMargin(isExpanded) {
         let ml = isExpanded ? (SIDEBAR_EXPANDED + 2) : (SIDEBAR_COLLAPSED + 2);
@@ -288,8 +332,6 @@
         dashboardCardWrapper.style.marginLeft = isExpanded ? "1rem" : "0.25rem";
         dashboardCardWrapper.style.width = isExpanded ? "calc(100% - 2rem)" : "100%";
     }
-
-    // Inicial
     setMainMargin(false);
 
     sidebar.addEventListener('mouseenter', function() {
@@ -310,7 +352,6 @@
         document.getElementById('moon-icon').classList.toggle('hidden', isDark);
         document.getElementById('sun-icon').classList.toggle('hidden', !isDark);
     });
-    // Set initial icons
     if(localStorage.getItem('theme') === 'dark') {
         html.classList.add('dark');
         document.getElementById('moon-icon').classList.add('hidden');
@@ -327,7 +368,21 @@
         }, 2200);
     }
 
-    // Fetch and display sales data (ATUALIZADO PARA NOVA API)
+    // Função para badge de status bonito
+    function badgeStatus(status) {
+        status = (status || '').toString().toLowerCase();
+        if(status === 'approved' || status === 'aprovado') return `<span class="badge-status badge-aprovado">Aprovado</span>`;
+        if(status === 'pendente' || status === 'pending') return `<span class="badge-status badge-pendente">Pendente</span>`;
+        if(status === 'cancelado' || status === 'cancelled') return `<span class="badge-status badge-cancelado">Cancelado</span>`;
+        return `<span class="badge-status badge-pendente">${status || '--'}</span>`;
+    }
+
+    // Função para exibir badge Telegram
+    function badgeTelegram() {
+        return `<span class="badge-telegram"><i data-lucide="send" class="w-4 h-4"></i> Telegram</span>`;
+    }
+
+    // Fetch and display sales data
     async function fetchSalesData() {
         try {
             const response = await fetch('/api/vendas', {
@@ -341,11 +396,10 @@
             const salesDataContainer = document.getElementById('salesData');
             salesDataContainer.innerHTML = '';
 
-            // ALERTA DE NENHUMA VENDA
             if (Array.isArray(sales) && sales.length === 0) {
                 salesDataContainer.innerHTML = `
                     <tr>
-                        <td colspan="6" class="px-6 py-8 text-center text-lg text-gray-400 font-bold bg-pink-50/80 dark:bg-pink-900/30 rounded-2xl">
+                        <td colspan="7" class="px-6 py-8 text-center text-lg text-gray-400 font-bold bg-pink-50/80 dark:bg-pink-900/30 rounded-2xl">
                             <i data-lucide="info" class="inline-block w-6 h-6 mr-2 align-text-bottom text-pink-400"></i>
                             Nenhuma venda realizada ainda.<br>
                             <span class="text-sm text-gray-400">Assim que você realizar sua primeira venda, ela aparecerá aqui automaticamente!</span>
@@ -357,27 +411,44 @@
             }
 
             sales.forEach(sale => {
-                let valorVenda;
+                let valorVenda = '';
                 if (!sale.produto_preco || sale.produto_preco === null) {
                     valorVenda = `<span class="text-gray-400 italic">--</span>`;
                 } else if (parseFloat(sale.produto_preco) === 0) {
-                    valorVenda = `<span class="px-3 py-1 rounded-full bg-pink-500/20 text-pink-500 font-bold text-xs">OFERTA GRÁTIS</span>`;
+                    valorVenda = `<span class="badge-gratis">OFERTA GRÁTIS</span>`;
                 } else {
                     valorVenda = `<span class="px-3 py-1 rounded-full bg-green-500/20 text-green-500 font-bold text-xs">R$ ${parseFloat(sale.produto_preco).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>`;
                 }
 
+                // Identificação de venda Telegram
+                let clienteCol, telefoneCol, emailCol;
+                if (
+                    sale.email_cliente &&
+                    (sale.email_cliente === "telegram@bot.com" || sale.email_cliente === "telegram@bot.com.br")
+                ) {
+                    clienteCol = badgeTelegram();
+                    telefoneCol = `<span class="text-cyan-400 font-semibold italic">—</span>`;
+                    emailCol = `<span class="text-cyan-400 font-semibold">telegram@bot.com</span>`;
+                } else {
+                    clienteCol = `<span>${sale.cliente || '--'}</span>`;
+                    telefoneCol = `<span>${sale.telefone_cliente || '--'}</span>`;
+                    emailCol = `<span>${sale.email_cliente || '--'}</span>`;
+                }
+
                 const row = `
-                    <tr class="hover:bg-pink-100/20 dark:hover:bg-pink-900/10 transition-all duration-300">
-                        <td class="px-6 py-4">${sale.cliente || '--'}</td>
-                        <td class="px-6 py-4">${sale.telefone_cliente || '--'}</td>
-                        <td class="px-6 py-4">${sale.email_cliente || '--'}</td>
-                        <td class="px-6 py-4">${sale.produto_nome || '--'}</td>
-                        <td class="px-6 py-4">${valorVenda}</td>
-                        <td class="px-6 py-4">${sale.data_venda ? new Date(sale.data_venda).toLocaleString('pt-BR') : '--'}</td>
+                    <tr class="hover:bg-pink-50 dark:hover:bg-[#232336] transition">
+                        <td>${clienteCol}</td>
+                        <td>${telefoneCol}</td>
+                        <td>${emailCol}</td>
+                        <td><span class="font-semibold flex items-center gap-2"><i data-lucide="shopping-cart" class="w-4 h-4 text-pink-400"></i> ${sale.produto_nome || '--'}</span></td>
+                        <td>${valorVenda}</td>
+                        <td>${badgeStatus(sale.status)}</td>
+                        <td>${sale.data_venda ? new Date(sale.data_venda).toLocaleString('pt-BR') : '--'}</td>
                     </tr>
                 `;
                 salesDataContainer.innerHTML += row;
             });
+            lucide.createIcons();
         } catch (error) {
             console.error('Erro:', error);
             showToast('Erro ao carregar os dados de vendas.');
