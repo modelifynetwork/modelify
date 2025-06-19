@@ -807,11 +807,6 @@ def criar_pagamento_pix():
                 )
             )
 
-            cursor.execute(
-                'UPDATE produtos SET quantidade_vendas = quantidade_vendas + 1 WHERE uuid = %s',
-                (produto_uuid,)
-            )
-
             conn.commit()
             conn.close()
 
@@ -891,19 +886,37 @@ def atualizar_pagamento():
 @app.route('/webhook', methods=['POST'])
 def webhook():
     try:
-        # Dados enviados pelo Mercado Pago
         webhook_data = request.json
 
         if webhook_data and webhook_data.get("type") == "payment":
             payment_id = webhook_data["data"]["id"]
 
-            # Consulta o pagamento para verificar o status
+            # Consulta o pagamento no Mercado Pago
             payment = mp.payment().get(payment_id)
             payment_status = payment["response"]["status"]
+            external_reference = payment["response"].get("external_reference") # pode ser útil
+
+            # Conectar ao banco de dados
+            conn = connect_db()
+            cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+            # Atualize o status do pagamento no banco
+            cursor.execute("UPDATE pagamentos SET status = %s WHERE id = %s", (payment_status.upper(), payment_id))
 
             if payment_status == "approved":
-                # Atualize o status do pagamento no banco ou sistema
-                return jsonify({"message": "Pagamento aprovado"}), 200
+                # Buscar o produto_id relacionado ao pagamento
+                cursor.execute("SELECT produto_id FROM pagamentos WHERE id = %s", (payment_id,))
+                result = cursor.fetchone()
+                if result:
+                    produto_id = result["produto_id"]
+                    # Incrementar a quantidade de vendas
+                    cursor.execute(
+                        "UPDATE produtos SET quantidade_vendas = COALESCE(quantidade_vendas, 0) + 1 WHERE id = %s", (produto_id,)
+                    )
+
+            conn.commit()
+            conn.close()
+            return jsonify({"message": f"Pagamento status atualizado para {payment_status}"}), 200
 
         return jsonify({"message": "Webhook recebido"}), 200
 
@@ -976,12 +989,6 @@ def criar_pagamento_pix_telegram():
                     pix_data['qr_code_base64'], pix_data["qr_code"], pix_data["qr_code"], produto_uuid,
                     "Telegram User", None, "telegram@bot.com", dono_email, telegram_id
                 )
-            )
-
-            # INCREMENTA QUANTIDADE DE VENDAS
-            cursor.execute(
-                'UPDATE produtos SET quantidade_vendas = COALESCE(quantidade_vendas, 0) + 1 WHERE uuid = %s',
-                (produto_uuid,)
             )
 
             conn.commit()
