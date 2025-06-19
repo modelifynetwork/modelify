@@ -1595,6 +1595,9 @@ def auth_google_callback():
 
 @app.route('/produtos')
 def listar_produtos():
+    if 'user' not in session or 'email' not in session['user']:
+        return redirect(url_for('login'))
+	    
     conn = connect_db()
     cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute('SELECT id, nome, descricao, preco, imagem, url_checkout, url_flow FROM produtos')
@@ -1626,6 +1629,8 @@ def get_produtos(email_usuario):
 
 @app.route('/produtos_lista')
 def produtos_lista():
+    if 'user' not in session or 'email' not in session['user']:
+        return redirect(url_for('login'))
     # Recupera o email do usuário armazenado no dicionário dentro da sessão
     user_info = session.get("user")
     email_usuario = user_info.get("email") if user_info else None
