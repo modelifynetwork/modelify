@@ -145,3 +145,5 @@ if __name__ == "__main__":
     # Aguarda todos os bots terminarem (normalmente nunca termina)
     for p in procs:
         p.join()
+
+app = flask_app
