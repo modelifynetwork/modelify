@@ -1192,10 +1192,13 @@ def vendas():
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
+    print("== DASHBOARD SESSION:", dict(session))  # DEBUG: mostra toda a sessão
     if 'user' not in session:
+        print("== NÃO TEM 'user' NA SESSION, REDIRECIONA PRA LOGIN")
         return redirect(url_for('login'))
 
     user_email = session['user']['email']
+    print(f"== LOGADO COMO: {user_email}")
 
     conn = connect_db()
     cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -1221,7 +1224,7 @@ def dashboard():
         receita_gerada=receita_gerada,
         produtos_vendidos=produtos_vendidos
     )
-
+	
 @app.route('/api/tasks', methods=['GET'])
 def get_tasks():
     if 'user' not in session:
@@ -1570,20 +1573,24 @@ def auth_google_callback():
     try:
         token = google.authorize_access_token()
         user_info = google.parse_id_token(token, nonce=None)
+        print("== CALLBACK USER INFO:", user_info)  # DEBUG: mostra info do Google
         session['user'] = {'email': user_info['email']}
+        print("== SESSION DEPOIS DO LOGIN:", dict(session))  # DEBUG: mostra sessão salva
 
         with connect_db() as conn:
             cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             cursor.execute('''
-                INSERT OR IGNORE INTO usuarios (nome, email, google_id)
+                INSERT INTO usuarios (nome, email, google_id)
                 VALUES (%s, %s, %s)
+                ON CONFLICT DO NOTHING
             ''', (user_info['name'], user_info['email'], user_info['sub']))
             conn.commit()
 
+        print("== REDIRECIONANDO PARA DASHBOARD")
         return redirect(url_for("dashboard"))
 
     except Exception as e:
-        print(f"Erro ao validar o token: {e}")
+        print(f"== ERRO NO CALLBACK: {e}")
         return redirect(url_for("login"))
 
 @app.route('/produtos')
