@@ -488,12 +488,13 @@ def editar_bot(bot_id):
         oferta = request.form.get('oferta')
         foto = bot['photo_filename']
         if 'bot_photo' in request.files:
-		file = request.files['bot_photo']
-		if file and allowed_file(file.filename):
-			try:
-				photo_filename = upload_image_imgbb(file)
-			except Exception as e:
-				return jsonify({'error': f"Erro ao subir imagem do bot: {str(e)}"}), 400"
+	    file = request.files['bot_photo']
+	    if file and allowed_file(file.filename):
+	    try:
+	        photo_filename = upload_image_imgbb(file)
+		    except Exception as e:
+			return jsonify({'error': f"Erro ao subir imagem do bot: {str(e)}"}), 400"
+			    
         cursor.execute("""
             UPDATE bots
                SET bot_name=%s, bot_token=%s, mensagens=%s, botao_texto=%s, group_id=%s, link_vip=%s, oferta=%s, photo_filename=%s
