@@ -1,3 +1,4 @@
+import base64
 from flask_session import Session
 import psycopg2.extras
 import psycopg2
