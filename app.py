@@ -1259,7 +1259,7 @@ def dashboard():
     )
 
 @app.route('/dashboard-mobile', methods=['GET', 'POST'])
-def dashboard():
+def dashboardmobile():
     print("== DASHBOARD SESSION:", dict(session))  # DEBUG: mostra toda a sessão
     if 'user' not in session:
         print("== NÃO TEM 'user' NA SESSION, REDIRECIONA PRA LOGIN")
