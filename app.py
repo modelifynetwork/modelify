@@ -240,7 +240,7 @@ def add_content_produto():
     if not nome or not produto_uuid or 'file' not in request.files:
         return jsonify({"error": "Dados insuficientes"}), 400
 
-    file = request.files['file']
+    file = request.files['file'] 
         if file and allowed_file(file.filename):
     try:
         conteudo_url = upload_image_imgbb(file)
