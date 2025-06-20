@@ -466,11 +466,11 @@ async function abrirModalEdicao(product_uuid) {
         document.getElementById('edit-description').value = produto.descricao;
         document.getElementById('edit-category').value = produto.categoria;
         document.getElementById('edit-file-name').textContent = "Nenhum arquivo selecionado";
-        if (produto.imagem) {
-            document.getElementById('edit-current-image').innerHTML = `<img src="/${produto.imagem}" class="rounded mt-1 mb-2 max-h-24">`;
-        } else {
-            document.getElementById('edit-current-image').innerHTML = '';
-        }
+	if (produto.imagem) {
+	    document.getElementById('edit-current-image').innerHTML = `<img src="${produto.imagem}" class="rounded mt-1 mb-2 max-h-24">`;
+	} else {
+	    document.getElementById('edit-current-image').innerHTML = '';
+	}
         document.getElementById('edit-modal').classList.remove('hidden');
         setTimeout(() => { document.getElementById('edit-product-name').focus(); }, 200);
     } else {
