@@ -1086,7 +1086,7 @@ def salvar_produto():
 
         # Limpeza dos valores antes de salvar
         nome = str(nome).strip()
-        imagem_path = str(imagem_path).strip()
+        imagem_url = str(imagem_url).strip()
         usuario_email = str(usuario_email).strip()
         descricao = str(descricao).strip()
         url_checkout = str(url_checkout).strip()
@@ -1096,7 +1096,7 @@ def salvar_produto():
         print("DEBUG DADOS PARA O BANCO:")
         print("  nome:", nome, type(nome))
         print("  preco:", preco, type(preco))
-        print("  imagem_path:", imagem_path, type(imagem_path))
+        print("  imagem_url:", imagem_url, type(imagem_url))
         print("  usuario_email:", usuario_email, type(usuario_email))
         print("  descricao:", descricao, type(descricao))
         print("  url_checkout:", url_checkout, type(url_checkout))
@@ -1112,7 +1112,7 @@ def salvar_produto():
             INSERT INTO produtos (nome, preco, imagem, usuario_email, descricao, url_checkout, url_flow, uuid, categoria)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
-            (nome, preco, imagem_path, usuario_email, descricao, url_checkout, url_flow, produto_uuid, categoria)
+            (nome, preco, imagem_url, usuario_email, descricao, url_checkout, url_flow, produto_uuid, categoria)
         )
         conn.commit()
         conn.close()
@@ -1127,7 +1127,7 @@ def salvar_produto():
     except Exception as e:
         print(f"Erro: {e}")
         return jsonify({'error': f'Ocorreu um erro: {str(e)}'}), 500
-
+	    
 @app.route('/afiliado/<uuid>', methods=['GET'])
 def afiliado(uuid):
 	return render_template('sejaafiliado.html')
