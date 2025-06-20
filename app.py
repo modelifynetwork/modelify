@@ -1067,14 +1067,14 @@ def salvar_produto():
             return jsonify({'error': 'O preço mínimo para cadastrar um produto é R$ 5,00.'}), 400
 
         # Salvar a imagem no servidor, se fornecida
-	if imagem and imagem.filename.strip() != "":
-		try:
-			imagem_url = upload_image_imgbb(imagem)
-		except Exception as e:
-			print(f"Erro ao subir imagem no imgbb: {e}")
-			return jsonify({'error': f"Erro ao subir imagem: {str(e)}"}), 400
-		else:
-			imagem_url = ""
+        if imagem and imagem.filename.strip() != "":
+            try:
+                imagem_url = upload_image_imgbb(imagem)
+            except Exception as e:
+                print(f"Erro ao subir imagem no imgbb: {e}")
+                return jsonify({'error': f"Erro ao subir imagem: {str(e)}"}), 400
+        else:
+            imagem_url = ""
 
         # Geração da URL de checkout
         produto_uuid = str(uuid.uuid4())
