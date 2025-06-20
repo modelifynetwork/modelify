@@ -1257,7 +1257,42 @@ def dashboard():
         receita_gerada=receita_gerada,
         produtos_vendidos=produtos_vendidos
     )
-	
+
+@app.route('/dashboard-mobile', methods=['GET', 'POST'])
+def dashboard():
+    print("== DASHBOARD SESSION:", dict(session))  # DEBUG: mostra toda a sessão
+    if 'user' not in session:
+        print("== NÃO TEM 'user' NA SESSION, REDIRECIONA PRA LOGIN")
+        return redirect(url_for('login'))
+
+    user_email = session['user']['email']
+    print(f"== LOGADO COMO: {user_email}")
+
+    conn = connect_db()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    # Total de vendas
+    cursor.execute('SELECT SUM(quantidade_vendas) FROM produtos WHERE usuario_email = %s', (user_email,))
+    total_sales = cursor.fetchone()[0] or 0
+
+    # Receita gerada
+    cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = %s', (user_email,))
+    receita_gerada = cursor.fetchone()[0] or 0.0
+
+    # Total de produtos vendidos
+    cursor.execute('SELECT COUNT(*) FROM produtos WHERE usuario_email = %s AND quantidade_vendas > 0', (user_email,))
+    produtos_vendidos = cursor.fetchone()[0] or 0
+
+    conn.close()
+
+    return render_template(
+        'dashboard-mobile.html',
+        user=session['user'],
+        total_sales=total_sales,
+        receita_gerada=receita_gerada,
+        produtos_vendidos=produtos_vendidos
+    )
+
 @app.route('/api/tasks', methods=['GET'])
 def get_tasks():
     if 'user' not in session:
