@@ -1,3 +1,4 @@
+from imgbb_upload import upload_image_imgbb
 from flask_session import Session
 import psycopg2.extras
 import psycopg2
@@ -24,6 +25,29 @@ from email.mime.text import MIMEText
 def connect_db():
     return psycopg2.connect(os.environ.get('DATABASE_URL'))
 
+def upload_image_imgbb(file_storage):
+    """
+    Sobe a imagem FileStorage (do Flask) para o imgbb e retorna a URL direta.
+    """
+    IMGBB_API_KEY = "6ac382cc95c4e42f2f42847421c6c496"
+    random_name = secrets.token_hex(16)
+    ext = file_storage.filename.rsplit('.', 1)[-1].lower()
+    filename = f"{random_name}.{ext}"
+    img_bytes = file_storage.read()
+    encoded_image = base64.b64encode(img_bytes)
+    url = "https://api.imgbb.com/1/upload"
+    payload = {
+        "key": IMGBB_API_KEY,
+        "image": encoded_image,
+        "name": filename
+    }
+    response = requests.post(url, data=payload)
+    if response.status_code == 200:
+        data = response.json()
+        return data["data"]["url"]
+    else:
+        raise Exception(f"Erro ao enviar imagem para imgbb: {response.text}")
+	    
 mp = mercadopago.SDK("APP_USR-6436253612422218-033017-115c16f1f9ddf7fca0c289fb9f1081a8-2359242973")
 stripe.api_key = os.getenv("STRIPE_API_KEY")
 app = Flask(__name__, static_folder='static')  # 1. crie o app
@@ -217,15 +241,13 @@ def add_content_produto():
         return jsonify({"error": "Dados insuficientes"}), 400
 
     file = request.files['file']
-    UPLOAD_FOLDER = app.config['UPLOAD_FOLDER']
-    from datetime import datetime
-    if file and allowed_file(file.filename):
-        filename = secure_filename(f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{file.filename}")
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
-        file.save(filepath)
-        conteudo_url = f"/{filepath}"
-    else:
-        return jsonify({"error": "Arquivo inválido ou ausente"}), 400
+	if file and allowed_file(file.filename):
+    try:
+        conteudo_url = upload_image_imgbb(file)
+    except Exception as e:
+        return jsonify({"error": f"Erro ao subir arquivo: {e}"}), 400
+else:
+    return jsonify({"error": "Arquivo inválido ou ausente"}), 400
 
     data_envio = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -338,16 +360,14 @@ def salvar_edicao_produto():
     categoria = request.form.get('categoria')
 
     # Atualizar imagem só se enviada
-    imagem = produto[3]
-    if 'imagem' in request.files and request.files['imagem']:
-        file = request.files['imagem']
-        if file and file.filename:
-            filename = secure_filename(file.filename)
-            path = os.path.join(app.config['UPLOAD_FOLDER'])
-            os.makedirs(path, exist_ok=True)
-            file_path = os.path.join(path, filename)
-            file.save(file_path)
-            imagem = os.path.join('uploads', filename)  # ajuste o path se necessário
+imagem = produto[3]
+if 'imagem' in request.files and request.files['imagem']:
+    file = request.files['imagem']
+    if file and file.filename:
+        try:
+            imagem = upload_image_imgbb(file)
+        except Exception as e:
+            return jsonify({'error': f"Erro ao subir imagem: {str(e)}"}), 400
 
     # Atualizar no banco
     cursor.execute("""
@@ -468,14 +488,12 @@ def editar_bot(bot_id):
         oferta = request.form.get('oferta')
         foto = bot['photo_filename']
         if 'bot_photo' in request.files:
-            file = request.files['bot_photo']
-            if file and file.filename:
-                filename = secure_filename(file.filename)
-                path = os.path.join(app.config['UPLOAD_FOLDER'], 'bots')
-                os.makedirs(path, exist_ok=True)
-                file_path = os.path.join(path, filename)
-                file.save(file_path)
-                foto = f"bots/{filename}"
+		file = request.files['bot_photo']
+		if file and allowed_file(file.filename):
+			try:
+				photo_filename = upload_image_imgbb(file)
+			except Exception as e:
+				return jsonify({'error': f"Erro ao subir imagem do bot: {str(e)}"}), 400"
         cursor.execute("""
             UPDATE bots
                SET bot_name=%s, bot_token=%s, mensagens=%s, botao_texto=%s, group_id=%s, link_vip=%s, oferta=%s, photo_filename=%s
@@ -564,12 +582,12 @@ def api_criar_bot():
     upload_folder = os.path.join(app.root_path, 'static', 'bots')
     os.makedirs(upload_folder, exist_ok=True)
     if 'bot_photo' in request.files:
-        file = request.files['bot_photo']
-        if file and allowed_file(file.filename):
-            filename = secure_filename(f"{uuid.uuid4().hex}_{file.filename}")
-            file_path = os.path.join(upload_folder, filename)
-            file.save(file_path)
-            photo_filename = f"bots/{filename}"
+	    file = request.files['bot_photo']
+	    if file and allowed_file(file.filename):
+		    try:
+			    photo_filename = upload_image_imgbb(file)
+		    except Exception as e:
+			    return jsonify({'error': f"Erro ao subir imagem do bot: {str(e)}"}), 400
 
     try:
         conn = connect_db()
@@ -1046,12 +1064,14 @@ def salvar_produto():
             return jsonify({'error': 'O preço mínimo para cadastrar um produto é R$ 5,00.'}), 400
 
         # Salvar a imagem no servidor, se fornecida
-        if imagem and imagem.filename.strip() != "":
-            filename = secure_filename(imagem.filename)
-            imagem_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            imagem.save(imagem_path)
-        else:
-            imagem_path = ""
+	if imagem and imagem.filename.strip() != "":
+		try:
+			imagem_url = upload_image_imgbb(imagem)
+		except Exception as e:
+			print(f"Erro ao subir imagem no imgbb: {e}")
+			return jsonify({'error': f"Erro ao subir imagem: {str(e)}"}), 400
+		else:
+			imagem_url = ""
 
         # Geração da URL de checkout
         produto_uuid = str(uuid.uuid4())
