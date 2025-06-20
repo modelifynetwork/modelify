@@ -360,9 +360,9 @@ def salvar_edicao_produto():
     categoria = request.form.get('categoria')
 
     # Atualizar imagem só se enviada
-imagem = produto[3]
-if 'imagem' in request.files and request.files['imagem']:
-    file = request.files['imagem']
+    imagem = produto[3]
+    if 'imagem' in request.files and request.files['imagem']:
+        file = request.files['imagem']
     if file and file.filename:
         try:
             imagem = upload_image_imgbb(file)
