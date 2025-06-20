@@ -361,12 +361,12 @@ def salvar_edicao_produto():
 
     # Atualizar imagem só se enviada
     imagem = produto[3]
-    if 'imagem' in request.files and request.files['imagem']:
-        file = request.files['imagem']
+    file = request.files.get('imagem')
     if file and file.filename:
         try:
             imagem = upload_image_imgbb(file)
         except Exception as e:
+            conn.close()
             return jsonify({'error': f"Erro ao subir imagem: {str(e)}"}), 400
 
     # Atualizar no banco
@@ -379,7 +379,7 @@ def salvar_edicao_produto():
     conn.commit()
     conn.close()
     return jsonify({'success': True, 'message': 'Produto atualizado com sucesso!'})
-
+	
 @app.route("/api/meus_bots")
 def api_meus_bots():
     if 'user' not in session or 'email' not in session['user']:
