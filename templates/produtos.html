@@ -561,7 +561,6 @@ async function salvarEdicaoProduto() {
                             dropdownLinks += `<a href="/membros/area/${produto.uuid}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition"><i data-lucide="users" class="w-4 h-4 mr-2"></i>Área de Membros</a>`;
                         }
                         dropdownLinks += `
-                            <a href="/ofertas?product_id=${produto.uuid}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition"><i data-lucide="target" class="w-4 h-4 mr-2"></i>Ofertas</a>
                             <a href="${produto.url_flow}" target="_blank" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition"><i data-lucide="brain-circuit" class="w-4 h-4 mr-2"></i>Funil de Venda</a>
 			    <a href="#" onclick="abrirModalEdicao('${produto.uuid}'); event.preventDefault();" class="flex items-center px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded transition"><i data-lucide="edit-3" class="w-4 h-4 mr-2"></i>Editar</a>
 			    <a href="#" onclick="excluirProduto('${produto.uuid}'); event.preventDefault();" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded transition"><i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>Excluir</a>
