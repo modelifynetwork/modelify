@@ -476,27 +476,30 @@ def editar_bot(bot_id):
         except Exception:
             mensagens = []
 
-if request.method == "POST":
-    bot_name = request.form.get('bot_name')
-    bot_token = request.form.get('bot_token')
-    mensagens_form = request.form.getlist('mensagens')
-    mensagens_form = [m for m in mensagens_form if m.strip()]
-    mensagens_json = json.dumps(mensagens_form)
-    botao_texto = request.form.get('botao_texto', 'QUERO TER ACESSO AO VIP')
-    group_id = request.form.get('group_id')
-    link_vip = request.form.get('link_vip')
-    oferta = request.form.get('oferta')
-    foto = bot['photo_filename']
-    if 'bot_photo' in request.files:
-        file = request.files['bot_photo']
-        if file and allowed_file(file.filename):
-            try:
-                photo_filename = upload_image_imgbb(file)
-            except Exception as e:
-                return jsonify({'error': f"Erro ao subir imagem do bot: {str(e)}"}), 400
-        else:
-            photo_filename = foto  # mantém o antigo se não enviou novo
-		
+    if request.method == "POST":
+        bot_name = request.form.get('bot_name')
+        bot_token = request.form.get('bot_token')
+        mensagens_form = request.form.getlist('mensagens')
+        mensagens_form = [m for m in mensagens_form if m.strip()]
+        mensagens_json = json.dumps(mensagens_form)
+        botao_texto = request.form.get('botao_texto', 'QUERO TER ACESSO AO VIP')
+        group_id = request.form.get('group_id')
+        link_vip = request.form.get('link_vip')
+        oferta = request.form.get('oferta')
+        foto = bot['photo_filename']
+
+        # Upload da foto do bot (opcional, via imgbb)
+        if 'bot_photo' in request.files:
+            file = request.files['bot_photo']
+            if file and allowed_file(file.filename):
+                try:
+                    photo_filename = upload_image_imgbb(file)
+                    foto = photo_filename  # só troca se o upload deu certo
+                except Exception as e:
+                    conn.close()
+                    return jsonify({'error': f"Erro ao subir imagem do bot: {str(e)}"}), 400
+            # se não for imagem válida, mantém o antigo
+
         cursor.execute("""
             UPDATE bots
                SET bot_name=%s, bot_token=%s, mensagens=%s, botao_texto=%s, group_id=%s, link_vip=%s, oferta=%s, photo_filename=%s
@@ -509,7 +512,7 @@ if request.method == "POST":
 
     conn.close()
     return render_template("editar_bot.html", bot=dict(bot), mensagens=mensagens)
-
+	
 @app.route('/api/get_content', methods=['GET'])
 def get_content():
     # Garante que o usuário está autenticado
