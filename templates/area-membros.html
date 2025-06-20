@@ -88,7 +88,7 @@
       class="bg-[#232336] hover:bg-pink-500/70 text-pink-200 hover:text-white rounded-full p-2 shadow transition mr-2 flex items-center">
       <i data-lucide="arrow-left" class="w-6 h-6"></i>
     </a>
-    <img src="{{ url_for('static', filename=product['imagem'].replace('static/', '')) }}" alt="Produto" class="w-16 h-16 rounded-xl border-4 border-pink-400/30 shadow-lg object-cover">
+    <img src="{{ product['imagem'] }}" alt="Produto" class="w-16 h-16 rounded-xl border-4 border-pink-400/30 shadow-lg object-cover">
     <div>
       <h1 class="text-2xl font-bold text-white flex items-center gap-2">{{ product['nome'] }}</h1>
       <p class="text-pink-100 text-sm mt-1">{{ product['descricao'] }}</p>
