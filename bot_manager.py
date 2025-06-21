@@ -5,7 +5,7 @@ import json
 import requests
 import base64
 from io import BytesIO
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Bot
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler
 import mercadopago
 import threading
@@ -45,14 +45,32 @@ def run_bot_proc(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, u
     import asyncio
     from telegram.ext import Application, CommandHandler, CallbackQueryHandler
 
+    # LIMPA O WEBHOOK antes de iniciar o polling!
+    try:
+        Bot(token).delete_webhook(drop_pending_updates=True)
+        print(f"[INFO] Webhook limpo para bot {token[:8]}")
+    except Exception as e:
+        print(f"[WARN] Falha ao limpar webhook para bot {token[:8]}: {e}")
+
     def build_app():
         app = Application.builder().token(token).build()
 
         async def start(update, context):
             try:
-                mensagens = json.loads(mensagens_json) if mensagens_json else []
+                print(f"[DEBUG] /start recebido de {update.effective_user.id} no bot {token[:8]}")
+                try:
+                    mensagens = json.loads(mensagens_json) if mensagens_json else []
+                except Exception as e:
+                    print(f"[ERRO] JSON inválido em 'mensagens' para bot {token[:8]}: {e}")
+                    mensagens = []
+                # Garante que seja lista de strings
+                if not isinstance(mensagens, list):
+                    mensagens = []
                 for msg in mensagens:
-                    await update.message.reply_text(msg)
+                    try:
+                        await update.message.reply_text(str(msg))
+                    except Exception as e:
+                        print(f"[ERRO] Falha ao enviar mensagem automática: {e}")
                 keyboard = [
                     [InlineKeyboardButton(botao_texto or "QUERO TER ACESSO AO VIP", callback_data="quero_vip")]
                 ]
@@ -62,6 +80,7 @@ def run_bot_proc(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, u
                     reply_markup=reply_markup
                 )
             except Exception as e:
+                print(f"[ERRO] Handler /start: {e}")
                 await update.message.reply_text("Erro ao processar as mensagens automáticas. Por favor, tente novamente.")
 
         async def button_callback(update, context):
@@ -74,6 +93,7 @@ def run_bot_proc(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, u
                 "bot_id": bot_id
             }
             try:
+                print(f"[DEBUG] Callback 'quero_vip' chamado por {query.from_user.id} no bot {token[:8]}")
                 response = requests.post(f"{FLASK_URL}/criar_pagamento_pix_telegram", json=payload, timeout=10)
                 if response.status_code == 200:
                     data = response.json()
@@ -90,8 +110,10 @@ def run_bot_proc(token, mensagens_json, botao_texto, bot_id, oferta, link_vip, u
                     if pix_copia_cola:
                         await query.message.reply_text(f"`{pix_copia_cola}`", parse_mode="Markdown")
                 else:
+                    print(f"[ERRO] Erro ao gerar pagamento PIX: status {response.status_code}")
                     await query.message.reply_text("Erro ao gerar o pagamento. Tente novamente em instantes.")
-            except Exception:
+            except Exception as e:
+                print(f"[ERRO] CallbackHandler: {e}")
                 await query.message.reply_text("Erro ao gerar o pagamento. Tente novamente mais tarde.")
 
         app.add_handler(CommandHandler("start", start))
