@@ -1654,8 +1654,17 @@ def auth_google_callback():
             ''', (user_info['name'], user_info['email'], user_info['sub']))
             conn.commit()
 
-        print("== REDIRECIONANDO PARA DASHBOARD")
-        return redirect(url_for("dashboard"))
+        # Detectar se o usuário está no celular ou desktop
+        user_agent = request.user_agent.string.lower()
+        is_mobile = any(device in user_agent for device in ["mobile", "android", "iphone"])
+
+        # Redirecionar com base no tipo de dispositivo
+        if is_mobile:
+            print("== USUÁRIO EM CELULAR - redirecionando para /dashboard-mobile")
+            return redirect('/dashboard-mobile')
+        else:
+            print("== USUÁRIO EM DESKTOP - redirecionando para /dashboard")
+            return redirect('/dashboard')
 
     except Exception as e:
         print(f"== ERRO NO CALLBACK: {e}")
