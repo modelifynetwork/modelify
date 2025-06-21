@@ -1220,15 +1220,48 @@ def aff():
 @app.route('/vendas', methods=['GET', 'POST'])
 def vendas():
     if 'user' not in session:
-         return redirect(url_for('login'))
+        return redirect(url_for('login'))
+
+    # Detectar tipo de dispositivo
+    user_agent = request.user_agent.string.lower()
+    is_mobile = any(device in user_agent for device in ["mobile", "android", "iphone"])
+
+    # Redirecionamento baseado no dispositivo
+    if is_mobile:
+        print("== USUÁRIO EM CELULAR - redirecionando para /vendas-mobile")
+        return redirect('/vendas-mobile')
+
     return render_template('vendas.html', user=session['user'])
+
+@app.route('/vendas-mobile', methods=['GET', 'POST'])
+def vendas_mobile():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
+    user_agent = request.user_agent.string.lower()
+    is_mobile = any(device in user_agent for device in ["mobile", "android", "iphone"])
+
+    if not is_mobile:
+        print("== USUÁRIO EM DESKTOP ACESSOU /vendas-mobile - redirecionando para /vendas")
+        return redirect('/vendas')
+
+    return render_template('vendas-mobile.html', user=session['user'])
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
-    print("== DASHBOARD SESSION:", dict(session))  # DEBUG: mostra toda a sessão
+    print("== DASHBOARD SESSION:", dict(session))  # DEBUG
     if 'user' not in session:
         print("== NÃO TEM 'user' NA SESSION, REDIRECIONA PRA LOGIN")
         return redirect(url_for('login'))
+
+    # Detectar tipo de dispositivo
+    user_agent = request.user_agent.string.lower()
+    is_mobile = any(device in user_agent for device in ["mobile", "android", "iphone"])
+
+    # Redirecionamento baseado no dispositivo
+    if is_mobile:
+        print("== USUÁRIO EM CELULAR - redirecionando para /dashboard-mobile")
+        return redirect('/dashboard-mobile')
 
     user_email = session['user']['email']
     print(f"== LOGADO COMO: {user_email}")
@@ -1236,15 +1269,12 @@ def dashboard():
     conn = connect_db()
     cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    # Total de vendas
     cursor.execute('SELECT SUM(quantidade_vendas) FROM produtos WHERE usuario_email = %s', (user_email,))
     total_sales = cursor.fetchone()[0] or 0
 
-    # Receita gerada
     cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = %s', (user_email,))
     receita_gerada = cursor.fetchone()[0] or 0.0
 
-    # Total de produtos vendidos
     cursor.execute('SELECT COUNT(*) FROM produtos WHERE usuario_email = %s AND quantidade_vendas > 0', (user_email,))
     produtos_vendidos = cursor.fetchone()[0] or 0
 
@@ -1258,28 +1288,29 @@ def dashboard():
         produtos_vendidos=produtos_vendidos
     )
 
+
 @app.route('/dashboard-mobile', methods=['GET', 'POST'])
-def dashboardmobile():
-    print("== DASHBOARD SESSION:", dict(session))  # DEBUG: mostra toda a sessão
+def dashboard_mobile():
     if 'user' not in session:
-        print("== NÃO TEM 'user' NA SESSION, REDIRECIONA PRA LOGIN")
         return redirect(url_for('login'))
 
-    user_email = session['user']['email']
-    print(f"== LOGADO COMO: {user_email}")
+    user_agent = request.user_agent.string.lower()
+    is_mobile = any(device in user_agent for device in ["mobile", "android", "iphone"])
 
+    if not is_mobile:
+        print("== USUÁRIO EM DESKTOP ACESSOU /dashboard-mobile - redirecionando para /dashboard")
+        return redirect('/dashboard')
+
+    user_email = session['user']['email']
     conn = connect_db()
     cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    # Total de vendas
     cursor.execute('SELECT SUM(quantidade_vendas) FROM produtos WHERE usuario_email = %s', (user_email,))
     total_sales = cursor.fetchone()[0] or 0
 
-    # Receita gerada
     cursor.execute('SELECT SUM(preco * quantidade_vendas) FROM produtos WHERE usuario_email = %s', (user_email,))
     receita_gerada = cursor.fetchone()[0] or 0.0
 
-    # Total de produtos vendidos
     cursor.execute('SELECT COUNT(*) FROM produtos WHERE usuario_email = %s AND quantidade_vendas > 0', (user_email,))
     produtos_vendidos = cursor.fetchone()[0] or 0
 
