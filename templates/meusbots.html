@@ -404,12 +404,12 @@ document.addEventListener("DOMContentLoaded", () => {
             <tr class="group border-b border-pink-50 dark:border-pink-900 hover:bg-pink-50 dark:hover:bg-[#232336] transition">
               <td class="px-5 py-5 whitespace-nowrap">
                 <div class="flex items-center gap-3">
-                  ${bot.photo_filename
-                    ? `<img src="/static/${bot.photo_filename}" alt="${bot.bot_name}" class="w-11 h-11 rounded-full object-cover border-2 border-pink-400 shadow">`
-                    : `<div class="w-11 h-11 rounded-full bg-pink-100 flex items-center justify-center text-pink-400 text-xl border-2 border-pink-400 shadow">
-                        <i data-lucide="bot"></i>
-                      </div>`
-                  }
+                    ${bot.photo_filename
+                      ? `<img src="${bot.photo_filename}" alt="${bot.bot_name}" class="w-11 h-11 rounded-full object-cover border-2 border-pink-400 shadow">`
+                      : `<div class="w-11 h-11 rounded-full bg-pink-100 flex items-center justify-center text-pink-400 text-xl border-2 border-pink-400 shadow">
+                           <i data-lucide="bot"></i>
+                         </div>`
+                        }
                   <div>
                     <div class="font-bold text-base text-[#18181b] dark:text-pink-100 truncate">${bot.bot_name}</div>
                   </div>
